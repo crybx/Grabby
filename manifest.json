@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Grabby",
+  "description": "Grab the contents of the page.",
+  "version": "1.0",
+  "icons": {
+    "128": "clipboard128.png"
+  },
+  "action": {
+    "default_popup": "hello.html",
+    "default_icon": "clipboard128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "offscreen",
+    "scripting",
+    "storage",
+    "declarativeContent"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["functions.js"]
+    }
+  ]
+}
