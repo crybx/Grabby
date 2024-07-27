@@ -47,13 +47,40 @@ function deJum(sentence){
 }
 
 function removeFontTags(element) {
-    // remove 'font' tag elements while keeping the inner text
+    let innerHTML = element.innerHTML;
+
+    if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
+        innerHTML = element.children[0].innerHTML;
+        if (element.children[0].children.length > 0 && element.children[0].children[0].tagName === 'FONT') {
+            innerHTML = element.children[0].children[0].innerHTML
+        }
+    }
+
     if (element.tagName === 'FONT') {
-        if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
-            // remove a second 'font' tag element if it exists while keeping the inner html
-            element.outerHTML = element.children[0].innerHTML;
+        if (element.parentElement) {
+            element.outerHTML = innerHTML;
         } else {
-            element.outerHTML = element.innerHTML;
+            element.innerHTML = innerHTML;
+        }
+    } else if (element.tagName === 'P') {
+        element.innerHTML = innerHTML;
+    }
+}
+
+function removeEmptyParagraphAndHeadings(element) {
+    if (element.tagName === 'P'
+        || element.tagName === 'H1'
+        || element.tagName === 'H2'
+        || element.tagName === 'H3'
+        || element.tagName === 'H4'
+        || element.tagName === 'H5'
+        || element.tagName === 'H6') {
+        if (element.textContent.trim() === '') {
+            element.outerHTML = '';
+        }
+        // if the only child is a 'br' tag, remove the paragraph or heading
+        else if (element.children.length === 1 && element.children[0].tagName === 'BR') {
+            element.outerHTML = '';
         }
     }
 }
@@ -93,6 +120,7 @@ function grabRidi() {
             element.classList.remove('block_1');
             element.classList.remove('body');
             element.removeAttribute('style');
+            removeEmptyParagraphAndHeadings(element);
         });
         fullText += article.innerHTML;
     });
@@ -130,11 +158,25 @@ function grabSyosetu() {
         removeFontTags(element);
         if (element.tagName === 'P') {
             element.removeAttribute('id');
+            element.textContent = element.textContent.trim();
         }
     });
 
     let fullText = '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
     copyToClipboard(fullText);
+}
+
+function grabJoara() {
+    const chapter = document.querySelector('.text-wrap');
+    chapter.querySelectorAll('*').forEach(element => {
+        removeFontTags(element);
+        if (element.tagName === 'P') {
+            element.textContent = element.textContent.trim();
+        } else if (element.tagName === 'SMALL') {
+            element.outerHTML = '';
+        }
+    });
+    copyToClipboard(chapter.innerHTML);
 }
 
 function grabChrysanthemum() {

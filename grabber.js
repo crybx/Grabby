@@ -32,6 +32,8 @@ function grabFromWebsite() {
             grabBlossom();
         } else if (url.includes('page.kakao.com')) {
             grabKakaoPage();
+        } else if (url.includes('joara.com')) {
+            grabJoara();
         } else if (url.includes('file://')) {
             grabLocalFile();
         }
