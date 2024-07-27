@@ -30,6 +30,10 @@ function grabFromWebsite() {
             grabStorySeedling();
         } else if (url.includes('blossomtranslation.com')) {
             grabBlossom();
+        } else if (url.includes('page.kakao.com')) {
+            grabKakaoPage();
+        } else if (url.includes('file://')) {
+            grabLocalFile();
         }
         else {
             console.log('This website is not supported');

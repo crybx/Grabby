@@ -1,7 +1,6 @@
 function copyToClipboard(text) {
     console.log(text);
 
-
     // Create a textbox field where we can insert text to.
     let copyFrom = document.createElement("textarea");
 
@@ -43,41 +42,54 @@ function deJum(sentence){
             sArray[i] = alphab[index];
         }
     }
-
     newSentence = sArray.join("");
     return newSentence;
 }
 
-function grabRidi() {
-    // color page as a test
-    // console.log("coloring page");
-    // document.body.style.backgroundColor = 'blue';
+function removeFontTags(element) {
+    // remove 'font' tag elements while keeping the inner text
+    if (element.tagName === 'FONT') {
+        if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
+            // remove a second 'font' tag element if it exists while keeping the inner html
+            element.outerHTML = element.children[0].innerHTML;
+        } else {
+            element.outerHTML = element.innerHTML;
+        }
+    }
+}
 
+function grabKakaoPage() {
+    const content = document.querySelector('.DC2CN');
+    content.querySelectorAll('*').forEach(element => {
+        removeFontTags(element);
+        // remove all attributes from 'p' tag elements
+        if (element.tagName === 'P') {
+            element.removeAttribute('id');
+            element.removeAttribute('data-p-id');
+            element.removeAttribute('data-original-font-size');
+            element.removeAttribute('data-original-line-height');
+            element.removeAttribute('style');
+        }
+    });
+    copyToClipboard(content.innerHTML);
+}
+
+function grabRidi() {
     let fullText = '';
 
     const articles = document.querySelectorAll('article');
     // For each article element, print the contents to the console
     articles.forEach(article => {
         article.querySelectorAll('*').forEach(element => {
-            // remove 'font' tag elements while keeping the inner text
-            if (element.tagName === 'FONT') {
-                if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
-                    // remove a second 'font' tag element if it exists while keeping the inner html
-                    element.outerHTML = element.children[0].innerHTML;
-                } else {
-                    element.outerHTML = element.innerHTML;
-                }
-            }
+            removeFontTags(element);
 
             // remove 'pre' tag elements
-            else if (element.tagName === 'PRE') {
+            if (element.tagName === 'PRE') {
                 element.outerHTML = '';
             }
 
-            // remove classes 'block_1' and 'body' from all elements
             element.classList.remove('block_1');
             element.classList.remove('body');
-            // remove style attribute from all elements
             element.removeAttribute('style');
         });
         fullText += article.innerHTML;
@@ -113,14 +125,8 @@ function grabSyosetu() {
     const chapter = document.querySelector('#novel_honbun');
 
     chapter.querySelectorAll('*').forEach(element => {
-        if (element.tagName === 'FONT') {
-            if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
-                // remove a second 'font' tag element if it exists while keeping the inner html
-                element.outerHTML = element.children[0].innerHTML;
-            } else {
-                element.outerHTML = element.innerHTML;
-            }
-        } else if (element.tagName === 'P') {
+        removeFontTags(element);
+        if (element.tagName === 'P') {
             element.removeAttribute('id');
         }
     });
@@ -178,7 +184,6 @@ function grabGoogleDocMobileBasic() {
     });
 
     copyToClipboard(content.innerHTML);
-
 }
 
 function grabBlogspot() {
@@ -213,20 +218,9 @@ function madaraWpTheme() {
             element.querySelectorAll('span').forEach(span => {
                 span.outerHTML = span.innerHTML;
             });
-        }
-
-        // remove script elements
-        else if (element.tagName === 'SCRIPT') {
-            element.outerHTML = '';
-        }
-
-        // remove ins elements
-        else if (element.tagName === 'INS') {
-            element.outerHTML = '';
-        }
-
-        // remove 'div' tag elements
-        else if (element.tagName === 'DIV') {
+        } else if (element.tagName === 'SCRIPT'
+                || element.tagName === 'INS'
+                || element.tagName === 'DIV') {
             element.outerHTML = '';
         }
     });
@@ -239,10 +233,8 @@ function grabWatashiWaSugoiDesu() {
     const content = document.querySelector('#wtr-content');
 
     content.querySelectorAll('*').forEach(element => {
-        // Remove all classes and styles
         element.removeAttribute('class');
         element.removeAttribute('style');
-        // remove select elements
         if (element.tagName === 'SELECT') {
             element.outerHTML = '';
         }
@@ -310,6 +302,25 @@ function grabBlossom() {
 
     let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
     copyToClipboard(fullText);
+}
+
+function grabLocalFile() {
+    const content = document.documentElement;
+
+    content.querySelectorAll('*').forEach(element => {
+        removeFontTags(element);
+
+        // trim whitespace from the beginning and end of the text if tag is p
+        if (element.tagName === 'P') {
+            element.textContent = element.textContent.trim();
+        }
+    });
+
+    // remove element with id goog-gt-tt
+    const googleTranslate = document.querySelector('#goog-gt-tt');
+    googleTranslate.outerHTML = '';
+
+    copyToClipboard(content.innerHTML);
 }
 
 function getAllLinks() {
