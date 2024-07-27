@@ -59,7 +59,9 @@ function removeFontTags(element) {
 }
 
 function grabKakaoPage() {
-    const content = document.querySelector('.DC2CN');
+    const shadowHost = document.querySelector('#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div');
+    const shadowRoot = shadowHost.shadowRoot;
+    const content = shadowRoot.querySelector('.DC2CN');
     content.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
         // remove all attributes from 'p' tag elements
