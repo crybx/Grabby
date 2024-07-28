@@ -360,11 +360,13 @@ function grabLocalFile() {
         }
     });
 
-    // remove element with id goog-gt-tt
-    const googleTranslate = document.querySelector('#goog-gt-tt');
-    googleTranslate.outerHTML = '';
-
-    copyToClipboard(content.innerHTML);
+    // remove link tag with href of "https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"
+    const extraCss = document.querySelector('link[href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"]');
+    const extraDiv = document.querySelector('#goog-gt-tt');
+    extraCss.outerHTML = '';
+    extraDiv.outerHTML = '';
+    const fullHtml = "<?xml version='1.0' encoding='utf-8'?>" + content.outerHTML;
+    copyToClipboard(fullHtml);
 }
 
 function getAllLinks() {
@@ -372,12 +374,14 @@ function getAllLinks() {
     let allLinks = '';
     links.forEach(link => {
         // if the link text has more than 1000 characters, skip it
-        // if (link.text.length > 1000) {
-        //     return;
-        // }
+        // if (link.text.length > 1000) { return; }
         // remove all consecutive whitespace characters
         link.text = link.text.replace(/\s+/g, ' ');
-        allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
+        // if text contains 'chapter' or 'Chapter', add it to the allLinks
+        if (link.text.toLowerCase().includes('chapter')) {
+            allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
+        }
+        //allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
     });
     console.log(allLinks);
     copyToClipboard(allLinks);
