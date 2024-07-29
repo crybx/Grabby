@@ -46,7 +46,20 @@ function deJum(sentence){
     return newSentence;
 }
 
-function removeFontTags(element) {
+function removeElements(elements) {
+    for (let e of elements) {
+        e.remove();
+    }
+}
+
+function removeTag(element, tagName) {
+    if (element.tagName === tagName) {
+        //element.outerHTML = '';
+        element.remove();
+    }
+}
+
+function oldRemoveFontTags(element) {
     let innerHTML = element.innerHTML;
 
     if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
@@ -67,6 +80,18 @@ function removeFontTags(element) {
     }
 }
 
+function removeFontTags(element) {
+    let fontTag = element.querySelector('font');
+    if (!fontTag) { return; }
+
+    let innerHTML = fontTag.innerHTML;
+    // if the first child of the 'font' tag is also a 'font' tag, get the innerHTML of the second 'font' tag
+    if (fontTag.children.length > 0 && fontTag.children[0].tagName === 'FONT') {
+        innerHTML = fontTag.children[0].innerHTML;
+    }
+    fontTag.outerHTML = innerHTML;
+}
+
 function removeEmptyParagraphAndHeadings(element) {
     if (element.tagName === 'P'
         || element.tagName === 'H1'
@@ -78,11 +103,35 @@ function removeEmptyParagraphAndHeadings(element) {
         if (element.textContent.trim() === '') {
             element.outerHTML = '';
         }
-        // if the only child is a 'br' tag, remove the paragraph or heading
+        // If the only thing in the paragraph is a 'br' tag, remove the paragraph
         else if (element.children.length === 1 && element.children[0].tagName === 'BR') {
-            element.outerHTML = '';
+            // make sure this doesn't have text besides the br tag
+            const innerHtml = element.innerHTML.toLowerCase();
+            if (innerHtml === '<br>' || innerHtml === '<br/>' || innerHtml === '<br />' || innerHtml === '<br></br>') {
+                element.outerHTML = '';
+            }
         }
     }
+}
+
+function removeClasses(element, classes) {
+    // element.classList.remove('block_1');
+    // element.classList.remove('body');
+    element.classList.remove(...classes);
+    if (element.classList.length === 0) {
+        element.removeAttribute('class');
+    }
+}
+
+function removeComments (root) {
+    let walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+
+    // if we delete currentNode, call to nextNode() fails.
+    let nodeList = [];
+    while (walker.nextNode()) {
+        nodeList.push(walker.currentNode);
+    }
+    removeElements(nodeList);
 }
 
 function grabKakaoPage() {
@@ -106,19 +155,16 @@ function grabKakaoPage() {
 function grabRidi() {
     let fullText = '';
 
+    // Ridi can have multiple articles in one page
     const articles = document.querySelectorAll('article');
-    // For each article element, print the contents to the console
     articles.forEach(article => {
+        removeComments(article);
         article.querySelectorAll('*').forEach(element => {
             removeFontTags(element);
-
-            // remove 'pre' tag elements
-            if (element.tagName === 'PRE') {
-                element.outerHTML = '';
-            }
-
-            element.classList.remove('block_1');
-            element.classList.remove('body');
+            removeTag(element, 'PRE');
+            removeTag(element, 'TITLE');
+            removeTag(element, 'LINK');
+            removeClasses(element, ['block_1', 'body', 'story_part_header_title']);
             element.removeAttribute('style');
             removeEmptyParagraphAndHeadings(element);
         });
@@ -135,9 +181,11 @@ function grabPublang() {
     let temp = document.createElement('div');
     temp.innerHTML = srcdoc;
     temp.querySelectorAll('*').forEach(element => {
-        if (element.tagName === 'LINK' || element.tagName === 'BASE' || element.tagName === 'META') {
-            element.outerHTML = '';
-        } else if (element.tagName === 'TITLE') {
+        removeTag(element, 'LINK');
+        removeTag(element, 'BASE');
+        removeTag(element, 'META');
+
+        if (element.tagName === 'TITLE') {
             element.outerHTML = '<h1>' + element.innerHTML + '</h1>';
         } else if (element.tagName === 'STYLE') {
             // let style = '';
@@ -363,8 +411,16 @@ function grabLocalFile() {
     // remove link tag with href of "https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"
     const extraCss = document.querySelector('link[href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"]');
     const extraDiv = document.querySelector('#goog-gt-tt');
-    extraCss.outerHTML = '';
-    extraDiv.outerHTML = '';
+    extraCss.remove();
+    extraDiv.remove();
+
+    // and self-closing / to end of link tag
+    const linkTags = document.querySelectorAll('link');
+    linkTags.forEach(link => {
+        // TDOO: this is not working, the link still doesn't self close
+        link.outerHTML = link.outerHTML.replace('>', '/>');
+    });
+
     const fullHtml = "<?xml version='1.0' encoding='utf-8'?>" + content.outerHTML;
     copyToClipboard(fullHtml);
 }
