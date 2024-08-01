@@ -301,7 +301,10 @@ function grabBlogspot() {
 }
 
 function madaraWpTheme() {
-    const title = document.querySelector('#chapter-heading').textContent;
+    const title =
+        document.querySelector("ol.breadcrumb li.active")?.textContent ||
+        document.querySelector('#chapter-heading').textContent ||
+        '';
     const content = document.querySelector('.text-left');
 
     content.querySelectorAll('*').forEach(element => {
@@ -398,6 +401,8 @@ function grabBlossom() {
 
 function grabLocalFile() {
     const content = document.documentElement;
+    // remove class attribute from html element
+    content.removeAttribute('class');
 
     content.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
@@ -411,14 +416,17 @@ function grabLocalFile() {
     // remove link tag with href of "https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"
     const extraCss = document.querySelector('link[href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"]');
     const extraDiv = document.querySelector('#goog-gt-tt');
-    extraCss.remove();
-    extraDiv.remove();
+    if (extraCss) extraCss.remove();
+    if (extraDiv) extraDiv.remove();
 
     // and self-closing / to end of link tag
     const linkTags = document.querySelectorAll('link');
     linkTags.forEach(link => {
-        // TDOO: this is not working, the link still doesn't self close
-        link.outerHTML = link.outerHTML.replace('>', '/>');
+        // if link contains gstatic, remove it
+        if (link.href.includes('gstatic')) {
+            link.remove();
+        }
+        console.log(link);
     });
 
     const fullHtml = "<?xml version='1.0' encoding='utf-8'?>" + content.outerHTML;
