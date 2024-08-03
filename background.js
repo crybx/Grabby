@@ -55,9 +55,33 @@ async function handleMessages(message) {
             handleAddExclamationMarkResult(message.data);
             closeOffscreenDocument();
             break;
+        case 'downloadAsFile':
+            downloadAsFile(message.title, message.blobUrl, message.cleanup);
+            break;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }
+}
+
+async function downloadAsFile(title, blobUrl, cleanup) {
+    let fileName = title;
+    let illegalWindowsFileNameChars = "~/?<>\\:*|\"";
+    // remove any illegal characters from the title
+    for (let i = 0; i < illegalWindowsFileNameChars.length; i++) {
+        fileName = fileName.replace(illegalWindowsFileNameChars[i], '');
+        // replace any spaces with underscores
+        fileName = fileName.replace(' ', '_');
+    }
+    fileName = fileName + '.xhtml';
+
+    let options = {
+        url: blobUrl,
+        filename: fileName,
+        saveAs: false
+    };
+
+    const downloadId = await chrome.downloads.download(options, cleanup);
+    console.log(`Download started with ID ${downloadId}`);
 }
 
 async function handleAddExclamationMarkResult(dom) {

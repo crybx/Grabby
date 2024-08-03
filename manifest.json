@@ -7,7 +7,7 @@
     "128": "clipboard128.png"
   },
   "action": {
-    "default_popup": "hello.html",
+    "default_popup": "grabby.html",
     "default_icon": "clipboard128.png"
   },
   "background": {
@@ -15,16 +15,22 @@
   },
   "permissions": [
     "activeTab",
-    "tabs",
+    "cookies",
+    "declarativeContent",
+    "downloads",
     "offscreen",
     "scripting",
     "storage",
-    "declarativeContent"
+    "tabs",
+    "unlimitedStorage",
+    "webRequest"
   ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["functions.js"]
+      "js": [
+        "functions.js"
+      ]
     }
   ]
 }

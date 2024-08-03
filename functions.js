@@ -26,24 +26,37 @@ function copyToClipboard(text) {
     document.body.removeChild(copyFrom);
 }
 
-function deJum(sentence){
-    let sArray = sentence.split("")
-    let newSentence;
-    let i;
-    let alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let cypher = 'tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM';
+function getHtmlFromContent(title, bodyText) {
+    return `<?xml version='1.0' encoding='utf-8'?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>${title}</title>
+  <link type="text/css" rel="stylesheet" href="../styles/stylesheet.css"/>
+</head>
+<body>
+${bodyText}
+</body>
+</html>
+    `;
+}
 
-    for (i = 0; i < sArray.length; i++){
-        // get the index of the character in the cypher
+function getFileBlobFromContent(title, bodyText) {
+    let blobText = getHtmlFromContent(title, bodyText);
+    return new Blob([blobText], {type: 'text/html'});
+}
+
+function dejumble(node) {
+    const alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const cypher = 'jymvfoutlpxiwcbqdgraenkzshCDJGSMXLPABOZRYUHEVKFNQWTI';
+    let sArray = node.textContent.split("");
+    for (let i = 0; i < sArray.length; i++) {
         let index = cypher.indexOf(sArray[i]);
-        // if index is -1, the character is not in the cypher
-        if (index !== -1){
-            // replace the character with the corresponding character in the alphab
+        if (index !== -1) {
             sArray[i] = alphab[index];
         }
     }
-    newSentence = sArray.join("");
-    return newSentence;
+    node.textContent = sArray.join("");
+    node.classList.remove("jum");
 }
 
 function removeElements(elements) {
@@ -56,27 +69,6 @@ function removeTag(element, tagName) {
     if (element.tagName === tagName) {
         //element.outerHTML = '';
         element.remove();
-    }
-}
-
-function oldRemoveFontTags(element) {
-    let innerHTML = element.innerHTML;
-
-    if (element.children.length > 0 && element.children[0].tagName === 'FONT') {
-        innerHTML = element.children[0].innerHTML;
-        if (element.children[0].children.length > 0 && element.children[0].children[0].tagName === 'FONT') {
-            innerHTML = element.children[0].children[0].innerHTML
-        }
-    }
-
-    if (element.tagName === 'FONT') {
-        if (element.parentElement) {
-            element.outerHTML = innerHTML;
-        } else {
-            element.innerHTML = innerHTML;
-        }
-    } else if (element.tagName === 'P') {
-        element.innerHTML = innerHTML;
     }
 }
 
@@ -149,7 +141,7 @@ function grabKakaoPage() {
             element.removeAttribute('style');
         }
     });
-    copyToClipboard(content.innerHTML);
+    return content.innerHTML;
 }
 
 function grabRidi() {
@@ -170,8 +162,7 @@ function grabRidi() {
         });
         fullText += article.innerHTML;
     });
-
-    copyToClipboard(fullText);
+    return fullText;
 }
 
 function grabPublang() {
@@ -187,15 +178,9 @@ function grabPublang() {
 
         if (element.tagName === 'TITLE') {
             element.outerHTML = '<h1>' + element.innerHTML + '</h1>';
-        } else if (element.tagName === 'STYLE') {
-            // let style = '';
-            // style += element.outerHTML;
-            // element.outerHTML = '';
-            // console.log(style);
         }
     });
-
-    copyToClipboard(temp.innerHTML);
+    return temp.innerHTML;
 }
 
 function grabSyosetu() {
@@ -209,9 +194,7 @@ function grabSyosetu() {
             element.textContent = element.textContent.trim();
         }
     });
-
-    let fullText = '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
 }
 
 function grabJoara() {
@@ -224,7 +207,7 @@ function grabJoara() {
             element.outerHTML = '';
         }
     });
-    copyToClipboard(chapter.innerHTML);
+    return chapter.innerHTML;
 }
 
 function grabChrysanthemum() {
@@ -245,14 +228,13 @@ function grabChrysanthemum() {
 
         // if element has class "jum" call deJum function
         if (element.classList.contains('jum')) {
-            element.innerHTML = deJum(element.innerHTML);
-            // remove jum class
-            element.classList.remove('jum');
+            dejumble(element);
+        }
+        if (element.classList.contains('emoji')) {
+            element.remove();
         }
     });
-
-    let fullText = '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
 }
 
 function grabGoogleDocMobileBasic() {
@@ -262,20 +244,18 @@ function grabGoogleDocMobileBasic() {
         element.removeAttribute('style');
         // if element contains 'table of contents', remove the element
         if (element.textContent.toLowerCase().includes('table of contents')) {
-            element.outerHTML = '';
+            element.remove();
         }
         // if element contains 'docs.google.com', remove the element
         else if (element.textContent.toLowerCase().includes('docs.google.com')) {
-            element.outerHTML = '';
+            element.remove();
         }
         else if (element.tagName === 'SPAN' || element.tagName === 'A') {
             // remove 'span' and 'a' tag elements while keeping the inner text
             element.outerHTML = element.innerHTML;
         }
-
     });
-
-    copyToClipboard(content.innerHTML);
+    return content.innerHTML;
 }
 
 function grabBlogspot() {
@@ -292,20 +272,22 @@ function grabBlogspot() {
             nextChapter = true;
         }
         if (nextChapter) {
-            element.outerHTML = '';
+            element.remove();
         }
     });
 
-    let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function madaraWpTheme() {
     const title =
         document.querySelector("ol.breadcrumb li.active")?.textContent ||
-        document.querySelector('#chapter-heading').textContent ||
+        document.querySelector('#chapter-heading')?.textContent ||
+        document.querySelector('.wp-block-heading')?.textContent ||
         '';
-    const content = document.querySelector('.text-left');
+    const content =
+        document.querySelector('.text-left') ||
+        document.querySelector('.entry-content_wrap');
 
     content.querySelectorAll('*').forEach(element => {
         // remove span inside p
@@ -316,12 +298,11 @@ function madaraWpTheme() {
         } else if (element.tagName === 'SCRIPT'
                 || element.tagName === 'INS'
                 || element.tagName === 'DIV') {
-            element.outerHTML = '';
+            element.remove();
         }
     });
 
-    let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabWatashiWaSugoiDesu() {
@@ -334,8 +315,7 @@ function grabWatashiWaSugoiDesu() {
             element.outerHTML = '';
         }
     });
-
-    copyToClipboard(content.innerHTML);
+    return content.innerHTML;
 }
 
 function grabWordpress() {
@@ -344,11 +324,9 @@ function grabWordpress() {
 
     // Remove script elements
     content.querySelectorAll('script').forEach(script => {
-        script.outerHTML = '';
+        script.remove();
     });
-
-    let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabJjwxc() {
@@ -360,8 +338,7 @@ function grabJjwxc() {
         element.removeAttribute('style');
     });
 
-    let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabStorySeedling() {
@@ -373,8 +350,7 @@ function grabStorySeedling() {
             fullText += element.innerHTML;
         }
     });
-
-    copyToClipboard(fullText);
+    return fullText;
 }
 
 function grabBlossom() {
@@ -395,15 +371,11 @@ function grabBlossom() {
         element.removeAttribute('data-paragraph-id');
     });
 
-    let fullText = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    copyToClipboard(fullText);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabLocalFile() {
-    const content = document.documentElement;
-    // remove class attribute from html element
-    content.removeAttribute('class');
-
+    const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
 
@@ -412,25 +384,7 @@ function grabLocalFile() {
             element.textContent = element.textContent.trim();
         }
     });
-
-    // remove link tag with href of "https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"
-    const extraCss = document.querySelector('link[href="https://www.gstatic.com/_/translate_http/_/ss/k=translate_http.tr.26tY-h6gH9w.L.W.O/am=Ohg/d=0/rs=AN8SPfocrRO-f5jO91h2UqcrdJsFzeCmQQ/m=el_main_css"]');
-    const extraDiv = document.querySelector('#goog-gt-tt');
-    if (extraCss) extraCss.remove();
-    if (extraDiv) extraDiv.remove();
-
-    // and self-closing / to end of link tag
-    const linkTags = document.querySelectorAll('link');
-    linkTags.forEach(link => {
-        // if link contains gstatic, remove it
-        if (link.href.includes('gstatic')) {
-            link.remove();
-        }
-        console.log(link);
-    });
-
-    const fullHtml = "<?xml version='1.0' encoding='utf-8'?>" + content.outerHTML;
-    copyToClipboard(fullHtml);
+    return content.innerHTML;
 }
 
 function getAllLinks() {
@@ -448,6 +402,6 @@ function getAllLinks() {
         //allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
     });
     console.log(allLinks);
-    copyToClipboard(allLinks);
+    return allLinks;
 }
 

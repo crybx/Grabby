@@ -1,47 +1,65 @@
 function grabFromWebsite() {
     // Get the url of the current tab
     const url = window.location.href;
+    // get tab title
+    const title = document.querySelector('title')?.textContent || '';
+    let content = '';
 
     if (url) {
         if (url.includes('ridibooks.com')) {
-            grabRidi();
+            content = grabRidi();
         } else if (url.includes('publang.com/')) {
-            grabPublang();
+            content = grabPublang();
         } else if (url.includes('syosetu.com')) {
-            grabSyosetu();
+            content = grabSyosetu();
         } else if (url.includes('chrysanthemumgarden.com')) {
-            grabChrysanthemum();
+            content = grabChrysanthemum();
         } else if (url.includes('docs.google.com')) {
-            grabGoogleDocMobileBasic();
+            content = grabGoogleDocMobileBasic();
         } else if (url.includes('blogspot.com')) {
-            grabBlogspot();
+            content = grabBlogspot();
         } else if (url.includes('galaxytranslations97.com')
                 || url.includes('foxaholic.com')
                 || url.includes('wooksteahouse.com')) {
-            madaraWpTheme();
+            content = madaraWpTheme();
         } else if (url.includes('watashiwasugoidesu.com')) {
-            grabWatashiWaSugoiDesu();
+            content = grabWatashiWaSugoiDesu();
         } else if (url.includes('wordpress.com')
                 || url.includes('mendacity.me')){
-            grabWordpress();
+            content = grabWordpress();
         } else if (url.includes('jjwxc.net')) {
-            grabJjwxc();
+            content = grabJjwxc();
         } else if (url.includes('storyseedling.com')) {
-            grabStorySeedling();
+            content = grabStorySeedling();
         } else if (url.includes('blossomtranslation.com')) {
-            grabBlossom();
+            content = grabBlossom();
         } else if (url.includes('page.kakao.com')) {
-            grabKakaoPage();
+            content = grabKakaoPage();
         } else if (url.includes('joara.com')) {
-            grabJoara();
+            content = grabJoara();
         } else if (url.includes('file://')) {
-            grabLocalFile();
+            content = grabLocalFile();
         }
         else {
             console.log('This website is not supported');
             console.log('URL:', url);
+            // TODO: write a kitchen sink method to grab text from any website
         }
     }
+
+    copyToClipboard(content);
+
+    // Download logic
+    let blob = getFileBlobFromContent(title, content);
+    let blobUrl = URL.createObjectURL(blob);
+    let cleanup = () => { URL.revokeObjectURL(options.url); };
+    chrome.runtime.sendMessage({
+        target: 'background',
+        type: 'downloadAsFile',
+        title: title,
+        blobUrl: blobUrl,
+        cleanup: cleanup
+    });
 }
 
 chrome.windows.getCurrent(function (currentWindow) {
@@ -54,5 +72,3 @@ chrome.windows.getCurrent(function (currentWindow) {
         });
     });
 });
-
-
