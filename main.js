@@ -41,9 +41,9 @@ function grabFromWebsite() {
             content = grabLocalFile();
         }
         else {
-            console.log('This website is not supported');
+            content = grabUnknown();
+            console.log('This website is not specifically supported');
             console.log('URL:', url);
-            // TODO: write a kitchen sink method to grab text from any website
         }
     }
 

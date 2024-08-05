@@ -59,73 +59,6 @@ function dejumble(node) {
     node.classList.remove("jum");
 }
 
-function removeElements(elements) {
-    for (let e of elements) {
-        e.remove();
-    }
-}
-
-function removeTag(element, tagName) {
-    if (element.tagName === tagName) {
-        //element.outerHTML = '';
-        element.remove();
-    }
-}
-
-function removeFontTags(element) {
-    let fontTag = element.querySelector('font');
-    if (!fontTag) { return; }
-
-    let innerHTML = fontTag.innerHTML;
-    // if the first child of the 'font' tag is also a 'font' tag, get the innerHTML of the second 'font' tag
-    if (fontTag.children.length > 0 && fontTag.children[0].tagName === 'FONT') {
-        innerHTML = fontTag.children[0].innerHTML;
-    }
-    fontTag.outerHTML = innerHTML;
-}
-
-function removeEmptyParagraphAndHeadings(element) {
-    if (element.tagName === 'P'
-        || element.tagName === 'H1'
-        || element.tagName === 'H2'
-        || element.tagName === 'H3'
-        || element.tagName === 'H4'
-        || element.tagName === 'H5'
-        || element.tagName === 'H6') {
-        if (element.textContent.trim() === '') {
-            element.outerHTML = '';
-        }
-        // If the only thing in the paragraph is a 'br' tag, remove the paragraph
-        else if (element.children.length === 1 && element.children[0].tagName === 'BR') {
-            // make sure this doesn't have text besides the br tag
-            const innerHtml = element.innerHTML.toLowerCase();
-            if (innerHtml === '<br>' || innerHtml === '<br/>' || innerHtml === '<br />' || innerHtml === '<br></br>') {
-                element.outerHTML = '';
-            }
-        }
-    }
-}
-
-function removeClasses(element, classes) {
-    // element.classList.remove('block_1');
-    // element.classList.remove('body');
-    element.classList.remove(...classes);
-    if (element.classList.length === 0) {
-        element.removeAttribute('class');
-    }
-}
-
-function removeComments (root) {
-    let walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
-
-    // if we delete currentNode, call to nextNode() fails.
-    let nodeList = [];
-    while (walker.nextNode()) {
-        nodeList.push(walker.currentNode);
-    }
-    removeElements(nodeList);
-}
-
 function grabKakaoPage() {
     const shadowHost = document.querySelector('#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div');
     const shadowRoot = shadowHost.shadowRoot;
@@ -153,10 +86,9 @@ function grabRidi() {
         removeComments(article);
         article.querySelectorAll('*').forEach(element => {
             removeFontTags(element);
-            removeTag(element, 'PRE');
-            removeTag(element, 'TITLE');
-            removeTag(element, 'LINK');
-            removeClasses(element, ['block_1', 'body', 'story_part_header_title']);
+            removeTags(element, ['PRE', 'TITLE', 'LINK']);
+            removeBlockClasses(element);
+            removeClasses(element, ['body', 'story_part_header_title']);
             element.removeAttribute('style');
             removeEmptyParagraphAndHeadings(element);
         });
@@ -172,9 +104,7 @@ function grabPublang() {
     let temp = document.createElement('div');
     temp.innerHTML = srcdoc;
     temp.querySelectorAll('*').forEach(element => {
-        removeTag(element, 'LINK');
-        removeTag(element, 'BASE');
-        removeTag(element, 'META');
+        removeTags(element, ['LINK', 'BASE', 'META']);
 
         if (element.tagName === 'TITLE') {
             element.outerHTML = '<h1>' + element.innerHTML + '</h1>';
@@ -201,10 +131,9 @@ function grabJoara() {
     const chapter = document.querySelector('.text-wrap');
     chapter.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
+        removeTag(element, 'SMALL')
         if (element.tagName === 'P') {
             element.textContent = element.textContent.trim();
-        } else if (element.tagName === 'SMALL') {
-            element.outerHTML = '';
         }
     });
     return chapter.innerHTML;
@@ -239,6 +168,7 @@ function grabChrysanthemum() {
 
 function grabGoogleDocMobileBasic() {
     const content = document.querySelector('.doc-content');
+    const headings = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 
     content.querySelectorAll('*').forEach(element => {
         element.removeAttribute('style');
@@ -253,6 +183,10 @@ function grabGoogleDocMobileBasic() {
         else if (element.tagName === 'SPAN' || element.tagName === 'A') {
             // remove 'span' and 'a' tag elements while keeping the inner text
             element.outerHTML = element.innerHTML;
+        }
+        // if element is a heading, remove the 'id' attribute
+        else if (headings.includes(element.tagName)) {
+            element.removeAttribute('id');
         }
     });
     return content.innerHTML;
@@ -290,16 +224,8 @@ function madaraWpTheme() {
         document.querySelector('.entry-content_wrap');
 
     content.querySelectorAll('*').forEach(element => {
-        // remove span inside p
-        if (element.tagName === 'P') {
-            element.querySelectorAll('span').forEach(span => {
-                span.outerHTML = span.innerHTML;
-            });
-        } else if (element.tagName === 'SCRIPT'
-                || element.tagName === 'INS'
-                || element.tagName === 'DIV') {
-            element.remove();
-        }
+        removeSpansInsideParagraph(element);
+        removeTags(element, ['SCRIPT', 'INS', 'DIV']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
@@ -309,11 +235,10 @@ function grabWatashiWaSugoiDesu() {
     const content = document.querySelector('#wtr-content');
 
     content.querySelectorAll('*').forEach(element => {
-        element.removeAttribute('class');
-        element.removeAttribute('style');
-        if (element.tagName === 'SELECT') {
-            element.outerHTML = '';
-        }
+        removeAttributes(element, ['class', 'style']);
+        removeTags(element, ['SCRIPT', 'SELECT']);
+        removeElementWithClasses(element, ['ezoic-autoinsert-ad']);
+        removeElementWithAttributes(element, ['data-ez-ph-id']);
     });
     return content.innerHTML;
 }
@@ -334,7 +259,6 @@ function grabJjwxc() {
     const content = document.querySelector('.novelbody');
 
     content.querySelectorAll('*').forEach(element => {
-        // remove style attribute from all elements
         element.removeAttribute('style');
     });
 
@@ -358,17 +282,8 @@ function grabBlossom() {
     const content = document.querySelector('.chapter-formatting');
 
     content.querySelectorAll('*').forEach(element => {
-        // remove span inside p
-        if (element.tagName === 'P') {
-            element.querySelectorAll('span').forEach(span => {
-                span.outerHTML = span.innerHTML;
-            });
-        }
-
-        //remove id attribute
-        element.removeAttribute('id');
-        // remove 'data-paragraph-id' attribute
-        element.removeAttribute('data-paragraph-id');
+        removeSpansInsideParagraph(element);
+        removeAttributes(element, ['id', 'data-paragraph-id']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
@@ -387,12 +302,19 @@ function grabLocalFile() {
     return content.innerHTML;
 }
 
+function grabUnknown() {
+    const content = document.querySelector('body');
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanup(element);
+    });
+    removeComments(content);
+    return content.innerHTML;
+}
+
 function getAllLinks() {
     const links = document.querySelectorAll('a');
     let allLinks = '';
     links.forEach(link => {
-        // if the link text has more than 1000 characters, skip it
-        // if (link.text.length > 1000) { return; }
         // remove all consecutive whitespace characters
         link.text = link.text.replace(/\s+/g, ' ');
         // if text contains 'chapter' or 'Chapter', add it to the allLinks

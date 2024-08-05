@@ -29,7 +29,8 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "functions.js"
+        "utils.js",
+        "grabbers.js"
       ]
     }
   ]

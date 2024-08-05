@@ -1,0 +1,130 @@
+function removeTag(element, tagName) {
+    if (element.tagName === tagName) {
+        //element.outerHTML = '';
+        element.remove();
+    }
+}
+
+function removeTags(element, tagNames) {
+    if (tagNames.includes(element.tagName)) {
+        element.remove();
+    }
+}
+
+function removeElements(elements) {
+    for (let e of elements) {
+        e.remove();
+    }
+}
+
+function removeElementWithClasses(element, classNames) {
+    for (let className of classNames) {
+        if (element.classList.contains(className)) {
+            element.remove();
+        }
+    }
+}
+
+function removeElementWithAttributes(element, attributes) {
+    for (let attribute of attributes) {
+        if (element.hasAttribute(attribute)) {
+            element.remove();
+        }
+    }
+}
+
+function removeFontTags(element) {
+    let fontTag = element.querySelector('font');
+    if (!fontTag) { return; }
+
+    let innerHTML = fontTag.innerHTML;
+    // if the first child of the 'font' tag is also a 'font' tag, get the innerHTML of the second 'font' tag
+    if (fontTag.children.length > 0 && fontTag.children[0].tagName === 'FONT') {
+        innerHTML = fontTag.children[0].innerHTML;
+    }
+    fontTag.outerHTML = innerHTML;
+}
+
+function removeSpansInsideParagraph(element) {
+    if (element.tagName === 'P') {
+        element.querySelectorAll('span').forEach(span => {
+            span.outerHTML = span.innerHTML;
+        });
+    }
+}
+
+function removeEmptyParagraphAndHeadings(element) {
+    const tagsToCheck = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+    if (tagsToCheck.includes(element.tagName)) {
+        if (element.textContent.trim() === '') {
+            element.outerHTML = '';
+        }
+        // If the only thing in the paragraph is a 'br' tag, remove the paragraph
+        else if (element.children.length === 1 && element.children[0].tagName === 'BR') {
+            // make sure this doesn't have text besides the br tag
+            const innerHtml = element.innerHTML.toLowerCase();
+            if (innerHtml === '<br>' || innerHtml === '<br/>' || innerHtml === '<br />' || innerHtml === '<br></br>') {
+                element.outerHTML = '';
+            }
+        }
+    }
+}
+
+function removeClasses(element, classes) {
+    element.classList.remove(...classes);
+    if (element.classList.length === 0) {
+        element.removeAttribute('class');
+    }
+}
+
+function removeBlockClasses(element) {
+    let classes = element.classList;
+    for (let c of classes) {
+        if (c.startsWith('block_')) {
+            element.classList.remove(c);
+        }
+    }
+    if (element.classList.length === 0) {
+        element.removeAttribute('class');
+    }
+}
+
+function removeAttributes(element, attributeName) {
+    for (let name of attributeName) {
+        element.removeAttribute(name);
+    }
+}
+
+function removeComments (root) {
+    let walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
+
+    // if we delete currentNode, call to nextNode() fails.
+    let nodeList = [];
+    while (walker.nextNode()) {
+        nodeList.push(walker.currentNode);
+    }
+    removeElements(nodeList);
+}
+
+function aggressiveCleanup(element) {
+    const attributes = [
+        'style',
+        'class',
+        'id',
+        'data-paragraph-id'
+    ];
+    removeAttributes(element, attributes);
+    removeFontTags(element);
+    const tags = [
+        'BASE',
+        'IFRAME',
+        'SCRIPT',
+        'LINK',
+        'META',
+        'NOSCRIPT',
+        'SELECT',
+        'STYLE',
+        'TITLE',
+    ];
+    removeTags(element, tags);
+}

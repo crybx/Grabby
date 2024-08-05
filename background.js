@@ -69,9 +69,11 @@ async function downloadAsFile(title, blobUrl, cleanup) {
     // remove any illegal characters from the title
     for (let i = 0; i < illegalWindowsFileNameChars.length; i++) {
         fileName = fileName.replace(illegalWindowsFileNameChars[i], '');
-        // replace any spaces with underscores
-        fileName = fileName.replace(' ', '_');
     }
+    // remove 'Ridi' from the filename
+    fileName = fileName.replace(' - Ridi', '');
+    // remove any other whitespace
+    fileName = fileName.replace(/\s/g, '_');
     fileName = fileName + '.xhtml';
 
     let options = {
