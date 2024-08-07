@@ -74,7 +74,10 @@ async function downloadAsFile(title, blobUrl, cleanup) {
     fileName = fileName.replace(' - Ridi', '');
     // remove any other whitespace
     fileName = fileName.replace(/\s/g, '_');
+    // replace . with _ in the filename
+    fileName = fileName.replace(/\./g, '_');
     fileName = fileName + '.xhtml';
+    console.log(fileName);
 
     let options = {
         url: blobUrl,

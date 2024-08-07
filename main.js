@@ -2,7 +2,10 @@ function grabFromWebsite() {
     // Get the url of the current tab
     const url = window.location.href;
     // get tab title
-    const title = document.querySelector('title')?.textContent || '';
+    let title =
+        document.querySelector('title')?.textContent ||
+        document.querySelector('h1')?.textContent ||
+        'chapter';
     let content = '';
 
     if (url) {
@@ -38,6 +41,8 @@ function grabFromWebsite() {
         } else if (url.includes('joara.com')) {
             content = grabJoara();
         } else if (url.includes('file://')) {
+            // get the filename from the end of the url
+            title = url.split('/').pop();
             content = grabLocalFile();
         }
         else {

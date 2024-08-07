@@ -299,6 +299,8 @@ function grabLocalFile() {
             element.textContent = element.textContent.trim();
         }
     });
+    const extraDiv = document.querySelector('#goog-gt-tt');
+    if (extraDiv) extraDiv.remove();
     return content.innerHTML;
 }
 
