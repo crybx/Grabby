@@ -43,6 +43,8 @@ function grabFromWebsite() {
         } else if (url.includes('file://')) {
             // get the filename from the end of the url
             title = url.split('/').pop();
+            // remove extension
+            title = title.split('.').slice(0, -1).join('.');
             content = grabLocalFile();
         }
         else {
