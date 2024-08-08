@@ -40,10 +40,11 @@ function grabFromWebsite() {
             content = grabKakaoPage();
         } else if (url.includes('joara.com')) {
             content = grabJoara();
+        } else if (url.includes('patreon.com')) {
+            content = grabPatreon();
         } else if (url.includes('file://')) {
-            // get the filename from the end of the url
+            // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();
-            // remove extension
             title = title.split('.').slice(0, -1).join('.');
             content = grabLocalFile();
         }

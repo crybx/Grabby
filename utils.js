@@ -11,6 +11,13 @@ function removeTags(element, tagNames) {
     }
 }
 
+function removeTagsFromContent(content, tagNames) {
+    for (let tagName of tagNames) {
+        let elements = content.querySelectorAll(tagName);
+        removeElements(elements);
+    }
+}
+
 function removeElements(elements) {
     for (let e of elements) {
         e.remove();
@@ -106,25 +113,41 @@ function removeComments (root) {
     removeElements(nodeList);
 }
 
-function aggressiveCleanup(element) {
+function aggressiveCleanupElement(element) {
+    const elementsWithClass = [
+        'sharedaddy',
+        'wp-block-buttons',
+        'jp-relatedposts',
+        'grecaptcha-badge',
+    ]
     const attributes = [
         'style',
-        'class',
+        // 'class',
         'id',
         'data-paragraph-id'
     ];
+    removeElementWithClasses(element, elementsWithClass);
     removeAttributes(element, attributes);
     removeFontTags(element);
+}
+
+function aggressiveCleanupContent(content) {
     const tags = [
         'BASE',
+        'BUTTON',
+        'HEADER',
         'IFRAME',
         'SCRIPT',
         'LINK',
         'META',
         'NOSCRIPT',
+        'NEXT-ROUTE-ANNOUNCER',
+        'PATH',
         'SELECT',
         'STYLE',
-        'TITLE',
+        'SVG',
+        'TITLE'
     ];
-    removeTags(element, tags);
+    removeTagsFromContent(content, tags);
+    removeComments(content);
 }

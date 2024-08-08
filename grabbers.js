@@ -247,9 +247,9 @@ function grabWordpress() {
     const title = document.querySelector('title').textContent;
     const content = document.querySelector('.entry-content');
 
-    // Remove script elements
-    content.querySelectorAll('script').forEach(script => {
-        script.remove();
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
     });
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
@@ -289,6 +289,18 @@ function grabBlossom() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabPatreon() {
+    const content = document.querySelector('body');
+
+    // add all <p> and header tags to the fullText
+    let fullText = '';
+    content.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach(element => {
+        fullText += element.outerHTML;
+    });
+
+    return fullText;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {
@@ -306,10 +318,10 @@ function grabLocalFile() {
 
 function grabUnknown() {
     const content = document.querySelector('body');
+    aggressiveCleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanup(element);
+        aggressiveCleanupElement(element);
     });
-    removeComments(content);
     return content.innerHTML;
 }
 
