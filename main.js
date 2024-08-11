@@ -21,7 +21,7 @@ function grabFromWebsite() {
             content = grabGoogleDocMobileBasic();
         } else if (url.includes('blogspot.com')) {
             content = grabBlogspot();
-        } else if (url.includes('galaxytranslations97.com')
+        } else if (url.includes('galaxytranslations')
                 || url.includes('foxaholic.com')
                 || url.includes('wooksteahouse.com')) {
             content = madaraWpTheme();
