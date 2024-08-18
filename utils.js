@@ -115,18 +115,28 @@ function removeComments (root) {
 
 function aggressiveCleanupElement(element) {
     const elementsWithClass = [
+        'ezoic-autoinsert-ad',
+        'floating-audio-button-container',
+        'floating-reader-button-container',
         'sharedaddy',
         'wp-block-buttons',
         'jp-relatedposts',
         'grecaptcha-badge',
+        'sidebar-container',
+        'sidebar-nav',
+    ]
+    const elementsWithAttribute = [
+        'data-ez-ph-id'
     ]
     const attributes = [
         'style',
+        // These help figure out what else to remove!
         // 'class',
         'id',
         'data-paragraph-id'
     ];
     removeElementWithClasses(element, elementsWithClass);
+    removeElementWithAttributes(element, elementsWithAttribute);
     removeAttributes(element, attributes);
     removeFontTags(element);
 }
@@ -134,18 +144,21 @@ function aggressiveCleanupElement(element) {
 function aggressiveCleanupContent(content) {
     const tags = [
         'BASE',
+        'BREAK',
         'BUTTON',
+        'FOOTER',
         'HEADER',
         'IFRAME',
-        'SCRIPT',
         'LINK',
         'META',
         'NOSCRIPT',
         'NEXT-ROUTE-ANNOUNCER',
         'PATH',
         'SELECT',
+        'SCRIPT',
         'STYLE',
         'SVG',
+        'TEXTAREA',
         'TITLE'
     ];
     removeTagsFromContent(content, tags);

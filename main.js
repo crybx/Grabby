@@ -42,6 +42,13 @@ function grabFromWebsite() {
             content = grabJoara();
         } else if (url.includes('patreon.com')) {
             content = grabPatreon();
+        } else if (url.includes('yoru.world')) {
+            content = grabYoruWorld();
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(content, "text/html");
+            title = doc.querySelector('h1').textContent;
+        } else if (url.includes('starlightstream.net')) {
+            content = grabStarlightStream();
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();

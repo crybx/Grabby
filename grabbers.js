@@ -301,6 +301,36 @@ function grabPatreon() {
     return fullText;
 }
 
+function grabYoruWorld() {
+    const content = document.querySelector('.__className_11742b');
+    const title = document.querySelector('.text-2xl').textContent;
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
+function grabStarlightStream() {
+    const content = document.querySelector('[data-id="content-viewer"]');
+    const title = document.querySelector('title').textContent;
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    // get all the p tags
+    let fullText = '';
+    content.querySelectorAll('p').forEach(element => {
+        fullText += '<p>' + element.innerHTML + '</p>';
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + fullText;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {
