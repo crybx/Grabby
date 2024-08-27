@@ -28,7 +28,8 @@ function grabFromWebsite() {
         } else if (url.includes('watashiwasugoidesu.com')) {
             content = grabWatashiWaSugoiDesu();
         } else if (url.includes('wordpress.com')
-                || url.includes('mendacity.me')){
+                || url.includes('mendacity.me')
+                || url.includes('transweaver.com')){
             content = grabWordpress();
         } else if (url.includes('jjwxc.net')) {
             content = grabJjwxc();
@@ -44,11 +45,12 @@ function grabFromWebsite() {
             content = grabPatreon();
         } else if (url.includes('yoru.world')) {
             content = grabYoruWorld();
-            var parser = new DOMParser();
-            var doc = parser.parseFromString(content, "text/html");
-            title = doc.querySelector('h1').textContent;
+            title = getTitleFromFirstHeading(content);
         } else if (url.includes('starlightstream.net')) {
             content = grabStarlightStream();
+        } else if (url.includes('novelingua.com')) {
+            content = grabNovelingua();
+            title = getTitleFromFirstHeading(content);
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();

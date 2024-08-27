@@ -124,6 +124,7 @@ function aggressiveCleanupElement(element) {
         'grecaptcha-badge',
         'sidebar-container',
         'sidebar-nav',
+        'wp-image-16312'
     ]
     const elementsWithAttribute = [
         'data-ez-ph-id'

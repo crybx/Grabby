@@ -40,6 +40,13 @@ ${bodyText}
     `;
 }
 
+function getTitleFromFirstHeading(content) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(content, "text/html");
+    title = doc.querySelector('h1').textContent;
+    return title;
+}
+
 function getFileBlobFromContent(title, bodyText) {
     let blobText = getHtmlFromContent(title, bodyText);
     return new Blob([blobText], {type: 'text/html'});
@@ -329,6 +336,23 @@ function grabStarlightStream() {
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + fullText;
+}
+
+function grabNovelingua() {
+    const content = document.querySelector('.p-cyr2166');
+    // title is in the canonical link
+    let canonical = document.querySelector('link[rel="canonical"]').href.split('/');
+    let title = canonical.pop();
+    if (title === '') {
+        title = canonical.pop();
+    }
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabLocalFile() {
