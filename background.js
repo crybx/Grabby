@@ -65,11 +65,9 @@ async function handleMessages(message) {
 
 async function downloadAsFile(title, blobUrl, cleanup) {
     let fileName = title;
-    let illegalWindowsFileNameChars = "~/?<>\\:*|\"";
-    // remove any illegal characters from the title
-    for (let i = 0; i < illegalWindowsFileNameChars.length; i++) {
-        fileName = fileName.replace(illegalWindowsFileNameChars[i], '');
-    }
+    let illegalWindowsFileNameRegex = /[<>:"/\\|?*]/g;
+    fileName = fileName.replace(illegalWindowsFileNameRegex, '');
+
     // remove 'Ridi' from the filename
     fileName = fileName.replace(' - Ridi', '');
     // remove any other whitespace
