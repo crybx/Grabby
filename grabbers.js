@@ -355,6 +355,37 @@ function grabNovelingua() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabZenithtls() {
+    // content is in main tag
+    const content = document.querySelector('main');
+    // title is all the text inside the ol tag inside header tag, with the li items in reverse order
+    let title = '';
+    const ol = document.querySelector('header ol');
+
+    if (ol) {
+        const li = ol.querySelectorAll('li');
+        for (let i = li.length - 1; i >= 0; i--) {
+            //title += li[i].textContent + ' ';
+            // skip if it's Home or /
+            if (li[i].textContent === 'Home' || li[i].textContent === '/') {
+                continue;
+            }
+            title += li[i].textContent + '_';
+        }
+        // replace all spaces and apostrophes with underscores
+        title = title.replace(/ /g, '_');
+        // remove apostrophes and make sure to properly escape the ' character in the regex
+        title = title.replace(/'/g, '');
+    }
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {

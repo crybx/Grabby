@@ -51,6 +51,9 @@ function grabFromWebsite() {
         } else if (url.includes('novelingua.com')) {
             content = grabNovelingua();
             title = getTitleFromFirstHeading(content);
+        } else if (url.includes('zenithtls.com')) {
+            content = grabZenithtls();
+            title = getTitleFromFirstHeading(content);
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();
