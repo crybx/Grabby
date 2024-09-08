@@ -386,6 +386,27 @@ function grabZenithtls() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabReadhive() {
+    // content is in div with class 'prose'
+    const content = document.querySelector('.prose');
+    let title = document.querySelector('title').textContent;
+    // remove ' – Readhive' from the title
+    title = title.replace(' – Readhive', '');
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+        // remove 'span' tag elements while keeping the inner text
+        if (element.tagName === 'SPAN') {
+            element.outerHTML = element.innerHTML;
+        }
+        removeElementWithClasses(element, ['absolute', 'code-block', 'fixed', 'flex', 'sticky']);
+        removeAttribute(element, '@click');
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {
