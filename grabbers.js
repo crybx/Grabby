@@ -407,6 +407,33 @@ function grabReadhive() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabPeachTeaAgency() {
+    const content = document.querySelector('.shadow-gold-light');
+    // title is all the text inside the ol tag inside nav tag, with the li items
+    let title = '';
+    const ol = document.querySelector('nav ol');
+
+    if (ol) {
+        const li = ol.querySelectorAll('li');
+        for (let i = 1; i < li.length; i++) {
+            // text is in the a tag
+            title += li[i].querySelector('a').textContent + ' ';
+        }
+
+        // replace all spaces and apostrophes with underscores
+        title = title.trim().replace(/ /g, '_');
+        // remove apostrophes and make sure to properly escape the ' character in the regex
+        title = title.replace(/'/g, '');
+    }
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {

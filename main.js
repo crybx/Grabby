@@ -57,6 +57,9 @@ function grabFromWebsite() {
         } else if (url.includes('readhive.org')) {
             content = grabReadhive();
             title = getTitleFromFirstHeading(content);
+        } else if (url.includes('peachtea.agency')) {
+            content = grabPeachTeaAgency();
+            title = getTitleFromFirstHeading(content);
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();
