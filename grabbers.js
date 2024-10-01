@@ -291,6 +291,7 @@ function grabBlossom() {
     content.querySelectorAll('*').forEach(element => {
         removeSpansInsideParagraph(element);
         removeAttributes(element, ['id', 'data-paragraph-id']);
+        removeElementWithClasses(element, ['eoc-chapter-groups']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;

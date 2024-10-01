@@ -23,13 +23,15 @@ function grabFromWebsite() {
             content = grabBlogspot();
         } else if (url.includes('galaxytranslations')
                 || url.includes('foxaholic.com')
-                || url.includes('wooksteahouse.com')) {
+                || url.includes('wooksteahouse.com')
+                || url.includes('darkstartranslations.com')) {
             content = madaraWpTheme();
         } else if (url.includes('watashiwasugoidesu.com')) {
             content = grabWatashiWaSugoiDesu();
         } else if (url.includes('wordpress.com')
                 || url.includes('mendacity.me')
-                || url.includes('transweaver.com')){
+                || url.includes('transweaver.com')
+                || url.includes('ladyhotcombtranslations.com')){
             content = grabWordpress();
         } else if (url.includes('jjwxc.net')) {
             content = grabJjwxc();
