@@ -13,6 +13,7 @@ function grabFromWebsite() {
             content = grabRidi();
         } else if (url.includes('publang.com/')) {
             content = grabPublang();
+            title = getTitleFromFirstHeading(content);
         } else if (url.includes('syosetu.com')) {
             content = grabSyosetu();
         } else if (url.includes('chrysanthemumgarden.com')) {
