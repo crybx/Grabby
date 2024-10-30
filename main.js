@@ -37,7 +37,8 @@ function grabFromWebsite() {
             content = grabJjwxc();
         } else if (url.includes('storyseedling.com')) {
             content = grabStorySeedling();
-        } else if (url.includes('blossomtranslation.com')) {
+        } else if (url.includes('blossomtranslation.com')
+                || url.includes('springofromance.com')){
             content = grabBlossom();
         } else if (url.includes('page.kakao.com')) {
             content = grabKakaoPage();
