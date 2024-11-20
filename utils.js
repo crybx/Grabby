@@ -13,8 +13,10 @@ function removeTags(element, tagNames) {
 
 function removeTagsFromContent(content, tagNames) {
     for (let tagName of tagNames) {
-        let elements = content.querySelectorAll(tagName);
-        removeElements(elements);
+        let elements = content?.querySelectorAll(tagName);
+        if (elements?.length > 0) {
+            removeElements(elements);
+        }
     }
 }
 

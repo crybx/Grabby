@@ -310,7 +310,7 @@ function grabPatreon() {
 }
 
 function grabYoruWorld() {
-    const content = document.querySelector('.__className_11742b');
+    const content = document.querySelector('.text-base');
     const title = document.querySelector('.text-2xl').textContent;
 
     aggressiveCleanupContent(content);
