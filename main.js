@@ -25,7 +25,8 @@ function grabFromWebsite() {
         } else if (url.includes('galaxytranslations')
                 || url.includes('foxaholic.com')
                 || url.includes('wooksteahouse.com')
-                || url.includes('darkstartranslations.com')) {
+                || url.includes('darkstartranslations.com')
+                || url.includes('sleepytranslations.com')) {
             content = madaraWpTheme();
         } else if (url.includes('watashiwasugoidesu.com')) {
             content = grabWatashiWaSugoiDesu();
