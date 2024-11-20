@@ -358,7 +358,7 @@ function grabNovelingua() {
 
 function grabZenithtls() {
     // content is in main tag
-    const content = document.querySelector('main');
+    const content = document.querySelector('article');
     // title is all the text inside the ol tag inside header tag, with the li items in reverse order
     let title = '';
     const ol = document.querySelector('header ol');
@@ -382,6 +382,20 @@ function grabZenithtls() {
     aggressiveCleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
+
+        // if element is div or span, remove it but keep the inner text
+        if (element.tagName === 'DIV' || element.tagName === 'SPAN') {
+            try {
+                element.outerHTML = element.innerHTML;
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    });
+
+    // if element is P, replace all newlines with </p><p>
+    content.querySelectorAll('p').forEach(element => {
+        element.innerHTML = element.innerHTML.replace(/\n/g, '</p>\n<p>');
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
@@ -460,7 +474,7 @@ function grabUnknown() {
 }
 
 function getAllLinks() {
-    const links = document.querySelectorAll('a');
+    let links = document.querySelectorAll('a');
     let allLinks = '';
     links.forEach(link => {
         // remove all consecutive whitespace characters
@@ -473,5 +487,25 @@ function getAllLinks() {
     });
     console.log(allLinks);
     return allLinks;
+}
+
+function logAllLinks() {
+    document.querySelectorAll('a').forEach(link => {
+        // remove all consecutive whitespace characters
+        link.text = link.text.replace(/\s+/g, ' ');
+        if (link.text.toLowerCase().includes('chapter')) {
+            console.log('<a href="' + link.href +'">' + link.text  + '</a>');
+        }
+    });
+}
+
+
+function dangerLinks() {
+    const links = document.querySelectorAll('a.text-danger');
+    let allLinks = '';
+    links.forEach(link => {
+        allLinks += link.href +'\n';
+    });
+    console.log(allLinks);
 }
 
