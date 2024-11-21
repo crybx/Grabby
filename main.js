@@ -40,7 +40,10 @@ function grabFromWebsite() {
         } else if (url.includes('storyseedling.com')) {
             content = grabStorySeedling();
         } else if (url.includes('blossomtranslation.com')
-                || url.includes('springofromance.com')){
+                || url.includes('springofromance.com')
+                || url.includes('razentl.com')
+                || url.includes('igniforge.com')
+                || url.includes('novelib.com')) {
             content = grabBlossom();
         } else if (url.includes('page.kakao.com')) {
             content = grabKakaoPage();
