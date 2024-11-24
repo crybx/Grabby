@@ -449,6 +449,16 @@ function grabPeachTeaAgency() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabAO3() {
+    // content is in the first div with the class .chapter
+    const content = document.querySelector('div.chapter');
+    // title is the h2 tag with the classed 'title heading' + the text of h3 class 'title'
+    let title = document.querySelector('.title.heading').textContent.trim();
+    title += ' - ' + document.querySelector('h3.title').textContent.trim();
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
 function grabLocalFile() {
     const content = document.querySelector('body');
     content.querySelectorAll('*').forEach(element => {
