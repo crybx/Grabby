@@ -310,8 +310,12 @@ function grabPatreon() {
 }
 
 function grabYoruWorld() {
-    const content = document.querySelector('.text-base');
     const title = document.querySelector('.text-2xl').textContent;
+
+    // the content is inside the section tag
+    // it's in the first div that has a class that starts with __className_
+    let content = document.querySelector('section');
+    content = content.querySelector('div[class^="__className_"]');
 
     aggressiveCleanupContent(content);
     content.querySelectorAll('*').forEach(element => {

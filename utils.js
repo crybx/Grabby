@@ -105,6 +105,10 @@ function removeAttributes(element, attributeName) {
 }
 
 function removeComments (root) {
+    if (!(root instanceof Node)) {
+        console.error("The root parameter is not a valid Node. Cannot remove comments.");
+        return;
+    }
     let walker = document.createTreeWalker(root, NodeFilter.SHOW_COMMENT);
 
     // if we delete currentNode, call to nextNode() fails.
@@ -136,7 +140,8 @@ function aggressiveCleanupElement(element) {
         // These help figure out what else to remove!
         // 'class',
         'id',
-        'data-paragraph-id'
+        'data-paragraph-id',
+        'data-paragraph-index'
     ];
     removeElementWithClasses(element, elementsWithClass);
     removeElementWithAttributes(element, elementsWithAttribute);
