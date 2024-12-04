@@ -65,6 +65,7 @@ async function handleMessages(message) {
 
 async function downloadAsFile(title, blobUrl, cleanup) {
     let fileName = title;
+    // # and , are not illegal, but they are annoying
     let illegalWindowsFileNameRegex = /[<>:"#/\\|?*]/g;
     fileName = fileName.replace(illegalWindowsFileNameRegex, '');
 
@@ -74,6 +75,8 @@ async function downloadAsFile(title, blobUrl, cleanup) {
     fileName = fileName.replace(/\s/g, '_');
     // replace . with _ in the filename
     fileName = fileName.replace(/\./g, '_');
+    // replace comma with nothing
+    fileName = fileName.split(',').join('');
     fileName = fileName + '.xhtml';
     console.log(fileName);
 
