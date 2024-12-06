@@ -65,7 +65,7 @@ function removeSpansInsideParagraph(element) {
 function removeEmptyParagraphAndHeadings(element) {
     const tagsToCheck = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
     if (tagsToCheck.includes(element.tagName)) {
-        if (element.textContent.trim() === '') {
+        if (element.children.length === 0 && element.textContent.trim() === '') {
             element.outerHTML = '';
         }
         // If the only thing in the paragraph is a 'br' tag, remove the paragraph
