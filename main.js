@@ -33,7 +33,9 @@ function grabFromWebsite() {
         } else if (url.includes('wordpress.com')
                 || url.includes('mendacity.me')
                 || url.includes('transweaver.com')
-                || url.includes('ladyhotcombtranslations.com')){
+                || url.includes('ladyhotcombtranslations.com')
+                || url.includes('eatapplepies.com')
+                || url.includes('littlepinkstarfish.com')) {
             content = grabWordpress();
         } else if (url.includes('jjwxc.net')) {
             content = grabJjwxc();
@@ -43,7 +45,8 @@ function grabFromWebsite() {
                 || url.includes('springofromance.com')
                 || url.includes('razentl.com')
                 || url.includes('igniforge.com')
-                || url.includes('novelib.com')) {
+                || url.includes('novelib.com')
+                || url.includes('lilyonthevalley.com')) {
             content = grabBlossom();
         } else if (url.includes('page.kakao.com')) {
             content = grabKakaoPage();
@@ -71,6 +74,10 @@ function grabFromWebsite() {
         } else if (url.includes('archiveofourown.org')) {
             content = grabAO3();
             title = getTitleFromFirstHeading(content);
+        } else if (url.includes('fanfiction.ws')) {
+            content = grabFanfictionNet();
+        } else if (url.includes('fenrirealm.com')) {
+            content = grabFenrir();
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();

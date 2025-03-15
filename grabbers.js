@@ -121,9 +121,12 @@ function grabPublang() {
 }
 
 function grabSyosetu() {
-    const title = document.querySelector('.novel_subtitle').textContent;
-    const chapter = document.querySelector('#novel_honbun');
+    const title = document.querySelector('.p-novel__title');
+    const chapter = document.querySelector('div.p-novel__body');
 
+    title.querySelectorAll('*').forEach(element => {
+        removeFontTags(element);
+    });
     chapter.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
         if (element.tagName === 'P') {
@@ -131,7 +134,7 @@ function grabSyosetu() {
             element.textContent = element.textContent.trim();
         }
     });
-    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
+    return title.outerHTML + '\n\n' + chapter.innerHTML;
 }
 
 function grabJoara() {
@@ -285,13 +288,16 @@ function grabStorySeedling() {
 }
 
 function grabBlossom() {
-    const title = document.querySelector('.chapter__title').textContent;
+    let title = document.querySelector('.chapter__title')?.textContent;
+    let subtitle = document.querySelector('.chapter-second-title')?.textContent;
+    if (subtitle) { title += ': ' + subtitle; }
+
     const content = document.querySelector('.chapter-formatting');
 
     content.querySelectorAll('*').forEach(element => {
         removeSpansInsideParagraph(element);
         removeAttributes(element, ['id', 'data-paragraph-id']);
-        removeElementWithClasses(element, ['eoc-chapter-groups']);
+        removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
@@ -476,6 +482,30 @@ function grabLocalFile() {
     const extraDiv = document.querySelector('#goog-gt-tt');
     if (extraDiv) extraDiv.remove();
     return content.innerHTML;
+}
+
+function grabFanfictionNet() {
+    const content = document.querySelector('.storytext');
+    const title = document.querySelector('title').textContent;
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
+function grabFenrir() {
+    const content = document.querySelector('#reader-area');
+    // title is the first h1
+    const title = document.querySelector('h1')?.textContent
+    ??  document.querySelector('title').textContent;
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabUnknown() {

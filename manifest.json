@@ -25,6 +25,7 @@
     "unlimitedStorage",
     "webRequest"
   ],
+  "host_permissions": ["*://*/*"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
