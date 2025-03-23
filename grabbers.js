@@ -350,7 +350,11 @@ function grabStarlightStream() {
 }
 
 function grabNovelingua() {
-    const content = document.querySelector('.p-cyr2166');
+    const content = document.querySelector('.p-cyr2166') ||
+        document.querySelector('.p-alh4926') ||
+        document.querySelector('article') ||
+        document.querySelector('.entry-content');
+
     // title is in the canonical link
     let canonical = document.querySelector('link[rel="canonical"]').href.split('/');
     let title = canonical.pop();
