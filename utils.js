@@ -137,8 +137,9 @@ function aggressiveCleanupElement(element) {
     ]
     const attributes = [
         'style',
-        // These help figure out what else to remove!
+        // 'class' helps figure out what else to remove!
         // 'class',
+        'dir',
         'id',
         'data-paragraph-id',
         'data-paragraph-index'
