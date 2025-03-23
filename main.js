@@ -26,7 +26,8 @@ function grabFromWebsite() {
                 || url.includes('foxaholic.com')
                 || url.includes('wooksteahouse.com')
                 || url.includes('darkstartranslations.com')
-                || url.includes('sleepytranslations.com')) {
+                || url.includes('sleepytranslations.com')
+                || url.includes('system707.com')) {
             content = madaraWpTheme();
         } else if (url.includes('watashiwasugoidesu.com')) {
             content = grabWatashiWaSugoiDesu();
@@ -46,7 +47,8 @@ function grabFromWebsite() {
                 || url.includes('razentl.com')
                 || url.includes('igniforge.com')
                 || url.includes('novelib.com')
-                || url.includes('lilyonthevalley.com')) {
+                || url.includes('lilyonthevalley.com')
+                || url.includes('emberlib731.xyz')) {
             content = grabBlossom();
         } else if (url.includes('page.kakao.com')) {
             content = grabKakaoPage();
