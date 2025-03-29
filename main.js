@@ -80,6 +80,10 @@ function grabFromWebsite() {
             content = grabFanfictionNet();
         } else if (url.includes('fenrirealm.com')) {
             content = grabFenrir();
+        } else if (url.includes('reaperscans.com')) {
+            content = grabReaperScans();
+        } else if (url.includes('noveltranslation.net')) {
+            content = grabNovelTranslationNet();
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();

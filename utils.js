@@ -140,7 +140,7 @@ function aggressiveCleanupElement(element) {
         // 'class' helps figure out what else to remove!
         // 'class',
         'dir',
-        'id',
+        // 'id',
         'data-paragraph-id',
         'data-paragraph-index'
     ];

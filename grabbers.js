@@ -256,12 +256,7 @@ function grabWatashiWaSugoiDesu() {
 function grabWordpress() {
     const title = document.querySelector('title').textContent;
     const content = document.querySelector('.entry-content');
-
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
 function grabJjwxc() {
@@ -323,12 +318,7 @@ function grabYoruWorld() {
     let content = document.querySelector('section');
     content = content.querySelector('div[class^="__className_"]');
 
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
-
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
 function grabStarlightStream() {
@@ -362,12 +352,7 @@ function grabNovelingua() {
         title = canonical.pop();
     }
 
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
-
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
 function grabZenithtls() {
@@ -455,12 +440,7 @@ function grabPeachTeaAgency() {
         title = title.replace(/'/g, '');
     }
 
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
-
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
 function grabAO3() {
@@ -491,11 +471,7 @@ function grabLocalFile() {
 function grabFanfictionNet() {
     const content = document.querySelector('.storytext');
     const title = document.querySelector('title').textContent;
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
 function grabFenrir() {
@@ -504,16 +480,27 @@ function grabFenrir() {
     const title = document.querySelector('h1')?.textContent
     ??  document.querySelector('title').textContent;
 
-    aggressiveCleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
-        aggressiveCleanupElement(element);
-    });
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+}
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+function grabReaperScans() {
+    const content = document.querySelector('#reader-container');
+    return generalCleanup(content);
+}
+
+function grabNovelTranslationNet() {
+    // This is trash that doesn't work in the extension, but works
+    // fine in the browser console. Why???
+    const content = document.querySelector('pre');
+    return content.textContent;
 }
 
 function grabUnknown() {
     const content = document.querySelector('body');
+    return generalCleanup(content);
+}
+
+function generalCleanup(content) {
     aggressiveCleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
