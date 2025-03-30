@@ -84,6 +84,8 @@ function grabFromWebsite() {
             content = grabReaperScans();
         } else if (url.includes('noveltranslation.net')) {
             content = grabNovelTranslationNet();
+        } else if (url.includes('karistudio.com')) {
+            content = grabKaristudio();
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();

@@ -42,6 +42,14 @@ function removeElementWithAttributes(element, attributes) {
     }
 }
 
+function removeElementWithIds(element, ids) {
+    for (let id of ids) {
+        if (element.id === id) {
+            element.remove();
+        }
+    }
+}
+
 function removeFontTags(element) {
     let fontTag = element.querySelector('font');
     if (!fontTag) { return; }
@@ -120,7 +128,14 @@ function removeComments (root) {
 }
 
 function aggressiveCleanupElement(element) {
+    const ids = [
+        'novel_nav',
+        'donation-msg'
+    ];
     const elementsWithClass = [
+        'confuse',
+        'code-block',
+        'clearfix',
         'ezoic-autoinsert-ad',
         'floating-audio-button-container',
         'floating-reader-button-container',
@@ -138,12 +153,15 @@ function aggressiveCleanupElement(element) {
     const attributes = [
         'style',
         // 'class' helps figure out what else to remove!
-        // 'class',
         'dir',
-        // 'id',
+        // 'id' affects footnotes and also what else to remove!
+        'data-shortcode',
         'data-paragraph-id',
-        'data-paragraph-index'
+        'data-paragraph-index',
+        'aria-disabled',
+        'role'
     ];
+    removeElementWithIds(element, ids);
     removeElementWithClasses(element, elementsWithClass);
     removeElementWithAttributes(element, elementsWithAttribute);
     removeAttributes(element, attributes);
@@ -157,9 +175,11 @@ function aggressiveCleanupContent(content) {
         'BUTTON',
         'FOOTER',
         'HEADER',
+        'INS',
         'IFRAME',
         'LINK',
         'META',
+        'NAV',
         'NOSCRIPT',
         'NEXT-ROUTE-ANNOUNCER',
         'PATH',

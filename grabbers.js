@@ -414,8 +414,8 @@ function grabReadhive() {
         if (element.tagName === 'SPAN') {
             element.outerHTML = element.innerHTML;
         }
-        removeElementWithClasses(element, ['absolute', 'code-block', 'fixed', 'flex', 'sticky']);
-        removeAttribute(element, '@click');
+        removeElementWithClasses(element, ['absolute', 'fixed', 'flex', 'sticky']);
+        removeAttributes(element, ['@click']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
@@ -493,6 +493,19 @@ function grabNovelTranslationNet() {
     // fine in the browser console. Why???
     const content = document.querySelector('pre');
     return content.textContent;
+}
+
+function grabKaristudio() {
+    const content = document.querySelector('article');
+    const title = document.querySelector('.title').textContent;
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+        removeClasses(element, ['chapter_content']);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabUnknown() {
