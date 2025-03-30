@@ -151,14 +151,15 @@ function aggressiveCleanupElement(element) {
         'data-ez-ph-id'
     ]
     const attributes = [
-        'style',
+        'aria-disabled',
         // 'class' helps figure out what else to remove!
         'dir',
         // 'id' affects footnotes and also what else to remove!
         'data-shortcode',
         'data-paragraph-id',
         'data-paragraph-index',
-        'aria-disabled',
+        'face',
+        'style',
         'role'
     ];
     removeElementWithIds(element, ids);

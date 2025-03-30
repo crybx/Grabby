@@ -209,14 +209,18 @@ function grabBlogspot() {
     // remove all elements that appear after the text 'Next Chapter' shows up
     let nextChapter = false;
 
+    aggressiveCleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
-        // remove the attribute 'face'
-        element.removeAttribute('face');
+        aggressiveCleanupElement(element);
         if (element.textContent.toLowerCase().includes('next chapter')) {
             nextChapter = true;
         }
         if (nextChapter) {
             element.remove();
+        }
+        // if element is a link, only keep the text inside it
+        if (element.tagName === 'A') {
+            element.outerHTML = element.textContent;
         }
     });
 
