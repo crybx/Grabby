@@ -160,6 +160,24 @@ function grabChrysanthemum() {
     return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
 }
 
+function grabSecondLifeTranslations() {
+    const content = document.querySelector('.entry-content');
+    const title = document.querySelector('.entry-title').textContent;
+    const cipher = 'rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY';
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        aggressiveCleanupElement(element);
+        if (element.classList.contains('jmbl')) {
+            dejumble(element, cipher);
+        }
+        removeClasses(element, ['jmbl']);
+        removeElementWithClasses(element, ['jmbl-ent', 'jmbl-disclaimer']);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
 function grabGoogleDocMobileBasic() {
     const content = document.querySelector('.doc-content');
     const headings = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];

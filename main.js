@@ -86,6 +86,8 @@ function grabFromWebsite() {
             content = grabNovelTranslationNet();
         } else if (url.includes('karistudio.com')) {
             content = grabKaristudio();
+        } else if (url.includes('secondlifetranslations.com')) {
+            content = grabSecondLifeTranslations();
         } else if (url.includes('file://')) {
             // get the filename from the end of the url and remove the extension
             title = url.split('/').pop();
