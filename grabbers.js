@@ -52,20 +52,6 @@ function getFileBlobFromContent(title, bodyText) {
     return new Blob([blobText], {type: 'text/html'});
 }
 
-function dejumble(node) {
-    const alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const cypher = 'jymvfoutlpxiwcbqdgraenkzshCDJGSMXLPABOZRYUHEVKFNQWTI';
-    let sArray = node.textContent.split("");
-    for (let i = 0; i < sArray.length; i++) {
-        let index = cypher.indexOf(sArray[i]);
-        if (index !== -1) {
-            sArray[i] = alphab[index];
-        }
-    }
-    node.textContent = sArray.join("");
-    node.classList.remove("jum");
-}
-
 function grabKakaoPage() {
     const shadowHost = document.querySelector('#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div');
     const shadowRoot = shadowHost.shadowRoot;
@@ -152,6 +138,7 @@ function grabJoara() {
 function grabChrysanthemum() {
     const title = document.querySelector('.entry-title').querySelector('.chapter-title').textContent;
     const chapter = document.querySelector('#novel-content');
+    const cipher = 'tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM';
 
     chapter.querySelectorAll('*').forEach(element => {
         if (element.tagName === 'DIV') {
@@ -165,13 +152,10 @@ function grabChrysanthemum() {
             }
         }
 
-        // if element has class "jum" call deJum function
         if (element.classList.contains('jum')) {
-            dejumble(element);
+            dejumble(element, cipher);
         }
-        if (element.classList.contains('emoji')) {
-            element.remove();
-        }
+        removeClasses(element, ['jum', 'emoji']);
     });
     return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
 }

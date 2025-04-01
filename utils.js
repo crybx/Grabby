@@ -194,3 +194,17 @@ function aggressiveCleanupContent(content) {
     removeTagsFromContent(content, tags);
     removeComments(content);
 }
+
+function dejumble(node, cipher) {
+    // Get cipher by copying abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+    // into an element that has the scrambled text on the page.
+    const alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let sArray = node.textContent.split("");
+    for (let i = 0; i < sArray.length; i++) {
+        let index = alphab.indexOf(sArray[i]);
+        if (index !== -1) {
+            sArray[i] = cipher[index];
+        }
+    }
+    node.textContent = sArray.join("");
+}
