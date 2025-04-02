@@ -288,7 +288,7 @@ function grabStorySeedling() {
     return fullText;
 }
 
-function grabBlossom() {
+function grabFictioneer() {
     let title = document.querySelector('.chapter__title')?.textContent;
     let subtitle = document.querySelector('.chapter-second-title')?.textContent;
     if (subtitle) { title += ': ' + subtitle; }
