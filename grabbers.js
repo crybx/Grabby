@@ -58,13 +58,8 @@ function grabKakaoPage() {
     const content = shadowRoot.querySelector('.DC2CN');
     content.querySelectorAll('*').forEach(element => {
         removeFontTags(element);
-        // remove all attributes from 'p' tag elements
         if (element.tagName === 'P') {
-            element.removeAttribute('id');
-            element.removeAttribute('data-p-id');
-            element.removeAttribute('data-original-font-size');
-            element.removeAttribute('data-original-line-height');
-            element.removeAttribute('style');
+            removeAttributes(element, ['id', 'data-p-id', 'data-original-font-size', 'data-original-line-height', 'style']);
         }
     });
     return content.innerHTML;
@@ -72,6 +67,9 @@ function grabKakaoPage() {
 
 function grabRidi() {
     let fullText = '';
+    let title = document.querySelector('title').textContent;
+    // remove ' – Ridi' from the title
+    title = title.replace(' - Ridi', '');
 
     // Ridi can have multiple articles in one page
     const articles = document.querySelectorAll('article');
@@ -82,11 +80,17 @@ function grabRidi() {
             removeTags(element, ['PRE', 'TITLE', 'LINK']);
             removeBlockClasses(element);
             removeClasses(element, ['body', 'story_part_header_title']);
-            element.removeAttribute('style');
+            removeAttributes(element, ['style']);
             removeEmptyParagraphAndHeadings(element);
         });
         fullText += article.innerHTML;
     });
+
+    // If there's no h tags, add h1 tag with the title
+    if (fullText.search(/<h[1-6]/) === -1) {
+        fullText = '<h1>' + title + '</h1>' + fullText;
+    }
+
     return fullText;
 }
 
@@ -270,7 +274,7 @@ function grabJjwxc() {
     const content = document.querySelector('.novelbody');
 
     content.querySelectorAll('*').forEach(element => {
-        element.removeAttribute('style');
+        removeAttributes(element, ['style']);
     });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
