@@ -87,7 +87,12 @@ function main() {
                 const config = findMatchingConfig(url);
 
                 if (config) {
-                    content = config.grabber();
+                    try {
+                        content = config.grabber();
+                    } catch (grabError) {
+                        console.error(`Error in grabber for ${url}:`, grabError);
+                        content = grabUnknown(); // Fallback to generic grabber
+                    }
                     title = extractTitle(content, config.useFirstHeadingTitle);
                 } else {
                     content = grabUnknown();
@@ -113,11 +118,12 @@ function main() {
     }
 
     async function handleContentDownload(title, content) {
+        let blobUrl;
         try {
             copyToClipboard(content);
 
             const blob = getFileBlobFromContent(title, content);
-            const blobUrl = URL.createObjectURL(blob);
+            blobUrl = URL.createObjectURL(blob);
 
             await chrome.runtime.sendMessage({
                 target: 'background',
@@ -129,6 +135,8 @@ function main() {
         } catch (error) {
             console.error('Error downloading content:', error);
             URL.revokeObjectURL(blobUrl);
+        } finally {
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
         }
     }
 
