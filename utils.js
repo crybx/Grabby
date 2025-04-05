@@ -139,6 +139,7 @@ function aggressiveCleanupElement(element) {
         'ezoic-autoinsert-ad',
         'floating-audio-button-container',
         'floating-reader-button-container',
+        'mycred-buy-link',
         'sharedaddy',
         'wp-block-buttons',
         'jp-relatedposts',
