@@ -66,7 +66,7 @@ async function handleMessages(message) {
 async function downloadAsFile(title, blobUrl, cleanup) {
     let fileName = title;
     // # and , are not illegal, but they are annoying
-    let illegalWindowsFileNameRegex = /[<>:"#/\\|?*]/g;
+    let illegalWindowsFileNameRegex = /[<>:"#!/\\|?*]/g;
     fileName = fileName.replace(illegalWindowsFileNameRegex, '');
 
     // remove 'Ridi' from the filename
