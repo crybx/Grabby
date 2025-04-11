@@ -31,7 +31,7 @@ function main() {
         },
         multiDomains: {
             fictioneerSites: {
-                domains: ['blossomtranslation.com', 'emberlib731.xyz', 'igniforge.com', 'lilyonthevalley.com',
+                domains: ['blossomtranslation.com', 'bythebai.com', 'emberlib731.xyz', 'igniforge.com', 'lilyonthevalley.com',
                     'novelib.com', 'springofromance.com', 'razentl.com'],
                 grabber: grabFictioneer
             },
