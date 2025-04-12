@@ -23,7 +23,7 @@ function main() {
             'publang.com': { grabber: grabPublang, useFirstHeadingTitle: true },
             'secondlifetranslations.com': { grabber: grabSecondLifeTranslations },
             'starlightstream.net': { grabber: grabStarlightStream },
-            'storyseedling.com': { grabber: grabStorySeedling },
+            'storyseedling.com': { grabber: grabStorySeedling, useFirstHeadingTitle: true },
             'syosetu.com': { grabber: grabSyosetu },
             'watashiwasugoidesu.com': { grabber: grabWatashiWaSugoiDesu },
             'yoru.world': { grabber: grabYoruWorld, useFirstHeadingTitle: true },

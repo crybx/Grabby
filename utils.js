@@ -1,6 +1,5 @@
 function removeTag(element, tagName) {
     if (element.tagName === tagName) {
-        //element.outerHTML = '';
         element.remove();
     }
 }
@@ -196,10 +195,12 @@ function aggressiveCleanupContent(content) {
     removeComments(content);
 }
 
-function dejumble(node, cipher) {
+function dejumble(node, cipher, alphab = null) {
     // Get cipher by copying abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
     // into an element that has the scrambled text on the page.
-    const alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (!alphab) {
+        alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    }
     let sArray = node.textContent.split("");
     for (let i = 0; i < sArray.length; i++) {
         let index = alphab.indexOf(sArray[i]);

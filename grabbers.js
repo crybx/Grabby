@@ -281,15 +281,24 @@ function grabJjwxc() {
 }
 
 function grabStorySeedling() {
-    const content = document.querySelectorAll('.mb-4');
-    // if element contains text 'chapter' add it to the fullText
-    let fullText = '';
-    content.forEach(element => {
-        if (element.textContent.toLowerCase().includes('chapter')) {
-            fullText += element.innerHTML;
-        }
+    //content is in <div x-html="content">
+    const content = document.querySelector('div[x-html="content"]');
+    const title = document.querySelector('title').textContent;
+    const cipher = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const alphab = '⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵';
+    const warn = ' This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.';
+
+    aggressiveCleanupContent(content);
+    content.querySelectorAll('*').forEach(element => {
+        // remove all instances of cls followed by 18 other
+        // e.g. clsf7ee7eab1744489659
+        element.textContent = element.textContent.replace(/cls[^\s]{18}/g, '');
+        dejumble(element, cipher, alphab);
+        // replace warn with nothing
+        element.textContent = element.textContent.replace(warn, '');
+        removeAttributes(element, ['class']);
     });
-    return fullText;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabFictioneer() {
