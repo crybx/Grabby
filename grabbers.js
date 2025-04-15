@@ -88,7 +88,7 @@ function grabRidi() {
 
     // If there's no h tags, add h1 tag with the title
     if (fullText.search(/<h[1-6]/) === -1) {
-        fullText = '<h1>' + title + '</h1>' + fullText;
+        fullText = '<h1 class="auto-title">' + title + '</h1>' + fullText;
     }
 
     return fullText;
