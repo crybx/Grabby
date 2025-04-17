@@ -303,10 +303,12 @@ function grabStorySeedling() {
 
 function grabFictioneer() {
     let title = document.querySelector('.chapter__title')?.textContent;
-    let subtitle = document.querySelector('.chapter-second-title')?.textContent;
+    let subtitle = document.querySelector('.chapter__second-title')?.textContent ||
+        document.querySelector('.chapter__group')?.textContent;
     if (subtitle) { title += ': ' + subtitle; }
 
     const content = document.querySelector('.chapter-formatting');
+    const footnotes = document.querySelector('.chapter__footnotes');
 
     content.querySelectorAll('*').forEach(element => {
         removeSpansInsideParagraph(element);
@@ -314,7 +316,7 @@ function grabFictioneer() {
         removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav']);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML + footnotes.innerHTML;
 }
 
 function grabPatreon() {
