@@ -307,7 +307,9 @@ function grabFictioneer() {
         document.querySelector('.chapter__group')?.textContent;
     if (subtitle) { title += ': ' + subtitle; }
 
-    const content = document.querySelector('.chapter-formatting');
+    let content = document.querySelector('.chapter-formatting') ||
+        document.querySelector('#chapter-content');
+
     const footnotes = document.querySelector('.chapter__footnotes');
 
     content.querySelectorAll('*').forEach(element => {
@@ -315,8 +317,10 @@ function grabFictioneer() {
         removeAttributes(element, ['id', 'data-paragraph-id']);
         removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav']);
     });
+    content = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    if (footnotes) { content += '\n\n' + footnotes.innerHTML; }
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML + footnotes.innerHTML;
+    return content;
 }
 
 function grabPatreon() {
