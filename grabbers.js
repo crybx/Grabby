@@ -381,7 +381,6 @@ function grabNovelingua() {
 }
 
 function grabZenithtls() {
-    // content is in main tag
     const content = document.querySelector('article');
     // title is all the text inside the ol tag inside header tag, with the li items in reverse order
     let title = '';
@@ -447,7 +446,7 @@ function grabReadhive() {
 }
 
 function grabPeachTeaAgency() {
-    const content = document.querySelector('.shadow-gold-light');
+    const content = document.querySelector('.transition-all');
     // title is all the text inside the ol tag inside nav tag, with the li items
     let title = '';
     const ol = document.querySelector('nav ol');
@@ -464,6 +463,33 @@ function grabPeachTeaAgency() {
         // remove apostrophes and make sure to properly escape the ' character in the regex
         title = title.replace(/'/g, '');
     }
+
+    // wrap raw text in p tags
+    // Find text nodes that are direct children of the content div
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+        content,
+        NodeFilter.SHOW_TEXT,
+        { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
+    );
+
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
+        // Only process text nodes that are direct children of the content div
+        if (node.parentNode === content) {
+            textNodes.push(node);
+        }
+    }
+
+    // Replace each text node with a paragraph
+    textNodes.forEach(node => {
+        const text = node.nodeValue.trim();
+        if (text) {
+            const p = document.createElement('p');
+            p.textContent = text;
+            node.parentNode.replaceChild(p, node);
+        }
+    });
 
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
