@@ -33,7 +33,8 @@ function main() {
             fictioneerSites: {
                 domains: ['blossomtranslation.com', 'bythebai.com', 'emberlib731.xyz', 'igniforge.com', 'lilyonthevalley.com',
                     'novelib.com', 'springofromance.com', 'razentl.com'],
-                grabber: grabFictioneer
+                grabber: grabFictioneer,
+                useFirstHeadingTitle: true
             },
             madaraWpSites: {
                 domains: ['darkstartranslations.com', 'foxaholic.com', 'sleepytranslations.com', 'system707.com'],

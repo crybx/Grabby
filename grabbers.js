@@ -302,10 +302,12 @@ function grabStorySeedling() {
 }
 
 function grabFictioneer() {
+    let storyName = document.querySelector('.chapter__story-link')?.textContent;
     let title = document.querySelector('.chapter__title')?.textContent;
     let subtitle = document.querySelector('.chapter__second-title')?.textContent ||
         document.querySelector('.chapter__group')?.textContent;
     if (subtitle) { title += ': ' + subtitle; }
+    if (storyName) { title = storyName + ': ' + title; }
 
     let content = document.querySelector('.chapter-formatting') ||
         document.querySelector('#chapter-content');
