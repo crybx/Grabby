@@ -325,6 +325,12 @@ function grabFictioneer() {
     return content;
 }
 
+function grabDarkstar() {
+    const title = document.querySelector('title').textContent;
+    const content = document.querySelector('.chapter-content');
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+}
+
 function grabPatreon() {
     const content = document.querySelector('body');
 

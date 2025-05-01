@@ -6,6 +6,7 @@ function main() {
             'archiveofourown.org': { grabber: grabAO3, useFirstHeadingTitle: true },
             'blogspot.com': { grabber: grabBlogspot },
             'chrysanthemumgarden.com': { grabber: grabChrysanthemum },
+            'darkstartranslations.com': { grabber: grabDarkstar },
             'docs.google.com': { grabber: grabGoogleDocMobileBasic },
             'fanfiction.ws': { grabber: grabFanfictionNet },
             'fenrirealm.com': { grabber: grabFenrir },
@@ -37,7 +38,7 @@ function main() {
                 useFirstHeadingTitle: true
             },
             madaraWpSites: {
-                domains: ['darkstartranslations.com', 'foxaholic.com', 'sleepytranslations.com', 'system707.com'],
+                domains: ['foxaholic.com', 'sleepytranslations.com', 'system707.com'],
                 grabber: madaraWpTheme
             },
             wordpressSites: {
