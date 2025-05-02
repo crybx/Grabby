@@ -1,0 +1,4 @@
+a:visited,
+a:visited > div > span {
+    color: #7e5dff !important;
+}

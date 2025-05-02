@@ -32,7 +32,8 @@
       "js": [
         "utils.js",
         "grabbers.js"
-      ]
+      ],
+      "css": ["grabby.css"]
     }
   ]
 }
