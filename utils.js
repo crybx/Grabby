@@ -145,6 +145,7 @@ function aggressiveCleanupElement(element) {
         'grecaptcha-badge',
         'sidebar-container',
         'sidebar-nav',
+        'uwp_widget_author_box',
         'wp-image-16312'
     ]
     const elementsWithAttribute = [

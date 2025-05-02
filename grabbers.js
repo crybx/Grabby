@@ -269,6 +269,19 @@ function grabWordpress() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
+function grabHyacinth() {
+    let title = document.querySelector('.ts-breadcrumb').textContent;
+    // replace all \n and \t with space
+    title = title.replace(/[\n\t]/g, ' ');
+    // remove 'Home' and '›'
+    title = title.replace(/Home|›/g, '');
+    // replace all multiple whitespaces in a row with a single space
+    title = title.replace(/\s+/g, ' ');
+
+    const content = document.querySelector('.entry-content');
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+}
+
 function grabJjwxc() {
     const title = document.querySelector('.noveltitle').textContent;
     const content = document.querySelector('.novelbody');

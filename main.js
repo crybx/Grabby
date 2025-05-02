@@ -10,6 +10,7 @@ function main() {
             'docs.google.com': { grabber: grabGoogleDocMobileBasic },
             'fanfiction.ws': { grabber: grabFanfictionNet },
             'fenrirealm.com': { grabber: grabFenrir },
+            'hyacinthbloom.com': { grabber: grabHyacinth, useFirstHeadingTitle: true },
             'jjwxc.net': { grabber: grabJjwxc },
             'joara.com': { grabber: grabJoara },
             'karistudio.com': { grabber: grabKaristudio },
@@ -42,8 +43,8 @@ function main() {
                 grabber: madaraWpTheme
             },
             wordpressSites: {
-                domains: ['eatapplepies.com', 'ladyhotcombtranslations.com', 'littlepinkstarfish.com', 'mendacity.me',
-                    'transweaver.com', 'wordpress.com'],
+                domains: ['eatapplepies.com', 'ladyhotcombtranslations.com',
+                    'littlepinkstarfish.com', 'mendacity.me', 'transweaver.com', 'wordpress.com'],
                 grabber: grabWordpress
             }
         }
@@ -80,11 +81,11 @@ function main() {
 
     async function grabFromWebsite() {
         const url = window.location.href;
-        let title, content;
+        let filename, content;
 
         try {
             if (url.includes('file://')) {
-                ({ title, content } = handleLocalFile(url));
+                ({ filename, content } = handleLocalFile(url));
             } else {
                 const config = findMatchingConfig(url);
 
@@ -95,19 +96,23 @@ function main() {
                         console.error(`Error in grabber for ${url}:`, grabError);
                         content = grabUnknown(); // Fallback to generic grabber
                     }
-                    title = extractTitle(content, config.useFirstHeadingTitle);
+                    filename = extractTitle(content, config.useFirstHeadingTitle);
                 } else {
                     content = grabUnknown();
-                    title = extractTitle(content, false);
+                    filename = extractTitle(content, false);
                     console.log('This website is not specifically supported: ', url);
                 }
+
+                // append domain name to the filename for easier search
+                const domain = new URL(url).hostname;
+                filename = `${filename}_${domain}`;
             }
 
             if (!content || content.trim() === '') {
                 throw new Error('No content could be extracted from this page');
             }
 
-            await handleContentDownload(title, content);
+            await handleContentDownload(filename, content);
         } catch (error) {
             console.error('Error grabbing content:', error);
             // Consider showing a user-friendly error notification
@@ -119,18 +124,18 @@ function main() {
         }
     }
 
-    async function handleContentDownload(title, content) {
+    async function handleContentDownload(filename, content) {
         let blobUrl;
         try {
             copyToClipboard(content);
 
-            const blob = getFileBlobFromContent(title, content);
+            const blob = getFileBlobFromContent(filename, content);
             blobUrl = URL.createObjectURL(blob);
 
             await chrome.runtime.sendMessage({
                 target: 'background',
                 type: 'downloadAsFile',
-                title: title,
+                title: filename,
                 blobUrl: blobUrl,
                 cleanup: () => URL.revokeObjectURL(blobUrl)
             });
