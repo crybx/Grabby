@@ -263,12 +263,6 @@ function grabWatashiWaSugoiDesu() {
     return content.innerHTML;
 }
 
-function grabWordpress() {
-    const title = document.querySelector('title').textContent;
-    const content = document.querySelector('.entry-content');
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
-}
-
 function grabHyacinth() {
     let title = document.querySelector('.ts-breadcrumb').textContent;
     // replace all \n and \t with space
@@ -330,7 +324,7 @@ function grabFictioneer() {
     content.querySelectorAll('*').forEach(element => {
         removeSpansInsideParagraph(element);
         removeAttributes(element, ['id', 'data-paragraph-id']);
-        removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav']);
+        removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav', 'paragraph-tools']);
     });
     content = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
     if (footnotes) { content += '\n\n' + footnotes.innerHTML; }
@@ -339,8 +333,16 @@ function grabFictioneer() {
 }
 
 function grabDarkstar() {
+    return grabStandard('title', '.chapter-content')
+}
+
+function grabWordpress() {
+    return grabStandard('title', '.entry-content');
+}
+
+function grabStandard(titleSelector = 'title', contentSelector = 'body') {
     const title = document.querySelector('title').textContent;
-    const content = document.querySelector('.chapter-content');
+    const content = document.querySelector('.entry-content');
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
 }
 
