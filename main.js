@@ -27,6 +27,7 @@ function main() {
             'starlightstream.net': { grabber: grabStarlightStream },
             'storyseedling.com': { grabber: grabStorySeedling, useFirstHeadingTitle: true },
             'syosetu.com': { grabber: grabSyosetu },
+            'tapas.io': { grabber: grabTapas, useFirstHeadingTitle: true },
             'watashiwasugoidesu.com': { grabber: grabWatashiWaSugoiDesu },
             'yoru.world': { grabber: grabYoruWorld, useFirstHeadingTitle: true },
             'zenithtls.com': { grabber: grabZenithtls, useFirstHeadingTitle: true },

@@ -127,6 +127,52 @@ function grabSyosetu() {
     return title.outerHTML + '\n\n' + chapter.innerHTML;
 }
 
+function grabTapas() {
+    const chapter = document.querySelector("#viewport");
+    const pageTitle = document.querySelector('title').textContent;
+    let title = document.querySelector("div.viewer__header p.title").textContent;
+    title = pageTitle + ': ' + title;
+
+    chapter.querySelectorAll('*').forEach(element => {
+        removeAttributes(element, ['dir']);
+        if (element.hasAttribute("style")) {
+            let styleText = element.getAttribute("style");
+
+            // if style contains italic, wrap innerHTML with <i> tags
+            if (styleText.includes("italic")) {
+                element.innerHTML = '<i>' + element.innerHTML + '</i>';
+                // remove font-style: italic; or font-style:italic; from style
+                styleText = styleText.replace(/font-style\s*:\s*italic\s*;/g, '');
+            }
+            // if style contains bold, wrap innerHTML with <b> tags
+            if (styleText.includes("bold") || styleText.includes("700")) {
+                element.innerHTML = '<b>' + element.innerHTML + '</b>';
+                // remove font-weight: 700; or font-weight:bold; from style
+                styleText = styleText.replace(/font-weight\s*:\s*(bold|700)\s*;/g, '');
+            }
+            // remove underline by wrapping with <u> tags
+            if (styleText.includes("underline")) {
+                element.innerHTML = '<u>' + element.innerHTML + '</u>';
+                // remove text-decoration: underline; from style
+                styleText = styleText.replace(/text-decoration\s*:\s*underline\s*;/g, '');
+            }
+            // remove font-weight: 400; from style
+            if (styleText.includes("400")) {
+                styleText = styleText.replace(/font-weight\s*:\s*400\s*;/g, '');
+            }
+
+            // if style does not contain italic, bold, underline, or strike-through, remove it
+            const regexContainsKeywords = /italic|bold|font-weight|underline|line-through/;
+            if (!regexContainsKeywords.test(styleText)) {
+                removeAttributes(element, ["style"]);
+            }
+        }
+    });
+    removeComments(chapter);
+
+    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
+}
+
 function grabJoara() {
     const chapter = document.querySelector('.text-wrap');
     chapter.querySelectorAll('*').forEach(element => {

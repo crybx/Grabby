@@ -111,7 +111,7 @@ function removeAttributes(element, attributeName) {
     }
 }
 
-function removeComments (root) {
+function removeComments(root) {
     if (!(root instanceof Node)) {
         console.error("The root parameter is not a valid Node. Cannot remove comments.");
         return;
@@ -146,7 +146,8 @@ function aggressiveCleanupElement(element) {
         'sidebar-container',
         'sidebar-nav',
         'uwp_widget_author_box',
-        'wp-image-16312'
+        'wp-image-16312',
+        'wp-block-comments'
     ]
     const elementsWithAttribute = [
         'data-ez-ph-id'
