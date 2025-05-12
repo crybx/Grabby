@@ -634,6 +634,12 @@ function grabKaristudio() {
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
+function grabLightnovelworld() {
+    const content = document.querySelector('#chapter-container');
+    const title = document.querySelector('.chapter-title').textContent;
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+}
+
 function grabUnknown() {
     const content = document.querySelector('body');
     return generalCleanup(content).innerHTML;

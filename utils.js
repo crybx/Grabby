@@ -1,5 +1,3 @@
-console.log('utils.js is running!');
-
 function removeTag(element, tagName) {
     if (element.tagName === tagName) {
         element.remove();
@@ -204,45 +202,48 @@ function replaceSemanticInlineStylesWithTags(element, removeLeftoverStyles = fal
 
 function aggressiveCleanupElement(element) {
     const ids = [
-        'novel_nav',
-        'donation-msg'
+        "chapter-comments",
+        "novel_nav",
+        "donation-msg"
     ];
     const elementsWithClass = [
-        'confuse',
-        'code-block',
-        'clearfix',
-        'ezoic-autoinsert-ad',
-        'floating-audio-button-container',
-        'floating-reader-button-container',
-        'mycred-buy-link',
-        'sharedaddy',
-        'wp-block-buttons',
-        'jp-relatedposts',
-        'grecaptcha-badge',
-        'sidebar-container',
-        'sidebar-nav',
-        'uwp_widget_author_box',
-        'wp-image-16312',
-        'wp-block-comments'
+        "chapternav",
+        "confuse",
+        "code-block",
+        "clearfix",
+        "ezoic-autoinsert-ad",
+        "floating-audio-button-container",
+        "floating-reader-button-container",
+        "mycred-buy-link",
+        "sharedaddy",
+        "wp-block-buttons",
+        "jp-relatedposts",
+        "grecaptcha-badge",
+        "sidebar-container",
+        "sidebar-nav",
+        "sidebar-wrapper",
+        "uwp_widget_author_box",
+        "wp-image-16312",
+        "wp-block-comments"
     ]
     const elementsWithAttribute = [
-        'data-ez-ph-id'
+        "data-ez-ph-id"
     ]
     const attributes = [
-        'aria-disabled',
+        "aria-disabled",
         // 'class' helps figure out what else to remove!
-        'dir',
+        "dir",
         // 'id' affects footnotes and also what else to remove!
-        'data-shortcode',
-        'data-paragraph-id',
-        'data-paragraph-index',
-        'face',
-        'style',
-        'role'
+        "data-shortcode",
+        "data-paragraph-id",
+        "data-paragraph-index",
+        "face",
+        "role"
     ];
     removeElementWithIds(element, ids);
     removeElementWithClasses(element, elementsWithClass);
     removeElementWithAttributes(element, elementsWithAttribute);
+    replaceSemanticInlineStylesWithTags(element, true);
     removeAttributes(element, attributes);
     removeEmptyAttributes(element);
     removeFontTags(element);
@@ -250,25 +251,28 @@ function aggressiveCleanupElement(element) {
 
 function aggressiveCleanupContent(content) {
     const tags = [
-        'BASE',
-        'BREAK',
-        'BUTTON',
-        'FOOTER',
-        'HEADER',
-        'INS',
-        'IFRAME',
-        'LINK',
-        'META',
-        'NAV',
-        'NOSCRIPT',
-        'NEXT-ROUTE-ANNOUNCER',
-        'PATH',
-        'SELECT',
-        'SCRIPT',
-        'STYLE',
-        'SVG',
-        'TEXTAREA',
-        'TITLE'
+        "BASE",
+        "BREAK",
+        "BUTTON",
+        "DIALOG",
+        "FOOTER",
+        "FORM",
+        "HEADER",
+        "INPUT",
+        "INS",
+        "IFRAME",
+        "LINK",
+        "META",
+        "NAV",
+        "NOSCRIPT",
+        "NEXT-ROUTE-ANNOUNCER",
+        "PATH",
+        "SELECT",
+        "SCRIPT",
+        "STYLE",
+        "SVG",
+        "TEXTAREA",
+        "TITLE"
     ];
     removeTagsFromContent(content, tags);
     removeComments(content);
@@ -276,7 +280,7 @@ function aggressiveCleanupContent(content) {
 
 function cipherSubstitution(element, cipher, alphab = null) {
     if (!alphab) {
-        alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        alphab = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
     let sArray = element.textContent.split("");
     for (let i = 0; i < sArray.length; i++) {

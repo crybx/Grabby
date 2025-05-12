@@ -5,50 +5,51 @@ function main() {
     const WEBSITE_CONFIGS = {
         // Grabbers for single domains
         singleDomains: {
-            'archiveofourown.org': { grabber: grabAO3, useFirstHeadingTitle: true },
-            'blogspot.com': { grabber: grabBlogspot },
-            'chrysanthemumgarden.com': { grabber: grabChrysanthemum },
-            'darkstartranslations.com': { grabber: grabDarkstar },
-            'docs.google.com': { grabber: grabGoogleDocMobileBasic },
-            'fanfiction.ws': { grabber: grabFanfictionNet },
-            'fenrirealm.com': { grabber: grabFenrir },
-            'hyacinthbloom.com': { grabber: grabHyacinth, useFirstHeadingTitle: true },
-            'jjwxc.net': { grabber: grabJjwxc },
-            'joara.com': { grabber: grabJoara },
-            'karistudio.com': { grabber: grabKaristudio },
-            'novelingua.com': { grabber: grabNovelingua, useFirstHeadingTitle: true },
-            'noveltranslation.net': { grabber: grabNovelTranslationNet },
-            'patreon.com': { grabber: grabPatreon },
-            'peachtea.agency': { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
-            'readhive.org': { grabber: grabReadhive, useFirstHeadingTitle: true },
-            'reaperscans.com': { grabber: grabReaperScans },
-            'requiemtls.com': { grabber: grabRequiemtls },
-            'ridibooks.com': { grabber: grabRidi },
-            'page.kakao.com': { grabber: grabKakaoPage },
-            'publang.com': { grabber: grabPublang, useFirstHeadingTitle: true },
-            'secondlifetranslations.com': { grabber: grabSecondLifeTranslations },
-            'starlightstream.net': { grabber: grabStarlightStream },
-            'storyseedling.com': { grabber: grabStorySeedling, useFirstHeadingTitle: true },
-            'syosetu.com': { grabber: grabSyosetu },
-            'tapas.io': { grabber: grabTapas, useFirstHeadingTitle: true },
-            'watashiwasugoidesu.com': { grabber: grabWatashiWaSugoiDesu },
-            'yoru.world': { grabber: grabYoruWorld, useFirstHeadingTitle: true },
-            'zenithtls.com': { grabber: grabZenithtls, useFirstHeadingTitle: true },
+            "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
+            "blogspot.com": { grabber: grabBlogspot },
+            "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
+            "darkstartranslations.com": { grabber: grabDarkstar },
+            "docs.google.com": { grabber: grabGoogleDocMobileBasic },
+            "fanfiction.ws": { grabber: grabFanfictionNet },
+            "fenrirealm.com": { grabber: grabFenrir },
+            "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
+            "jjwxc.net": { grabber: grabJjwxc },
+            "joara.com": { grabber: grabJoara },
+            "karistudio.com": { grabber: grabKaristudio },
+            "lightnovelworld.co": { grabber: grabLightnovelworld },
+            "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
+            "noveltranslation.net": { grabber: grabNovelTranslationNet },
+            "patreon.com": { grabber: grabPatreon },
+            "peachtea.agency": { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
+            "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
+            "reaperscans.com": { grabber: grabReaperScans },
+            "requiemtls.com": { grabber: grabRequiemtls },
+            "ridibooks.com": { grabber: grabRidi },
+            "page.kakao.com": { grabber: grabKakaoPage },
+            "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
+            "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },
+            "starlightstream.net": { grabber: grabStarlightStream },
+            "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
+            "syosetu.com": { grabber: grabSyosetu },
+            "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },
+            "watashiwasugoidesu.com": { grabber: grabWatashiWaSugoiDesu },
+            "yoru.world": { grabber: grabYoruWorld, useFirstHeadingTitle: true },
+            "zenithtls.com": { grabber: grabZenithtls, useFirstHeadingTitle: true },
         },
         multiDomains: {
             fictioneerSites: {
-                domains: ['blossomtranslation.com', 'bythebai.com', 'emberlib731.xyz', 'igniforge.com', 'lilyonthevalley.com',
-                    'novelib.com', 'springofromance.com', 'razentl.com'],
+                domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz", "igniforge.com", "lilyonthevalley.com",
+                    "novelib.com", "springofromance.com", "razentl.com"],
                 grabber: grabFictioneer,
                 useFirstHeadingTitle: true
             },
             madaraWpSites: {
-                domains: ['foxaholic.com', 'sleepytranslations.com', 'system707.com'],
+                domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
                 grabber: madaraWpTheme
             },
             wordpressSites: {
-                domains: ['eatapplepies.com', 'ladyhotcombtranslations.com',
-                    'littlepinkstarfish.com', 'mendacity.me', 'transweaver.com', 'wordpress.com'],
+                domains: ["eatapplepies.com", "ladyhotcombtranslations.com",
+                    "littlepinkstarfish.com", "mendacity.me", "transweaver.com", "wordpress.com"],
                 grabber: grabWordpress
             }
         }
@@ -72,13 +73,13 @@ function main() {
         if (useFirstHeadingTitle) {
             return getTitleFromFirstHeading(content);
         }
-        return document.querySelector('title')?.textContent ||
-            document.querySelector('h1')?.textContent ||
-            'chapter';
+        return document.querySelector("title")?.textContent ||
+            document.querySelector("h1")?.textContent ||
+            "chapter";
     }
 
     function handleLocalFile(url) {
-        const title = url.split('/').pop().split('.').slice(0, -1).join('.');
+        const title = url.split("/").pop().split(".").slice(0, -1).join(".");
         const content = grabLocalFile();
         return { title, content };
     }
@@ -88,7 +89,7 @@ function main() {
         let filename, content;
 
         try {
-            if (url.includes('file://')) {
+            if (url.includes("file://")) {
                 ({ filename, content } = handleLocalFile(url));
             } else {
                 const config = findMatchingConfig(url);
@@ -104,7 +105,7 @@ function main() {
                 } else {
                     content = grabUnknown();
                     filename = extractTitle(content, false);
-                    console.log('This website is not specifically supported: ', url);
+                    console.log("This website is not specifically supported: ", url);
                 }
 
                 // append domain name to the filename for easier search
@@ -112,17 +113,17 @@ function main() {
                 filename = `${filename}_${domain}`;
             }
 
-            if (!content || content.trim() === '') {
-                throw new Error('No content could be extracted from this page');
+            if (!content || content.trim() === "") {
+                throw new Error("No content could be extracted from this page");
             }
 
             await handleContentDownload(filename, content);
         } catch (error) {
-            console.error('Error grabbing content:', error);
+            console.error("Error grabbing content:", error);
             // Consider showing a user-friendly error notification
             chrome.runtime.sendMessage({
-                target: 'background',
-                type: 'showError',
+                target: "background",
+                type: "showError",
                 message: `Failed to grab content: ${error.message}`
             });
         }
@@ -137,14 +138,14 @@ function main() {
             blobUrl = URL.createObjectURL(blob);
 
             await chrome.runtime.sendMessage({
-                target: 'background',
-                type: 'downloadAsFile',
+                target: "background",
+                type: "downloadAsFile",
                 title: filename,
                 blobUrl: blobUrl,
                 cleanup: () => URL.revokeObjectURL(blobUrl)
             });
         } catch (error) {
-            console.error('Error downloading content:', error);
+            console.error("Error downloading content:", error);
             URL.revokeObjectURL(blobUrl);
         } finally {
             if (blobUrl) URL.revokeObjectURL(blobUrl);
@@ -158,7 +159,7 @@ function main() {
 chrome.windows.getCurrent(function (currentWindow) {
     chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (activeTabs) {
         if (!activeTabs || activeTabs.length === 0) {
-            console.error('No active tab found');
+            console.error("No active tab found");
             return;
         }
 
