@@ -34,6 +34,10 @@
         "grabbers.js"
       ],
       "css": ["grabby.css"]
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["youtube-nyan-cat.css"]
     }
   ]
 }

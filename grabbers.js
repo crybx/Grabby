@@ -129,48 +129,30 @@ function grabSyosetu() {
 
 function grabTapas() {
     const chapter = document.querySelector("#viewport");
-    const pageTitle = document.querySelector('title').textContent;
-    let title = document.querySelector("div.viewer__header p.title").textContent;
-    title = pageTitle + ': ' + title;
+    const pageTitle = document.querySelector('title').textContent.trim();
+    let title = document.querySelector("div.viewer__header p.title").textContent.trim();
+    title = pageTitle + " " + title;
+    title = title.replace("Read", "");
 
-    chapter.querySelectorAll('*').forEach(element => {
-        removeAttributes(element, ['dir']);
-        if (element.hasAttribute("style")) {
-            let styleText = element.getAttribute("style");
-
-            // if style contains italic, wrap innerHTML with <i> tags
-            if (styleText.includes("italic")) {
-                element.innerHTML = '<i>' + element.innerHTML + '</i>';
-                // remove font-style: italic; or font-style:italic; from style
-                styleText = styleText.replace(/font-style\s*:\s*italic\s*;/g, '');
-            }
-            // if style contains bold, wrap innerHTML with <b> tags
-            if (styleText.includes("bold") || styleText.includes("700")) {
-                element.innerHTML = '<b>' + element.innerHTML + '</b>';
-                // remove font-weight: 700; or font-weight:bold; from style
-                styleText = styleText.replace(/font-weight\s*:\s*(bold|700)\s*;/g, '');
-            }
-            // remove underline by wrapping with <u> tags
-            if (styleText.includes("underline")) {
-                element.innerHTML = '<u>' + element.innerHTML + '</u>';
-                // remove text-decoration: underline; from style
-                styleText = styleText.replace(/text-decoration\s*:\s*underline\s*;/g, '');
-            }
-            // remove font-weight: 400; from style
-            if (styleText.includes("400")) {
-                styleText = styleText.replace(/font-weight\s*:\s*400\s*;/g, '');
-            }
-
-            // if style does not contain italic, bold, underline, or strike-through, remove it
-            const regexContainsKeywords = /italic|bold|font-weight|underline|line-through/;
-            if (!regexContainsKeywords.test(styleText)) {
-                removeAttributes(element, ["style"]);
-            }
+    chapter.querySelectorAll("*").forEach(element => {
+        removeAttributes(element, ["dir", "role", "lang"]);
+        replaceSemanticInlineStylesWithTags(element, true);
+        if (element.tagName === "B" && element.hasAttribute("id")) {
+            removeAttributes(element, ["id"]);
         }
-    });
-    removeComments(chapter);
+        removeClasses(element, ["MsoNormal"]);
 
-    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
+        // if tag is <w:sdt> convert it to a span with class="special" - it's an invalid XHTML tag
+        if (element.tagName && element.tagName.toLowerCase() === "w:sdt") {
+            removeAttributes(element, ["id", "sdttag"]);
+            let spanElement = element.ownerDocument.createElement("span");
+            spanElement.classList.add("special");
+            replaceTag(element, spanElement);
+        }
+        aggressiveCleanupElement(element);
+    });
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + chapter.innerHTML;
 }
 
 function grabJoara() {
@@ -203,7 +185,7 @@ function grabChrysanthemum() {
         }
 
         if (element.classList.contains('jum')) {
-            dejumble(element, cipher);
+            cipherSubstitution(element, cipher);
         }
         removeClasses(element, ['jum', 'emoji']);
     });
@@ -219,7 +201,7 @@ function grabSecondLifeTranslations() {
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
         if (element.classList.contains('jmbl')) {
-            dejumble(element, cipher);
+            cipherSubstitution(element, cipher);
         }
         removeClasses(element, ['jmbl']);
         removeElementWithClasses(element, ['jmbl-ent', 'jmbl-disclaimer']);
@@ -319,7 +301,7 @@ function grabHyacinth() {
     title = title.replace(/\s+/g, ' ');
 
     const content = document.querySelector('.entry-content');
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabJjwxc() {
@@ -346,12 +328,26 @@ function grabStorySeedling() {
         // remove all instances of cls followed by 18 other
         // e.g. clsf7ee7eab1744489659
         element.textContent = element.textContent.replace(/cls[^\s]{18}/g, '');
-        dejumble(element, cipher, alphab);
+        cipherSubstitution(element, cipher, alphab);
         // replace warn with nothing
         element.textContent = element.textContent.replace(warn, '');
         removeAttributes(element, ['class']);
     });
     return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+}
+
+function grabRequiemtls() {
+    let content = document.querySelector('.entry-content');
+    const cipher = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*.!?,;:\"'-[()]0123456789~"
+    const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ"
+    // the alphabet changes between pages
+
+    content = generalCleanup(content);
+    content.querySelectorAll('*').forEach(element => {
+        cipherSubstitution(element, cipher, alphab);
+    });
+
+    return content.innerHTML;
 }
 
 function grabFictioneer() {
@@ -389,7 +385,7 @@ function grabWordpress() {
 function grabStandard(titleSelector = 'title', contentSelector = 'body') {
     const title = document.querySelector('title').textContent;
     const content = document.querySelector('.entry-content');
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabPatreon() {
@@ -412,7 +408,7 @@ function grabYoruWorld() {
     let content = document.querySelector('section');
     content = content.querySelector('div[class^="__className_"]');
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabStarlightStream() {
@@ -434,19 +430,29 @@ function grabStarlightStream() {
 }
 
 function grabNovelingua() {
-    const content = document.querySelector('.p-cyr2166') ||
-        document.querySelector('.p-alh4926') ||
-        document.querySelector('article') ||
-        document.querySelector('.entry-content');
-
     // title is in the canonical link
-    let canonical = document.querySelector('link[rel="canonical"]').href.split('/');
+    let canonical = document.querySelector("link[rel='canonical']").href.split("/");
     let title = canonical.pop();
-    if (title === '') {
+    if (title === "") {
         title = canonical.pop();
     }
+    title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    const content = document.querySelector(".entry-content .pagelayer-text") ||
+        document.querySelector(".entry-content .pagelayer-text-holder") ||
+        document.querySelector(".entry-content") ||
+        document.querySelector("article");
+
+    content.querySelectorAll("*").forEach(element => {
+        element.removeAttribute("dir");
+        replaceSemanticInlineStylesWithTags(element, true);
+        if (element.tagName === "B" && element.hasAttribute("id")) {
+            element.removeAttribute("id");
+        }
+    });
+    generalCleanup(content);
+
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
 }
 
 function grabZenithtls() {
@@ -560,7 +566,7 @@ function grabPeachTeaAgency() {
         }
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabAO3() {
@@ -591,7 +597,7 @@ function grabLocalFile() {
 function grabFanfictionNet() {
     const content = document.querySelector('.storytext');
     const title = document.querySelector('title').textContent;
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabFenrir() {
@@ -600,12 +606,12 @@ function grabFenrir() {
     const title = document.querySelector('h1')?.textContent
     ??  document.querySelector('title').textContent;
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content);
+    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
 }
 
 function grabReaperScans() {
     const content = document.querySelector('#reader-container');
-    return generalCleanup(content);
+    return generalCleanup(content).innerHTML;
 }
 
 function grabNovelTranslationNet() {
@@ -630,7 +636,7 @@ function grabKaristudio() {
 
 function grabUnknown() {
     const content = document.querySelector('body');
-    return generalCleanup(content);
+    return generalCleanup(content).innerHTML;
 }
 
 function generalCleanup(content) {
@@ -638,7 +644,7 @@ function generalCleanup(content) {
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
     });
-    return content.innerHTML;
+    return content;
 }
 
 function getAllLinks() {
@@ -667,7 +673,6 @@ function logAllLinks() {
     });
 }
 
-
 function dangerLinks() {
     const links = document.querySelectorAll('a.text-danger');
     let allLinks = '';
@@ -676,4 +681,3 @@ function dangerLinks() {
     });
     console.log(allLinks);
 }
-

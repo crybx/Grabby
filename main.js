@@ -20,6 +20,7 @@ function main() {
             'peachtea.agency': { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
             'readhive.org': { grabber: grabReadhive, useFirstHeadingTitle: true },
             'reaperscans.com': { grabber: grabReaperScans },
+            'requiemtls.com': { grabber: grabRequiemtls },
             'ridibooks.com': { grabber: grabRidi },
             'page.kakao.com': { grabber: grabKakaoPage },
             'publang.com': { grabber: grabPublang, useFirstHeadingTitle: true },

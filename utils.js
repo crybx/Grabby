@@ -1,3 +1,5 @@
+console.log('utils.js is running!');
+
 function removeTag(element, tagName) {
     if (element.tagName === tagName) {
         element.remove();
@@ -126,6 +128,80 @@ function removeComments(root) {
     removeElements(nodeList);
 }
 
+function removeEmptyAttributes(element) {
+    element.getAttributeNames().forEach(attr => {
+        if (element.getAttribute(attr).trim() === "") {
+            element.removeAttribute(attr);
+        }
+    });
+}
+
+function moveChildElements(from, to) {
+    while (from.hasChildNodes()) {
+        let node = from.childNodes[0];
+        to.appendChild(node);
+    }
+}
+
+function copyAttributes(from, to) {
+    for (let i = 0; i < from.attributes.length; ++i) {
+        let attr = from.attributes[i];
+        try {
+            to.setAttribute(attr.localName, attr.value);
+        } catch (e) {
+            // probably invalid attribute name.  Discard
+        }
+    }
+}
+
+function replaceTag(element, replacement) {
+    let parent = element.parentElement;
+    parent.insertBefore(replacement, element);
+    moveChildElements(element, replacement);
+    copyAttributes(element, replacement);
+    element.remove();
+}
+
+function wrapInnerContentInTag(element, tagName) {
+    const wrapper = document.createElement(tagName);
+    while (element.firstChild) {
+        wrapper.appendChild(element.firstChild);
+    }
+    element.appendChild(wrapper);
+}
+
+function replaceSemanticInlineStylesWithTags(element, removeLeftoverStyles = false) {
+    if (element.hasAttribute("style")) {
+        let styleText = element.getAttribute("style");
+
+        // Map of style patterns to their semantic HTML equivalents
+        const styleToTag = [
+            { regex: /font-style\s*:\s*(italic|oblique)\s*;/g, match: /italic|oblique/, tag: "i" },
+            { regex: /font-weight\s*:\s*(bold|[7-9]\d\d)\s*;/g, match: /bold|[7-9]\d\d/, tag: "b" },
+            { regex: /text-decoration\s*:\s*underline\s*;/g, match: /underline/, tag: "u" },
+            { regex: /text-decoration\s*:\s*line-through\s*;/g, match: /line-through/, tag: "s" }
+        ];
+
+        // Apply semantic tags and remove corresponding styles
+        for (const style of styleToTag) {
+            if (style.match.test(styleText)) {
+                wrapInnerContentInTag(element, style.tag);
+                styleText = styleText.replace(style.regex, "");
+            }
+        }
+
+        // Remove non-semantic font-weight
+        styleText = styleText.replace(/font-weight\s*:\s*(normal|[1-4]\d\d)\s*;/g, "");
+        styleText = styleText.trim();
+
+        if (styleText && (!removeLeftoverStyles || /italic|bold|font-weight|underline|line-through/.test(styleText))) {
+            element.setAttribute("style", styleText);
+        } else {
+            element.removeAttribute("style");
+        }
+    }
+}
+
 function aggressiveCleanupElement(element) {
     const ids = [
         'novel_nav',
@@ -168,6 +244,7 @@ function aggressiveCleanupElement(element) {
     removeElementWithClasses(element, elementsWithClass);
     removeElementWithAttributes(element, elementsWithAttribute);
     removeAttributes(element, attributes);
+    removeEmptyAttributes(element);
     removeFontTags(element);
 }
 
@@ -197,18 +274,16 @@ function aggressiveCleanupContent(content) {
     removeComments(content);
 }
 
-function dejumble(node, cipher, alphab = null) {
-    // Get cipher by copying abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
-    // into an element that has the scrambled text on the page.
+function cipherSubstitution(element, cipher, alphab = null) {
     if (!alphab) {
         alphab = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     }
-    let sArray = node.textContent.split("");
+    let sArray = element.textContent.split("");
     for (let i = 0; i < sArray.length; i++) {
         let index = alphab.indexOf(sArray[i]);
         if (index !== -1) {
             sArray[i] = cipher[index];
         }
     }
-    node.textContent = sArray.join("");
+    element.textContent = sArray.join("");
 }
