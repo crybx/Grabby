@@ -33,11 +33,11 @@
         "utils.js",
         "grabbers.js"
       ],
-      "css": ["grabby.css"]
+      "css": ["styles/grabby.css"]
     },
     {
       "matches": ["*://*.youtube.com/*"],
-      "css": ["youtube-nyan-cat.css"]
+      "css": ["styles/youtube-nyan-cat.css"]
     }
   ]
 }

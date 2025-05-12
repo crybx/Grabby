@@ -1,3 +1,5 @@
+// this file is loaded by grabby.html
+
 function main() {
     // Website configurations
     const WEBSITE_CONFIGS = {
