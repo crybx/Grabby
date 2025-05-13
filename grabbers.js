@@ -78,7 +78,7 @@ function grabRidi() {
         article.querySelectorAll('*').forEach(element => {
             removeFontTags(element);
             removeTags(element, ['PRE', 'TITLE', 'LINK']);
-            removeBlockClasses(element);
+            removeClassesThatStartWith(element, "block_");
             removeClasses(element, ['body', 'story_part_header_title']);
             removeAttributes(element, ['style']);
             removeEmptyParagraphAndHeadings(element);
@@ -128,31 +128,30 @@ function grabSyosetu() {
 }
 
 function grabTapas() {
-    const chapter = document.querySelector("#viewport");
     const pageTitle = document.querySelector('title').textContent.trim();
     let title = document.querySelector("div.viewer__header p.title").textContent.trim();
     title = pageTitle + " " + title;
-    title = title.replace("Read", "");
+    title = title.replace("Read", "")?.trim();
 
+    const chapter = document.querySelector("#viewport");
     chapter.querySelectorAll("*").forEach(element => {
         removeAttributes(element, ["dir", "role", "lang"]);
         replaceSemanticInlineStylesWithTags(element, true);
-        if (element.tagName === "B" && element.hasAttribute("id")) {
-            removeAttributes(element, ["id"]);
-        }
         removeClasses(element, ["MsoNormal"]);
+        removeIdsThatStartWith(element, "docs-internal-guid-");
 
-        // if tag is <w:sdt> convert it to a span with class="special" - it's an invalid XHTML tag
+        // tag <w:sdt> is not valid XHTML, convert it to span with class="sdttag"
         if (element.tagName && element.tagName.toLowerCase() === "w:sdt") {
             removeAttributes(element, ["id", "sdttag"]);
-            let spanElement = element.ownerDocument.createElement("span");
-            spanElement.classList.add("special");
+            const spanElement = element.ownerDocument.createElement("span");
+            spanElement.classList.add("sdttag");
             replaceTag(element, spanElement);
         }
         aggressiveCleanupElement(element);
     });
+    cleanupContent(chapter);
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + chapter.innerHTML;
+    return `<h1>${title}</h1>\n\n${chapter.innerHTML}`;
 }
 
 function grabJoara() {
@@ -197,7 +196,7 @@ function grabSecondLifeTranslations() {
     const title = document.querySelector('.entry-title').textContent;
     const cipher = 'rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY';
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
         if (element.classList.contains('jmbl')) {
@@ -243,7 +242,7 @@ function grabBlogspot() {
     // remove all elements that appear after the text 'Next Chapter' shows up
     let nextChapter = false;
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
         if (element.textContent.toLowerCase().includes('next chapter')) {
@@ -323,7 +322,7 @@ function grabStorySeedling() {
     const alphab = '⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵';
     const warn = ' This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.';
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         // remove all instances of cls followed by 18 other
         // e.g. clsf7ee7eab1744489659
@@ -415,7 +414,7 @@ function grabStarlightStream() {
     const content = document.querySelector('[data-id="content-viewer"]');
     const title = document.querySelector('title').textContent;
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
     });
@@ -477,7 +476,7 @@ function grabZenithtls() {
         title = title.replace(/'/g, '');
     }
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
 
@@ -506,7 +505,7 @@ function grabReadhive() {
     // remove ' – Readhive' from the title
     title = title.replace(' – Readhive', '');
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
         // remove 'span' tag elements while keeping the inner text
@@ -625,7 +624,7 @@ function grabKaristudio() {
     const content = document.querySelector('article');
     const title = document.querySelector('.title').textContent;
 
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
         removeClasses(element, ['chapter_content']);
@@ -646,7 +645,7 @@ function grabUnknown() {
 }
 
 function generalCleanup(content) {
-    aggressiveCleanupContent(content);
+    cleanupContent(content);
     content.querySelectorAll('*').forEach(element => {
         aggressiveCleanupElement(element);
     });
