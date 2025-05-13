@@ -93,15 +93,13 @@ function removeClasses(element, classes) {
     }
 }
 
-function removeBlockClasses(element) {
-    let classes = element.classList;
-    for (let c of classes) {
-        if (c.startsWith("block_")) {
-            element.classList.remove(c);
+function unwrapDivs(content) {
+    const divs = content.querySelectorAll("div");
+    for (const div of divs) {
+        while (div.firstChild) {
+            div.parentNode.insertBefore(div.firstChild, div);
         }
-    }
-    if (element.classList.length === 0) {
-        element.removeAttribute("class");
+        div.parentNode.removeChild(div);
     }
 }
 

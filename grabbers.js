@@ -62,7 +62,7 @@ function grabKakaoPage() {
             removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height", "style"]);
         }
     });
-    return content.innerHTML;
+    return content.innerHTML.trim();
 }
 
 function grabRidi() {
@@ -151,7 +151,7 @@ function grabTapas() {
     });
     cleanupContent(content);
 
-    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
+    return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
 function grabJoara() {
@@ -206,7 +206,7 @@ function grabSecondLifeTranslations() {
         removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabGoogleDocMobileBasic() {
@@ -232,7 +232,7 @@ function grabGoogleDocMobileBasic() {
             element.removeAttribute("id");
         }
     });
-    return content.innerHTML;
+    return content.innerHTML.trim();
 }
 
 function grabBlogspot() {
@@ -257,7 +257,7 @@ function grabBlogspot() {
         }
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function madaraWpTheme() {
@@ -275,7 +275,7 @@ function madaraWpTheme() {
         removeTags(element, ["SCRIPT", "INS", "DIV"]);
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabWatashiWaSugoiDesu() {
@@ -287,7 +287,7 @@ function grabWatashiWaSugoiDesu() {
         removeElementWithClasses(element, ["ezoic-autoinsert-ad"]);
         removeElementWithAttributes(element, ["data-ez-ph-id"]);
     });
-    return content.innerHTML;
+    return content.innerHTML.trim();
 }
 
 function grabHyacinth() {
@@ -306,7 +306,7 @@ function grabHyacinth() {
     });
     cleanupContent(content);
 
-    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
+    return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
 function grabJjwxc() {
@@ -317,7 +317,7 @@ function grabJjwxc() {
         replaceSemanticInlineStylesWithTags(element, true);
     });
 
-    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
+    return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
 function grabStorySeedling() {
@@ -338,7 +338,7 @@ function grabStorySeedling() {
         element.textContent = element.textContent.replace(warn, "");
         removeAttributes(element, ["class"]);
     });
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabRequiemtls() {
@@ -352,7 +352,7 @@ function grabRequiemtls() {
         cipherSubstitution(element, cipher, alphab);
     });
 
-    return content.innerHTML;
+    return content.innerHTML.trim();
 }
 
 function grabFictioneer() {
@@ -373,7 +373,7 @@ function grabFictioneer() {
         removeAttributes(element, ["id", "data-paragraph-id"]);
         removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
     });
-    content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML}`;
+    content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
     if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
 
     return content;
@@ -439,21 +439,26 @@ function grabNovelingua() {
     }
     title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
-    const content = document.querySelector(".entry-content .pagelayer-text") ||
-        document.querySelector(".entry-content .pagelayer-text-holder") ||
-        document.querySelector(".entry-content") ||
-        document.querySelector("article");
+    const content = document.querySelector(".entry-content")
 
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
         replaceSemanticInlineStylesWithTags(element, true);
-        if (element.tagName === "B" && element.hasAttribute("id")) {
+        if (element.id?.startsWith("docs-internal-guid-")) {
             element.removeAttribute("id");
         }
+        removeElementWithClasses(element, [
+            "pagelayer-btn-holder", "pagelayer-share",
+            "pagelayer-image_slider", "pagelayer-embed"
+        ])
+        removeClasses(element, ["pagelayer-text-holder"])
+        replaceSemanticInlineStylesWithTags(element, false);
+        aggressiveCleanupElement(element);
     });
-    generalCleanup(content);
+    unwrapDivs(content);
+    cleanupContent(content);
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabZenithtls() {
@@ -497,7 +502,7 @@ function grabZenithtls() {
         element.innerHTML = element.innerHTML.replace(/\n/g, "</p>\n<p>");
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabReadhive() {
@@ -518,7 +523,7 @@ function grabReadhive() {
         removeAttributes(element, ["@click"]);
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabPeachTeaAgency() {
@@ -578,7 +583,7 @@ function grabAO3() {
     let title = document.querySelector(".title.heading").textContent.trim();
     title += " - " + document.querySelector("h3.title").textContent.trim();
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabLocalFile() {
@@ -593,7 +598,7 @@ function grabLocalFile() {
     });
     const extraDiv = document.querySelector("#goog-gt-tt");
     if (extraDiv) extraDiv.remove();
-    return content.innerHTML;
+    return content.innerHTML.trim();
 }
 
 function grabFanfictionNet() {
@@ -631,7 +636,7 @@ function grabKaristudio() {
         removeClasses(element, ["chapter_content"]);
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
 function grabLightnovelworld() {
@@ -646,7 +651,7 @@ function grabStandard(titleSelector = "title", contentSelector = "body") {
     const title = document.querySelector(titleSelector).textContent;
     const content = document.querySelector(contentSelector);
     generalCleanup(content);
-    return `<h1>${title.trim()}</h1>\n\n${content.innerHTML}`;
+    return `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
 function generalCleanup(content) {
