@@ -16,7 +16,7 @@ function copyToClipboard(text) {
     copyFrom.select();
 
     // Execute command
-    document.execCommand('copy');
+    document.execCommand("copy");
 
     // (Optional) De-select the text using blur().
     copyFrom.blur();
@@ -27,7 +27,7 @@ function copyToClipboard(text) {
 }
 
 function getHtmlFromContent(title, bodyText) {
-    return `<?xml version='1.0' encoding='utf-8'?>
+    return `<?xml version="1.0" encoding="utf-8"?>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>${title}</title>
@@ -43,98 +43,98 @@ ${bodyText}
 function getTitleFromFirstHeading(content) {
     var parser = new DOMParser();
     var doc = parser.parseFromString(content, "text/html");
-    title = doc.querySelector('h1').textContent;
+    title = doc.querySelector("h1").textContent;
     return title;
 }
 
 function getFileBlobFromContent(title, bodyText) {
     let blobText = getHtmlFromContent(title, bodyText);
-    return new Blob([blobText], {type: 'text/html'});
+    return new Blob([blobText], {type: "text/html"});
 }
 
 function grabKakaoPage() {
-    const shadowHost = document.querySelector('#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div');
+    const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
-    const content = shadowRoot.querySelector('.DC2CN');
-    content.querySelectorAll('*').forEach(element => {
+    const content = shadowRoot.querySelector(".DC2CN");
+    content.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
-        if (element.tagName === 'P') {
-            removeAttributes(element, ['id', 'data-p-id', 'data-original-font-size', 'data-original-line-height', 'style']);
+        if (element.tagName === "P") {
+            removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height", "style"]);
         }
     });
     return content.innerHTML;
 }
 
 function grabRidi() {
-    let fullText = '';
-    let title = document.querySelector('title').textContent;
-    // remove ' – Ridi' from the title
-    title = title.replace(' - Ridi', '');
+    let fullText = "";
+    let title = document.querySelector("title").textContent;
+    // remove " – Ridi" from the title
+    title = title.replace(" - Ridi", "");
 
     // Ridi can have multiple articles in one page
-    const articles = document.querySelectorAll('article');
+    const articles = document.querySelectorAll("article");
     articles.forEach(article => {
         removeComments(article);
-        article.querySelectorAll('*').forEach(element => {
+        article.querySelectorAll("*").forEach(element => {
             removeFontTags(element);
-            removeTags(element, ['PRE', 'TITLE', 'LINK']);
+            removeTags(element, ["PRE", "TITLE", "LINK"]);
             removeClassesThatStartWith(element, "block_");
-            removeClasses(element, ['body', 'story_part_header_title']);
-            removeAttributes(element, ['style']);
+            removeClasses(element, ["body", "story_part_header_title"]);
+            removeAttributes(element, ["style"]);
             removeEmptyParagraphAndHeadings(element);
         });
         fullText += article.innerHTML;
     });
 
-    // If there's no h tags, add h1 tag with the title
+    // If there are no h tags, add h1 tag with the title
     if (fullText.search(/<h[1-6]/) === -1) {
-        fullText = '<h1 class="auto-title">' + title + '</h1>' + fullText;
+        fullText = `<h1 class="auto-title">${title}</h1>${fullText}`;
     }
 
     return fullText;
 }
 
 function grabPublang() {
-    const iframe = document.querySelector('iframe');
-    const srcdoc = iframe.getAttribute('srcdoc');
+    const iframe = document.querySelector("iframe");
+    const srcdoc = iframe.getAttribute("srcdoc");
 
-    let temp = document.createElement('div');
+    let temp = document.createElement("div");
     temp.innerHTML = srcdoc;
-    temp.querySelectorAll('*').forEach(element => {
-        removeTags(element, ['LINK', 'BASE', 'META']);
+    temp.querySelectorAll("*").forEach(element => {
+        removeTags(element, ["LINK", "BASE", "META"]);
 
-        if (element.tagName === 'TITLE') {
-            element.outerHTML = '<h1>' + element.innerHTML + '</h1>';
+        if (element.tagName === "TITLE") {
+            element.outerHTML = "<h1>" + element.innerHTML + "</h1>";
         }
     });
     return temp.innerHTML;
 }
 
 function grabSyosetu() {
-    const title = document.querySelector('.p-novel__title');
-    const chapter = document.querySelector('div.p-novel__body');
+    const title = document.querySelector(".p-novel__title");
+    const chapter = document.querySelector("div.p-novel__body");
 
-    title.querySelectorAll('*').forEach(element => {
+    title.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
     });
-    chapter.querySelectorAll('*').forEach(element => {
+    chapter.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
-        if (element.tagName === 'P') {
-            element.removeAttribute('id');
+        if (element.tagName === "P") {
+            element.removeAttribute("id");
             element.textContent = element.textContent.trim();
         }
     });
-    return title.outerHTML + '\n\n' + chapter.innerHTML;
+    return title.outerHTML + "\n\n" + chapter.innerHTML;
 }
 
 function grabTapas() {
-    const pageTitle = document.querySelector('title').textContent.trim();
+    const pageTitle = document.querySelector("title").textContent.trim();
     let title = document.querySelector("div.viewer__header p.title").textContent.trim();
     title = pageTitle + " " + title;
     title = title.replace("Read", "")?.trim();
 
-    const chapter = document.querySelector("#viewport");
-    chapter.querySelectorAll("*").forEach(element => {
+    const content = document.querySelector("#viewport");
+    content.querySelectorAll("*").forEach(element => {
         removeAttributes(element, ["dir", "role", "lang"]);
         replaceSemanticInlineStylesWithTags(element, true);
         removeClasses(element, ["MsoNormal"]);
@@ -149,17 +149,17 @@ function grabTapas() {
         }
         aggressiveCleanupElement(element);
     });
-    cleanupContent(chapter);
+    cleanupContent(content);
 
-    return `<h1>${title}</h1>\n\n${chapter.innerHTML}`;
+    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
 }
 
 function grabJoara() {
-    const chapter = document.querySelector('.text-wrap');
-    chapter.querySelectorAll('*').forEach(element => {
+    const chapter = document.querySelector(".text-wrap");
+    chapter.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
-        removeTag(element, 'SMALL')
-        if (element.tagName === 'P') {
+        removeTag(element, "SMALL")
+        if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
     });
@@ -167,182 +167,188 @@ function grabJoara() {
 }
 
 function grabChrysanthemum() {
-    const title = document.querySelector('.entry-title').querySelector('.chapter-title').textContent;
-    const chapter = document.querySelector('#novel-content');
-    const cipher = 'tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM';
+    const title = document.querySelector(".entry-title").querySelector(".chapter-title").textContent;
+    const chapter = document.querySelector("#novel-content");
+    const cipher = "tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM";
 
-    chapter.querySelectorAll('*').forEach(element => {
-        if (element.tagName === 'DIV') {
-            if (element.classList.contains('chrys-iklan')) {
-                element.outerHTML = '';
+    chapter.querySelectorAll("*").forEach(element => {
+        if (element.tagName === "DIV") {
+            if (element.classList.contains("chrys-iklan")) {
+                element.outerHTML = "";
             }
         } else {
-            const elementStyle = element.getAttribute('style');
-            if (elementStyle?.includes('height:1px')) {
-                element.outerHTML = '';
+            const elementStyle = element.getAttribute("style");
+            if (elementStyle?.includes("height:1px")) {
+                element.outerHTML = "";
             }
         }
 
-        if (element.classList.contains('jum')) {
+        if (element.classList.contains("jum")) {
             cipherSubstitution(element, cipher);
         }
-        removeClasses(element, ['jum', 'emoji']);
+        removeClasses(element, ["jum", "emoji"]);
     });
-    return '<h1>' + title + '</h1>' + '\n\n' + chapter.innerHTML;
+    return "<h1>" + title + "</h1>" + "\n\n" + chapter.innerHTML;
 }
 
 function grabSecondLifeTranslations() {
-    const content = document.querySelector('.entry-content');
-    const title = document.querySelector('.entry-title').textContent;
-    const cipher = 'rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY';
+    const content = document.querySelector(".entry-content");
+    const title = document.querySelector(".entry-title").textContent;
+    const cipher = "rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY";
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
-        if (element.classList.contains('jmbl')) {
+        if (element.classList.contains("jmbl")) {
             cipherSubstitution(element, cipher);
         }
-        removeClasses(element, ['jmbl']);
-        removeElementWithClasses(element, ['jmbl-ent', 'jmbl-disclaimer']);
+        removeClasses(element, ["jmbl"]);
+        removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabGoogleDocMobileBasic() {
-    const content = document.querySelector('.doc-content');
-    const headings = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+    const content = document.querySelector(".doc-content");
+    const headings = ["H1", "H2", "H3", "H4", "H5", "H6"];
 
-    content.querySelectorAll('*').forEach(element => {
-        element.removeAttribute('style');
-        // if element contains 'table of contents', remove the element
-        if (element.textContent.toLowerCase().includes('table of contents')) {
+    content.querySelectorAll("*").forEach(element => {
+        element.removeAttribute("style");
+        // if element contains "table of contents", remove the element
+        if (element.textContent.toLowerCase().includes("table of contents")) {
             element.remove();
         }
-        // if element contains 'docs.google.com', remove the element
-        else if (element.textContent.toLowerCase().includes('docs.google.com')) {
+        // if element contains "docs.google.com", remove the element
+        else if (element.textContent.toLowerCase().includes("docs.google.com")) {
             element.remove();
         }
-        else if (element.tagName === 'SPAN' || element.tagName === 'A') {
-            // remove 'span' and 'a' tag elements while keeping the inner text
+        else if (element.tagName === "SPAN" || element.tagName === "A") {
+            // remove "span" and "a" tag elements while keeping the inner text
             element.outerHTML = element.innerHTML;
         }
-        // if element is a heading, remove the 'id' attribute
+        // if element is a heading, remove the "id" attribute
         else if (headings.includes(element.tagName)) {
-            element.removeAttribute('id');
+            element.removeAttribute("id");
         }
     });
     return content.innerHTML;
 }
 
 function grabBlogspot() {
-    const title = document.querySelector('.entry-title').textContent;
-    const content = document.querySelector('.entry-content');
+    const title = document.querySelector(".entry-title").textContent;
+    const content = document.querySelector(".entry-content");
 
-    // remove all elements that appear after the text 'Next Chapter' shows up
+    // remove all elements that appear after the text "Next Chapter" shows up
     let nextChapter = false;
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
-        if (element.textContent.toLowerCase().includes('next chapter')) {
+        if (element.textContent.toLowerCase().includes("next chapter")) {
             nextChapter = true;
         }
         if (nextChapter) {
             element.remove();
         }
         // if element is a link, only keep the text inside it
-        if (element.tagName === 'A') {
+        if (element.tagName === "A") {
             element.outerHTML = element.textContent;
         }
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function madaraWpTheme() {
     const title =
         document.querySelector("ol.breadcrumb li.active")?.textContent ||
-        document.querySelector('#chapter-heading')?.textContent ||
-        document.querySelector('.wp-block-heading')?.textContent ||
-        '';
+        document.querySelector("#chapter-heading")?.textContent ||
+        document.querySelector(".wp-block-heading")?.textContent ||
+        "";
     const content =
-        document.querySelector('.text-left') ||
-        document.querySelector('.entry-content_wrap');
+        document.querySelector(".text-left") ||
+        document.querySelector(".entry-content_wrap");
 
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         removeSpansInsideParagraph(element);
-        removeTags(element, ['SCRIPT', 'INS', 'DIV']);
+        removeTags(element, ["SCRIPT", "INS", "DIV"]);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabWatashiWaSugoiDesu() {
-    const content = document.querySelector('#wtr-content');
+    const content = document.querySelector("#wtr-content");
 
-    content.querySelectorAll('*').forEach(element => {
-        removeAttributes(element, ['class', 'style']);
-        removeTags(element, ['SCRIPT', 'SELECT']);
-        removeElementWithClasses(element, ['ezoic-autoinsert-ad']);
-        removeElementWithAttributes(element, ['data-ez-ph-id']);
+    content.querySelectorAll("*").forEach(element => {
+        removeAttributes(element, ["class", "style"]);
+        removeTags(element, ["SCRIPT", "SELECT"]);
+        removeElementWithClasses(element, ["ezoic-autoinsert-ad"]);
+        removeElementWithAttributes(element, ["data-ez-ph-id"]);
     });
     return content.innerHTML;
 }
 
 function grabHyacinth() {
-    let title = document.querySelector('.ts-breadcrumb').textContent;
+    let title = document.querySelector(".ts-breadcrumb").textContent;
     // replace all \n and \t with space
-    title = title.replace(/[\n\t]/g, ' ');
-    // remove 'Home' and '›'
-    title = title.replace(/Home|›/g, '');
+    title = title.replace(/[\n\t]/g, " ");
+    // remove "Home" and "›"
+    title = title.replace(/Home|›/g, "");
     // replace all multiple whitespaces in a row with a single space
-    title = title.replace(/\s+/g, ' ');
+    title = title.replace(/\s+/g, " ").trim();
 
-    const content = document.querySelector('.entry-content');
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    const content = document.querySelector(".entry-content");
+    content.querySelectorAll("*").forEach(element => {
+        replaceSemanticInlineStylesWithTags(element, false);
+        aggressiveCleanupElement(element);
+    });
+    cleanupContent(content);
+
+    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
 }
 
 function grabJjwxc() {
-    const title = document.querySelector('.noveltitle').textContent;
-    const content = document.querySelector('.novelbody');
+    const title = document.querySelector(".noveltitle").textContent.trim();
+    const content = document.querySelector(".novelbody");
 
-    content.querySelectorAll('*').forEach(element => {
-        removeAttributes(element, ['style']);
+    content.querySelectorAll("*").forEach(element => {
+        replaceSemanticInlineStylesWithTags(element, true);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return `<h1>${title}</h1>\n\n${content.innerHTML}`;
 }
 
 function grabStorySeedling() {
     //content is in <div x-html="content">
     const content = document.querySelector('div[x-html="content"]');
-    const title = document.querySelector('title').textContent;
-    const cipher = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    const alphab = '⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵';
-    const warn = ' This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.';
+    const title = document.querySelector("title").textContent;
+    const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const alphab = "⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵";
+    const warn = " This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.";
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         // remove all instances of cls followed by 18 other
         // e.g. clsf7ee7eab1744489659
-        element.textContent = element.textContent.replace(/cls[^\s]{18}/g, '');
+        element.textContent = element.textContent.replace(/cls[^\s]{18}/g, "");
         cipherSubstitution(element, cipher, alphab);
         // replace warn with nothing
-        element.textContent = element.textContent.replace(warn, '');
-        removeAttributes(element, ['class']);
+        element.textContent = element.textContent.replace(warn, "");
+        removeAttributes(element, ["class"]);
     });
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabRequiemtls() {
-    let content = document.querySelector('.entry-content');
+    let content = document.querySelector(".entry-content");
     const cipher = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*.!?,;:\"'-[()]0123456789~"
     const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ"
     // the alphabet changes between pages
 
     content = generalCleanup(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         cipherSubstitution(element, cipher, alphab);
     });
 
@@ -350,49 +356,45 @@ function grabRequiemtls() {
 }
 
 function grabFictioneer() {
-    let storyName = document.querySelector('.chapter__story-link')?.textContent;
-    let title = document.querySelector('.chapter__title')?.textContent;
-    let subtitle = document.querySelector('.chapter__second-title')?.textContent ||
-        document.querySelector('.chapter__group')?.textContent;
-    if (subtitle) { title += ': ' + subtitle; }
-    if (storyName) { title = storyName + ': ' + title; }
+    let storyName = document.querySelector(".chapter__story-link")?.textContent;
+    let title = document.querySelector(".chapter__title")?.textContent;
+    let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
+        document.querySelector(".chapter__group")?.textContent;
+    if (subtitle) { title += ": " + subtitle; }
+    if (storyName) { title = storyName + ": " + title; }
 
-    let content = document.querySelector('.chapter-formatting') ||
-        document.querySelector('#chapter-content');
+    let content = document.querySelector(".chapter-formatting") ||
+        document.querySelector("#chapter-content");
 
-    const footnotes = document.querySelector('.chapter__footnotes');
+    const footnotes = document.querySelector(".chapter__footnotes");
 
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         removeSpansInsideParagraph(element);
-        removeAttributes(element, ['id', 'data-paragraph-id']);
-        removeElementWithClasses(element, ['eoc-chapter-groups', 'chapter-nav', 'paragraph-tools']);
+        removeAttributes(element, ["id", "data-paragraph-id"]);
+        removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
     });
-    content = '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
-    if (footnotes) { content += '\n\n' + footnotes.innerHTML; }
+    content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML}`;
+    if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
 
     return content;
 }
 
 function grabDarkstar() {
-    return grabStandard('title', '.chapter-content')
+    return grabStandard("title", ".chapter-content")
 }
 
 function grabWordpress() {
-    return grabStandard('title', '.entry-content');
+    return grabStandard("title", ".entry-content");
 }
 
-function grabStandard(titleSelector = 'title', contentSelector = 'body') {
-    const title = document.querySelector('title').textContent;
-    const content = document.querySelector('.entry-content');
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
-}
+
 
 function grabPatreon() {
-    const content = document.querySelector('body');
+    const content = document.querySelector("body");
 
     // add all <p> and header tags to the fullText
-    let fullText = '';
-    content.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach(element => {
+    let fullText = "";
+    content.querySelectorAll("p, h1, h2, h3, h4, h5, h6").forEach(element => {
         fullText += element.outerHTML;
     });
 
@@ -400,32 +402,32 @@ function grabPatreon() {
 }
 
 function grabYoruWorld() {
-    const title = document.querySelector('.text-2xl').textContent;
+    const title = document.querySelector(".text-2xl").textContent;
 
     // the content is inside the section tag
-    // it's in the first div that has a class that starts with __className_
-    let content = document.querySelector('section');
+    // it is in the first div that has a class that starts with __className_
+    let content = document.querySelector("section");
     content = content.querySelector('div[class^="__className_"]');
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
 }
 
 function grabStarlightStream() {
     const content = document.querySelector('[data-id="content-viewer"]');
-    const title = document.querySelector('title').textContent;
+    const title = document.querySelector("title").textContent;
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
     });
 
     // get all the p tags
-    let fullText = '';
-    content.querySelectorAll('p').forEach(element => {
-        fullText += '<p>' + element.innerHTML + '</p>';
+    let fullText = "";
+    content.querySelectorAll("p").forEach(element => {
+        fullText += "<p>" + element.innerHTML + "</p>";
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + fullText;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + fullText;
 }
 
 function grabNovelingua() {
@@ -451,37 +453,37 @@ function grabNovelingua() {
     });
     generalCleanup(content);
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabZenithtls() {
-    const content = document.querySelector('article');
+    const content = document.querySelector("article");
     // title is all the text inside the ol tag inside header tag, with the li items in reverse order
-    let title = '';
-    const ol = document.querySelector('header ol');
+    let title = "";
+    const ol = document.querySelector("header ol");
 
     if (ol) {
-        const li = ol.querySelectorAll('li');
+        const li = ol.querySelectorAll("li");
         for (let i = li.length - 1; i >= 0; i--) {
-            //title += li[i].textContent + ' ';
-            // skip if it's Home or /
-            if (li[i].textContent === 'Home' || li[i].textContent === '/') {
+            //title += li[i].textContent + " ";
+            // skip if it is Home or /
+            if (li[i].textContent === "Home" || li[i].textContent === "/") {
                 continue;
             }
-            title += li[i].textContent + '_';
+            title += li[i].textContent + "_";
         }
         // replace all spaces and apostrophes with underscores
-        title = title.replace(/ /g, '_');
+        title = title.replace(/ /g, "_");
         // remove apostrophes and make sure to properly escape the ' character in the regex
-        title = title.replace(/'/g, '');
+        title = title.replace(/'/g, "");
     }
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
 
         // if element is div or span, remove it but keep the inner text
-        if (element.tagName === 'DIV' || element.tagName === 'SPAN') {
+        if (element.tagName === "DIV" || element.tagName === "SPAN") {
             try {
                 element.outerHTML = element.innerHTML;
             } catch (e) {
@@ -491,60 +493,61 @@ function grabZenithtls() {
     });
 
     // if element is P, replace all newlines with </p><p>
-    content.querySelectorAll('p').forEach(element => {
-        element.innerHTML = element.innerHTML.replace(/\n/g, '</p>\n<p>');
+    content.querySelectorAll("p").forEach(element => {
+        element.innerHTML = element.innerHTML.replace(/\n/g, "</p>\n<p>");
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabReadhive() {
-    // content is in div with class 'prose'
-    const content = document.querySelector('.prose');
-    let title = document.querySelector('title').textContent;
-    // remove ' – Readhive' from the title
-    title = title.replace(' – Readhive', '');
+    // content is in div with class "prose"
+    const content = document.querySelector(".prose");
+    let title = document.querySelector("title").textContent;
+    // remove " – Readhive" from the title
+    title = title.replace(" – Readhive", "");
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
-        // remove 'span' tag elements while keeping the inner text
-        if (element.tagName === 'SPAN') {
+        // remove "span" tag elements while keeping the inner text
+        if (element.tagName === "SPAN") {
             element.outerHTML = element.innerHTML;
         }
-        removeElementWithClasses(element, ['absolute', 'fixed', 'flex', 'sticky']);
-        removeAttributes(element, ['@click']);
+        removeElementWithClasses(element, ["absolute", "fixed", "flex", "sticky"]);
+        removeAttributes(element, ["@click"]);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabPeachTeaAgency() {
-    const content = document.querySelector('.transition-all');
+    const content = document.querySelector(".transition-all");
     // title is all the text inside the ol tag inside nav tag, with the li items
-    let title = '';
-    const ol = document.querySelector('nav ol');
+    let title = "";
+    const ol = document.querySelector("nav ol");
 
     if (ol) {
-        const li = ol.querySelectorAll('li');
+        const li = ol.querySelectorAll("li");
         for (let i = 1; i < li.length; i++) {
             // text is in the a tag
-            title += li[i].querySelector('a').textContent + ' ';
+            title += li[i].querySelector("a").textContent + " ";
         }
 
         // replace all spaces and apostrophes with underscores
-        title = title.trim().replace(/ /g, '_');
+        title = title.trim().replace(/ /g, "_");
         // remove apostrophes and make sure to properly escape the ' character in the regex
-        title = title.replace(/'/g, '');
+        title = title.replace(/'/g, "");
     }
 
+    // TODO: make this a util function
     // wrap raw text in p tags
     // Find text nodes that are direct children of the content div
     const textNodes = [];
     const walker = document.createTreeWalker(
         content,
         NodeFilter.SHOW_TEXT,
-        { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '' ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
+        { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== "" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
     );
 
     while (walker.nextNode()) {
@@ -559,130 +562,133 @@ function grabPeachTeaAgency() {
     textNodes.forEach(node => {
         const text = node.nodeValue.trim();
         if (text) {
-            const p = document.createElement('p');
+            const p = document.createElement("p");
             p.textContent = text;
             node.parentNode.replaceChild(p, node);
         }
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
 }
 
 function grabAO3() {
     // content is in the first div with the class .chapter
-    const content = document.querySelector('div.chapter');
-    // title is the h2 tag with the classed 'title heading' + the text of h3 class 'title'
-    let title = document.querySelector('.title.heading').textContent.trim();
-    title += ' - ' + document.querySelector('h3.title').textContent.trim();
+    const content = document.querySelector("div.chapter");
+    // title is the h2 tag with the classed "title heading" + the text of h3 class "title"
+    let title = document.querySelector(".title.heading").textContent.trim();
+    title += " - " + document.querySelector("h3.title").textContent.trim();
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabLocalFile() {
-    const content = document.querySelector('body');
-    content.querySelectorAll('*').forEach(element => {
+    const content = document.querySelector("body");
+    content.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
 
         // trim whitespace from the beginning and end of the text if tag is p
-        if (element.tagName === 'P') {
+        if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
     });
-    const extraDiv = document.querySelector('#goog-gt-tt');
+    const extraDiv = document.querySelector("#goog-gt-tt");
     if (extraDiv) extraDiv.remove();
     return content.innerHTML;
 }
 
 function grabFanfictionNet() {
-    const content = document.querySelector('.storytext');
-    const title = document.querySelector('title').textContent;
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    return grabStandard("title", ".storytext");
 }
 
 function grabFenrir() {
-    const content = document.querySelector('#reader-area');
+    const content = document.querySelector("#reader-area");
     // title is the first h1
-    const title = document.querySelector('h1')?.textContent
-    ??  document.querySelector('title').textContent;
+    const title = document.querySelector("h1")?.textContent
+    ??  document.querySelector("title").textContent;
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
 }
 
 function grabReaperScans() {
-    const content = document.querySelector('#reader-container');
+    const content = document.querySelector("#reader-container");
     return generalCleanup(content).innerHTML;
 }
 
 function grabNovelTranslationNet() {
-    // This is trash that doesn't work in the extension, but works
+    // This is trash that does not work in the extension, but works
     // fine in the browser console. Why???
-    const content = document.querySelector('pre');
+    const content = document.querySelector("pre");
     return content.textContent;
 }
 
 function grabKaristudio() {
-    const content = document.querySelector('article');
-    const title = document.querySelector('.title').textContent;
+    const content = document.querySelector("article");
+    const title = document.querySelector(".title").textContent;
 
     cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         aggressiveCleanupElement(element);
-        removeClasses(element, ['chapter_content']);
+        removeClasses(element, ["chapter_content"]);
     });
 
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + content.innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabLightnovelworld() {
-    const content = document.querySelector('#chapter-container');
-    const title = document.querySelector('.chapter-title').textContent;
-    return '<h1>' + title.trim() + '</h1>' + '\n\n' + generalCleanup(content).innerHTML;
+    return grabStandard(".chapter-title", "#chapter-container");
 }
 
 function grabUnknown() {
-    const content = document.querySelector('body');
-    return generalCleanup(content).innerHTML;
+    return grabStandard();
+}
+
+function grabStandard(titleSelector = "title", contentSelector = "body") {
+    const title = document.querySelector(titleSelector).textContent;
+    const content = document.querySelector(contentSelector);
+    generalCleanup(content);
+    return `<h1>${title.trim()}</h1>\n\n${content.innerHTML}`;
 }
 
 function generalCleanup(content) {
-    cleanupContent(content);
-    content.querySelectorAll('*').forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
+        replaceSemanticInlineStylesWithTags(element, false);
         aggressiveCleanupElement(element);
     });
+    cleanupContent(content);
     return content;
 }
 
 function getAllLinks() {
-    let links = document.querySelectorAll('a');
-    let allLinks = '';
+    let links = document.querySelectorAll("a");
+    let allLinks = "";
     links.forEach(link => {
         // remove all consecutive whitespace characters
-        link.text = link.text.replace(/\s+/g, ' ');
-        // if text contains 'chapter' or 'Chapter', add it to the allLinks
-        if (link.text.toLowerCase().includes('chapter')) {
-            allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
+        link.text = link.text.replace(/\s+/g, " ");
+        // if text contains "chapter" or "Chapter", add it to the allLinks
+        if (link.text.toLowerCase().includes("chapter")) {
+           allLinks += `<a href="${link.href}">${link.text}</a>\n`;
         }
-        //allLinks += '<a href="' + link.href +'">' + link.text  + '</a>\n';
+        //allLinks += `<a href="${link.href}">${link.text}</a>\n`;
     });
     console.log(allLinks);
     return allLinks;
 }
 
 function logAllLinks() {
-    document.querySelectorAll('a').forEach(link => {
+    document.querySelectorAll("a").forEach(link => {
         // remove all consecutive whitespace characters
-        link.text = link.text.replace(/\s+/g, ' ');
-        if (link.text.toLowerCase().includes('chapter')) {
-            console.log('<a href="' + link.href +'">' + link.text  + '</a>');
+        link.text = link.text.replace(/\s+/g, " ");
+        if (link.text.toLowerCase().includes("chapter")) {
+            console.log(`<a href="${link.href}">${link.text}</a>`);
         }
     });
 }
 
 function dangerLinks() {
-    const links = document.querySelectorAll('a.text-danger');
-    let allLinks = '';
+    const links = document.querySelectorAll("a.text-danger");
+    let allLinks = "";
     links.forEach(link => {
-        allLinks += link.href +'\n';
+        allLinks += link.href + "\n";
     });
     console.log(allLinks);
 }
