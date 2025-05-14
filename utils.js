@@ -1,16 +1,36 @@
+function ensureHeading(content, title) {
+    if (!content.querySelector('h1, h2, h3, h4, h5, h6')) {
+        const firstP = content.querySelector("p");
+
+        if (firstP && /chapter|episode|#/i.test(firstP.textContent || "")) {
+            // convert first paragraph to heading
+            const h1 = document.createElement("h1");
+            replaceTag(firstP, h1);
+        } else if (title && title.trim()) {
+            // add h1 with title
+            const h1 = document.createElement("h1");
+            h1.textContent = title;
+            content.insertBefore(h1, content.firstChild);
+        }
+    }
+}
+
 function removeTag(element, tagName) {
-    if (element.tagName === tagName) {
+    if (element.tagName.toLowerCase() === tagName.toLowerCase()) {
         element.remove();
     }
 }
 
 function removeTags(element, tagNames) {
+    // Something is a little off about the name of this method for what it does
+    // TODO: handle if tagNames is not an array and make it case insensitive
     if (tagNames.includes(element.tagName)) {
         element.remove();
     }
 }
 
 function removeTagsFromContent(content, tagNames) {
+    // TODO: handle if tagNames is not an array
     for (let tagName of tagNames) {
         let elements = content?.querySelectorAll(tagName);
         if (elements?.length > 0) {
@@ -20,12 +40,14 @@ function removeTagsFromContent(content, tagNames) {
 }
 
 function removeElements(elements) {
+    // TODO: handle if elements is not an array
     for (let e of elements) {
         e.remove();
     }
 }
 
 function removeElementWithClasses(element, classNames) {
+    // TODO: handle if classNames is not an array
     for (let className of classNames) {
         if (element.classList.contains(className)) {
             element.remove();
@@ -34,6 +56,7 @@ function removeElementWithClasses(element, classNames) {
 }
 
 function removeElementWithAttributes(element, attributes) {
+    // TODO: handle if attributes is not an array
     for (let attribute of attributes) {
         if (element.hasAttribute(attribute)) {
             element.remove();
@@ -42,6 +65,7 @@ function removeElementWithAttributes(element, attributes) {
 }
 
 function removeElementWithIds(element, ids) {
+    // TODO: handle if ids is not an array
     for (let id of ids) {
         if (element.id === id) {
             element.remove();
@@ -49,18 +73,7 @@ function removeElementWithIds(element, ids) {
     }
 }
 
-function removeFontTags(element) {
-    let fontTag = element.querySelector("font");
-    if (!fontTag) { return; }
-
-    let innerHTML = fontTag.innerHTML;
-    // if the first child of the "font" tag is also a "font" tag, get the innerHTML of the second "font" tag
-    if (fontTag.children.length > 0 && fontTag.children[0].tagName === "FONT") {
-        innerHTML = fontTag.children[0].innerHTML;
-    }
-    fontTag.outerHTML = innerHTML;
-}
-
+// TODO: replace any use of this with unwrapSpansWithNoAttributes
 function removeSpansInsideParagraph(element) {
     if (element.tagName === "P") {
         element.querySelectorAll("span").forEach(span => {
@@ -71,17 +84,13 @@ function removeSpansInsideParagraph(element) {
 
 function removeEmptyParagraphAndHeadings(element) {
     const tagsToCheck = ["P", "H1", "H2", "H3", "H4", "H5", "H6"];
-    if (tagsToCheck.includes(element.tagName)) {
-        if (element.children.length === 0 && element.textContent.trim() === "") {
-            element.outerHTML = "";
+    if (tagsToCheck.includes(element.tagName) && element.textContent.trim() === "") {
+        if (element.children.length === 0) {
+            element.remove();
         }
-        // If the only thing in the paragraph is a "br" tag, remove the paragraph
+        // If the only thing inside is a "br" tag, remove it
         else if (element.children.length === 1 && element.children[0].tagName === "BR") {
-            // make sure this does not have text besides the br tag
-            const innerHtml = element.innerHTML.toLowerCase();
-            if (innerHtml === "<br>" || innerHtml === "<br/>" || innerHtml === "<br />" || innerHtml === "<br></br>") {
-                element.outerHTML = "";
-            }
+            element.remove();
         }
     }
 }
@@ -89,17 +98,7 @@ function removeEmptyParagraphAndHeadings(element) {
 function removeClasses(element, classes) {
     element.classList.remove(...classes);
     if (element.classList.length === 0) {
-        element.removeAttribute("class");
-    }
-}
-
-function unwrapDivs(content) {
-    const divs = content.querySelectorAll("div");
-    for (const div of divs) {
-        while (div.firstChild) {
-            div.parentNode.insertBefore(div.firstChild, div);
-        }
-        div.parentNode.removeChild(div);
+        removeAttributes(element, "class");
     }
 }
 
@@ -111,13 +110,13 @@ function removeClassesThatStartWith(element, prefix) {
         }
     }
     if (element.classList.length === 0) {
-        element.removeAttribute("class");
+        removeAttributes(element, "class");
     }
 }
 
 function removeIdsThatStartWith(element, prefix) {
     if (element.id?.startsWith(prefix)) {
-        element.removeAttribute("id");
+        removeAttributes(element, "id");
     }
 }
 
@@ -136,33 +135,18 @@ function removeComments(root) {
     removeElements(nodeList);
 }
 
-function moveChildElements(from, to) {
-    while (from.hasChildNodes()) {
-        let node = from.childNodes[0];
-        to.appendChild(node);
-    }
-}
-
 function copyAttributes(from, to) {
     for (let i = 0; i < from.attributes.length; ++i) {
         let attr = from.attributes[i];
         try {
             to.setAttribute(attr.localName, attr.value);
         } catch (e) {
-            // probably invalid attribute name.  Discard
+            // probably invalid attribute name, discard
         }
     }
 }
 
-function replaceTag(element, replacement) {
-    let parent = element.parentElement;
-    parent.insertBefore(replacement, element);
-    moveChildElements(element, replacement);
-    copyAttributes(element, replacement);
-    element.remove();
-}
-
-function removeAttributes (element, attributeNames) {
+function removeAttributes(element, attributeNames) {
     // This would be more concise but less performant on huge DOMs
     // attributeNames.forEach(name => element.removeAttribute(name));
     if (!element || attributeNames == null) return;
@@ -186,10 +170,7 @@ function removeAttributes (element, attributeNames) {
 function removeEmptyAttributes(content) {
     // This would be more concise but less performant on huge DOMs
     // element.getAttributeNames().forEach(attr => {
-    //     if (element.getAttribute(attr).trim() === "") {
-    //         element.removeAttribute(attr);
-    //     }
-    // });
+
     const elements = content.querySelectorAll("*");
 
     for (const element of elements) {
@@ -208,18 +189,43 @@ function removeEmptyAttributes(content) {
     }
 }
 
-function removeSpansWithNoAttributes(content) {
+function unwrapSpansWithNoAttributes(content) {
     // within p or div tags, spans with no attributes have no purpose
     const spans = content.querySelectorAll("p span, div span");
 
     for (const span of spans) {
         if (span.attributes.length === 0) {
-            while (span.firstChild) {
-                span.parentNode.insertBefore(span.firstChild, span);
-            }
-            span.parentNode.removeChild(span);
+            unwrapTag(span);
         }
     }
+}
+
+function moveChildElements(from, to) {
+    while (from.firstChild) {
+        to.appendChild(from.firstChild);
+    }
+}
+
+function replaceTag(element, replacement) {
+    const parent = element.parentElement;
+    parent.insertBefore(replacement, element);
+    moveChildElements(element, replacement);
+    copyAttributes(element, replacement);
+    element.remove();
+}
+
+function unwrapAllOfTag(content, tagName) {
+    const elements = content?.querySelectorAll(tagName) || [];
+    for (const element of elements) {
+        unwrapTag(element);
+    }
+}
+
+function unwrapTag(element) {
+    while (element.firstChild) {
+        element.parentNode.insertBefore(element.firstChild, element);
+    }
+    element.parentNode.removeChild(element);
 }
 
 function wrapInnerContentInTag(element, tagName) {
@@ -267,7 +273,7 @@ function replaceSemanticInlineStylesWithTags(element, removeLeftoverStyles = fal
     }
 }
 
-function aggressiveCleanupElement(element) {
+function standardElementCleanup(element) {
     const ids = [
         "chapter-comments",
         "novel_nav",
@@ -281,26 +287,28 @@ function aggressiveCleanupElement(element) {
         "ezoic-autoinsert-ad",
         "floating-audio-button-container",
         "floating-reader-button-container",
+        "grecaptcha-badge",
+        "jp-relatedposts",
         "mycred-buy-link",
         "sharedaddy",
-        "wp-block-buttons",
-        "jp-relatedposts",
-        "grecaptcha-badge",
         "sidebar-container",
         "sidebar-nav",
         "sidebar-wrapper",
         "uwp_widget_author_box",
         "wp-image-16312",
+        "wp-block-buttons",
         "wp-block-comments"
     ]
     const elementsWithAttribute = [
         "data-ez-ph-id"
     ]
+
+    // Don't remove:
+    // "class" story relevant styles and helps figure out what to remove/target
+    // "id" affects footnotes and helps figure out what to remove/target
     const attributes = [
         "aria-disabled",
-        // "class" helps figure out what else to remove!
         "dir",
-        // "id" affects footnotes and also what else to remove!
         "data-shortcode",
         "data-paragraph-id",
         "data-paragraph-index",
@@ -310,13 +318,12 @@ function aggressiveCleanupElement(element) {
     removeElementWithIds(element, ids);
     removeElementWithClasses(element, elementsWithClass);
     removeElementWithAttributes(element, elementsWithAttribute);
-    replaceSemanticInlineStylesWithTags(element, true);
+    replaceSemanticInlineStylesWithTags(element, false);
     removeAttributes(element, attributes);
     removeEmptyAttributes(element);
-    removeFontTags(element);
 }
 
-function cleanupContent(content) {
+function standardContentCleanup(content) {
     const tags = [
         "BASE",
         "BREAK",
@@ -342,9 +349,10 @@ function cleanupContent(content) {
         "TITLE"
     ];
     removeTagsFromContent(content, tags);
+    unwrapAllOfTag(content, "font");
     removeComments(content);
     removeEmptyAttributes(content);
-    removeSpansWithNoAttributes(content);
+    unwrapSpansWithNoAttributes(content);
 }
 
 function cipherSubstitution(element, cipher, alphab = null) {

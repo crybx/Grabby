@@ -12,6 +12,7 @@ function main() {
             "docs.google.com": { grabber: grabGoogleDocMobileBasic },
             "fanfiction.ws": { grabber: grabFanfictionNet },
             "fenrirealm.com": { grabber: grabFenrir },
+            "helioscans.com": { grabber: grabHelioscans },
             "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
             "jjwxc.net": { grabber: grabJjwxc },
             "joara.com": { grabber: grabJoara },

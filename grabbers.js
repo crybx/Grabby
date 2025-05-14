@@ -55,43 +55,41 @@ function getFileBlobFromContent(title, bodyText) {
 function grabKakaoPage() {
     const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
-    let content = shadowRoot.querySelector(".DC2CN");
-    // content = content.cloneNode(true);
+    const content = shadowRoot.querySelector(".DC2CN");
     content.querySelectorAll("*").forEach(element => {
-        removeFontTags(element);
         replaceSemanticInlineStylesWithTags(element, true);
         removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);
     });
+    unwrapAllOfTag(content, "font");
     return content.innerHTML.trim();
 }
 
 function grabRidi() {
-    let fullText = "";
     let title = document.querySelector("title").textContent;
     // remove " – Ridi" from the title
     title = title.replace(" - Ridi", "");
 
-    // Ridi can have multiple articles in one page
-    const articles = document.querySelectorAll("article");
-    articles.forEach(article => {
-        removeComments(article);
-        article.querySelectorAll("*").forEach(element => {
-            removeFontTags(element);
-            removeTags(element, ["PRE", "TITLE", "LINK"]);
-            removeClassesThatStartWith(element, "block_");
-            removeClasses(element, ["body", "story_part_header_title"]);
-            removeAttributes(element, ["style"]);
-            removeEmptyParagraphAndHeadings(element);
+    // Ridi can have multiple articles, create a container
+    const content = document.createElement("div");
+    // move all children of articles to the container
+    document.querySelectorAll("article").forEach(article => {
+        article.childNodes.forEach(node => {
+            content.appendChild(node.cloneNode(true));
         });
-        fullText += article.innerHTML;
     });
 
-    // If there are no h tags, add h1 tag with the title
-    if (fullText.search(/<h[1-6]/) === -1) {
-        fullText = `<h1 class="auto-title">${title}</h1>${fullText}`;
-    }
+    removeComments(content);
+    content.querySelectorAll("*").forEach(element => {
+        removeTags(element, ["PRE", "TITLE", "LINK"]);
+        removeClassesThatStartWith(element, "block_");
+        removeClasses(element, ["body", "story_part_header_title"]);
+        replaceSemanticInlineStylesWithTags(element, true);
+        removeEmptyParagraphAndHeadings(element);
+    });
+    unwrapAllOfTag(content, "font");
+    ensureHeading(content, title);
 
-    return fullText;
+    return content.innerHTML.trim();
 }
 
 function grabPublang() {
@@ -114,17 +112,15 @@ function grabSyosetu() {
     const title = document.querySelector(".p-novel__title");
     const chapter = document.querySelector("div.p-novel__body");
 
-    title.querySelectorAll("*").forEach(element => {
-        removeFontTags(element);
-    });
+    unwrapAllOfTag(title, "font");
+    unwrapAllOfTag(chapter, "font");
     chapter.querySelectorAll("*").forEach(element => {
-        removeFontTags(element);
         if (element.tagName === "P") {
             element.removeAttribute("id");
             element.textContent = element.textContent.trim();
         }
     });
-    return title.outerHTML + "\n\n" + chapter.innerHTML;
+    return title.outerHTML.trim() + "\n\n" + chapter.innerHTML.trim();
 }
 
 function grabTapas() {
@@ -147,9 +143,9 @@ function grabTapas() {
             spanElement.classList.add("sdttag");
             replaceTag(element, spanElement);
         }
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
     });
-    cleanupContent(content);
+    standardContentCleanup(content);
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
@@ -157,12 +153,12 @@ function grabTapas() {
 function grabJoara() {
     const chapter = document.querySelector(".text-wrap");
     chapter.querySelectorAll("*").forEach(element => {
-        removeFontTags(element);
         removeTag(element, "SMALL")
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
     });
+    unwrapAllOfTag(chapter, "font");
     return chapter.innerHTML;
 }
 
@@ -196,15 +192,15 @@ function grabSecondLifeTranslations() {
     const title = document.querySelector(".entry-title").textContent;
     const cipher = "rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY";
 
-    cleanupContent(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
         if (element.classList.contains("jmbl")) {
             cipherSubstitution(element, cipher);
         }
         removeClasses(element, ["jmbl"]);
         removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
+        standardElementCleanup(element);
     });
+    standardContentCleanup(content);
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -242,20 +238,18 @@ function grabBlogspot() {
     // remove all elements that appear after the text "Next Chapter" shows up
     let nextChapter = false;
 
-    cleanupContent(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
         if (element.textContent.toLowerCase().includes("next chapter")) {
             nextChapter = true;
         }
         if (nextChapter) {
             element.remove();
-        }
-        // if element is a link, only keep the text inside it
-        if (element.tagName === "A") {
-            element.outerHTML = element.textContent;
+        } else {
+            standardElementCleanup(element);
         }
     });
+    unwrapAllOfTag(content, "A");
+    standardContentCleanup(content);
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -302,9 +296,9 @@ function grabHyacinth() {
     const content = document.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
         replaceSemanticInlineStylesWithTags(element, false);
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
     });
-    cleanupContent(content);
+    standardContentCleanup(content);
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
@@ -323,12 +317,12 @@ function grabJjwxc() {
 function grabStorySeedling() {
     //content is in <div x-html="content">
     const content = document.querySelector('div[x-html="content"]');
-    const title = document.querySelector("title").textContent;
+    const title = document.querySelector("title").textContent.trim();
     const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     const alphab = "⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵";
     const warn = " This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.";
 
-    cleanupContent(content);
+    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
         // remove all instances of cls followed by 18 other
         // e.g. clsf7ee7eab1744489659
@@ -338,7 +332,7 @@ function grabStorySeedling() {
         element.textContent = element.textContent.replace(warn, "");
         removeAttributes(element, ["class"]);
     });
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
+    return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
 function grabRequiemtls() {
@@ -347,7 +341,7 @@ function grabRequiemtls() {
     const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ"
     // the alphabet changes between pages
 
-    content = generalCleanup(content);
+    content = standardCleanup(content);
     content.querySelectorAll("*").forEach(element => {
         cipherSubstitution(element, cipher, alphab);
     });
@@ -379,16 +373,6 @@ function grabFictioneer() {
     return content;
 }
 
-function grabDarkstar() {
-    return grabStandard("title", ".chapter-content")
-}
-
-function grabWordpress() {
-    return grabStandard("title", ".entry-content");
-}
-
-
-
 function grabPatreon() {
     const content = document.querySelector("body");
 
@@ -409,16 +393,16 @@ function grabYoruWorld() {
     let content = document.querySelector("section");
     content = content.querySelector('div[class^="__className_"]');
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 
 function grabStarlightStream() {
     const content = document.querySelector('[data-id="content-viewer"]');
     const title = document.querySelector("title").textContent;
 
-    cleanupContent(content);
+    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
     });
 
     // get all the p tags
@@ -440,23 +424,30 @@ function grabNovelingua() {
     title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
     const content = document.querySelector(".entry-content")
-
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
         replaceSemanticInlineStylesWithTags(element, true);
-        if (element.id?.startsWith("docs-internal-guid-")) {
-            element.removeAttribute("id");
-        }
+        removeIdsThatStartWith(element, "docs-internal-guid-");
         removeElementWithClasses(element, [
-            "pagelayer-btn-holder", "pagelayer-share",
+            "pagelayer-btn-holder", "pagelayer-share", "pagelayer-anim-par",
             "pagelayer-image_slider", "pagelayer-embed"
         ])
         removeClasses(element, ["pagelayer-text-holder"])
-        replaceSemanticInlineStylesWithTags(element, false);
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
     });
-    unwrapDivs(content);
-    cleanupContent(content);
+    standardContentCleanup(content);
+    unwrapAllOfTag(content, "div");
+
+    // now that everything is flatter inside content, look for the end of the content
+    let contentEnded = false;
+    content.querySelectorAll("*").forEach(element => {
+        if (contentEnded) {
+            element.remove();
+        } else if (element.textContent.toLowerCase().includes("please rate and review this novel on")) {
+            contentEnded = true;
+            element.remove();
+        }
+    });
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -483,9 +474,9 @@ function grabZenithtls() {
         title = title.replace(/'/g, "");
     }
 
-    cleanupContent(content);
+    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
 
         // if element is div or span, remove it but keep the inner text
         if (element.tagName === "DIV" || element.tagName === "SPAN") {
@@ -512,9 +503,9 @@ function grabReadhive() {
     // remove " – Readhive" from the title
     title = title.replace(" – Readhive", "");
 
-    cleanupContent(content);
+    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
         // remove "span" tag elements while keeping the inner text
         if (element.tagName === "SPAN") {
             element.outerHTML = element.innerHTML;
@@ -573,7 +564,7 @@ function grabPeachTeaAgency() {
         }
     });
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 
 function grabAO3() {
@@ -589,20 +580,14 @@ function grabAO3() {
 function grabLocalFile() {
     const content = document.querySelector("body");
     content.querySelectorAll("*").forEach(element => {
-        removeFontTags(element);
-
         // trim whitespace from the beginning and end of the text if tag is p
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
+        removeElementWithIds(element, ["goog-gt-tt"]);
     });
-    const extraDiv = document.querySelector("#goog-gt-tt");
-    if (extraDiv) extraDiv.remove();
+    unwrapAllOfTag(content, "font");
     return content.innerHTML.trim();
-}
-
-function grabFanfictionNet() {
-    return grabStandard("title", ".storytext");
 }
 
 function grabFenrir() {
@@ -611,12 +596,12 @@ function grabFenrir() {
     const title = document.querySelector("h1")?.textContent
     ??  document.querySelector("title").textContent;
 
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + generalCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 
 function grabReaperScans() {
     const content = document.querySelector("#reader-container");
-    return generalCleanup(content).innerHTML;
+    return standardCleanup(content).innerHTML;
 }
 
 function grabNovelTranslationNet() {
@@ -630,70 +615,50 @@ function grabKaristudio() {
     const content = document.querySelector("article");
     const title = document.querySelector(".title").textContent;
 
-    cleanupContent(content);
+    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
         removeClasses(element, ["chapter_content"]);
     });
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
+function grabDarkstar() {
+    return grabStandard(".chapter-content")
+}
+
+function grabFanfictionNet() {
+    return grabStandard(".storytext");
+}
+
+function grabWordpress() {
+    return grabStandard(".entry-content");
+}
+
 function grabLightnovelworld() {
-    return grabStandard(".chapter-title", "#chapter-container");
+    return grabStandard("#chapter-container", ".chapter-title");
+}
+
+function grabHelioscans() {
+    return grabStandard("#pages div.novel-reader");
 }
 
 function grabUnknown() {
     return grabStandard();
 }
 
-function grabStandard(titleSelector = "title", contentSelector = "body") {
+function grabStandard(contentSelector = "body", titleSelector = "title") {
     const title = document.querySelector(titleSelector).textContent;
     const content = document.querySelector(contentSelector);
-    generalCleanup(content);
+    standardCleanup(content);
     return `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
 }
 
-function generalCleanup(content) {
+function standardCleanup(content) {
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, false);
-        aggressiveCleanupElement(element);
+        standardElementCleanup(element);
     });
-    cleanupContent(content);
+    standardContentCleanup(content);
     return content;
-}
-
-function getAllLinks() {
-    let links = document.querySelectorAll("a");
-    let allLinks = "";
-    links.forEach(link => {
-        // remove all consecutive whitespace characters
-        link.text = link.text.replace(/\s+/g, " ");
-        // if text contains "chapter" or "Chapter", add it to the allLinks
-        if (link.text.toLowerCase().includes("chapter")) {
-           allLinks += `<a href="${link.href}">${link.text}</a>\n`;
-        }
-        //allLinks += `<a href="${link.href}">${link.text}</a>\n`;
-    });
-    console.log(allLinks);
-    return allLinks;
-}
-
-function logAllLinks() {
-    document.querySelectorAll("a").forEach(link => {
-        // remove all consecutive whitespace characters
-        link.text = link.text.replace(/\s+/g, " ");
-        if (link.text.toLowerCase().includes("chapter")) {
-            console.log(`<a href="${link.href}">${link.text}</a>`);
-        }
-    });
-}
-
-function dangerLinks() {
-    const links = document.querySelectorAll("a.text-danger");
-    let allLinks = "";
-    links.forEach(link => {
-        allLinks += link.href + "\n";
-    });
-    console.log(allLinks);
 }
