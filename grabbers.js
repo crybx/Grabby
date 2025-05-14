@@ -89,7 +89,7 @@ function grabRidi() {
     unwrapAllOfTag(content, "font");
     ensureHeading(content, title);
 
-    return content.innerHTML.trim();
+    return content.innerHTML;
 }
 
 function grabPublang() {

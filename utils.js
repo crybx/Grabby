@@ -7,6 +7,8 @@ function ensureHeading(content, title) {
             const h1 = document.createElement("h1");
             replaceTag(firstP, h1);
         } else if (title && title.trim()) {
+            console.log("I SEE NO HEADER and no chapter/episode numbering in this p:");
+            console.log(firstP.textContent);
             // add h1 with title
             const h1 = document.createElement("h1");
             h1.textContent = title;
