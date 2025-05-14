@@ -8,16 +8,16 @@ function main() {
             "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
             "blogspot.com": { grabber: grabBlogspot },
             "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
-            "darkstartranslations.com": { grabber: grabDarkstar },
+            "darkstartranslations.com": { grabber: grabStandard(".chapter-content") },
             "docs.google.com": { grabber: grabGoogleDocMobileBasic },
-            "fanfiction.ws": { grabber: grabFanfictionNet },
+            "fanfiction.ws": { grabber: grabStandard(".storytext") },
             "fenrirealm.com": { grabber: grabFenrir },
-            "helioscans.com": { grabber: grabHelioscans },
+            "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
             "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
             "jjwxc.net": { grabber: grabJjwxc },
             "joara.com": { grabber: grabJoara },
             "karistudio.com": { grabber: grabKaristudio },
-            "lightnovelworld.co": { grabber: grabLightnovelworld },
+            "lightnovelworld.co": { grabber: grabStandard("#chapter-container", ".chapter-title") },
             "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
             "noveltranslation.net": { grabber: grabNovelTranslationNet },
             "patreon.com": { grabber: grabPatreon },
@@ -51,7 +51,7 @@ function main() {
             wordpressSites: {
                 domains: ["eatapplepies.com", "ladyhotcombtranslations.com",
                     "littlepinkstarfish.com", "mendacity.me", "transweaver.com", "wordpress.com"],
-                grabber: grabWordpress
+                grabber: grabStandard(".entry-content")
             }
         }
     };
@@ -100,11 +100,11 @@ function main() {
                         content = config.grabber();
                     } catch (grabError) {
                         console.error(`Error in grabber for ${url}:`, grabError);
-                        content = grabUnknown(); // Fallback to generic grabber
+                        content = grabStandard()(); // Fallback to generic grabber
                     }
                     filename = extractTitle(content, config.useFirstHeadingTitle);
                 } else {
-                    content = grabUnknown();
+                    content = grabStandard()();
                     filename = extractTitle(content, false);
                     console.log("This website is not specifically supported: ", url);
                 }

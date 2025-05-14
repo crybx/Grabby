@@ -110,17 +110,17 @@ function grabPublang() {
 
 function grabSyosetu() {
     const title = document.querySelector(".p-novel__title");
-    const chapter = document.querySelector("div.p-novel__body");
+    const content = document.querySelector("div.p-novel__body");
 
     unwrapAllOfTag(title, "font");
-    unwrapAllOfTag(chapter, "font");
-    chapter.querySelectorAll("*").forEach(element => {
+    unwrapAllOfTag(content, "font");
+    content.querySelectorAll("*").forEach(element => {
         if (element.tagName === "P") {
             element.removeAttribute("id");
             element.textContent = element.textContent.trim();
         }
     });
-    return title.outerHTML.trim() + "\n\n" + chapter.innerHTML.trim();
+    return title.outerHTML.trim() + "\n\n" + content.innerHTML.trim();
 }
 
 function grabTapas() {
@@ -151,23 +151,23 @@ function grabTapas() {
 }
 
 function grabJoara() {
-    const chapter = document.querySelector(".text-wrap");
-    chapter.querySelectorAll("*").forEach(element => {
+    const content = document.querySelector(".text-wrap");
+    content.querySelectorAll("*").forEach(element => {
         removeTag(element, "SMALL")
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
     });
-    unwrapAllOfTag(chapter, "font");
-    return chapter.innerHTML;
+    unwrapAllOfTag(content, "font");
+    return content.innerHTML;
 }
 
 function grabChrysanthemum() {
     const title = document.querySelector(".entry-title").querySelector(".chapter-title").textContent;
-    const chapter = document.querySelector("#novel-content");
+    const content = document.querySelector("#novel-content");
     const cipher = "tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM";
 
-    chapter.querySelectorAll("*").forEach(element => {
+    content.querySelectorAll("*").forEach(element => {
         if (element.tagName === "DIV") {
             if (element.classList.contains("chrys-iklan")) {
                 element.outerHTML = "";
@@ -184,7 +184,7 @@ function grabChrysanthemum() {
         }
         removeClasses(element, ["jum", "emoji"]);
     });
-    return "<h1>" + title + "</h1>" + "\n\n" + chapter.innerHTML;
+    return "<h1>" + title + "</h1>" + "\n\n" + content.innerHTML;
 }
 
 function grabSecondLifeTranslations() {
@@ -624,35 +624,14 @@ function grabKaristudio() {
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
-function grabDarkstar() {
-    return grabStandard(".chapter-content")
-}
-
-function grabFanfictionNet() {
-    return grabStandard(".storytext");
-}
-
-function grabWordpress() {
-    return grabStandard(".entry-content");
-}
-
-function grabLightnovelworld() {
-    return grabStandard("#chapter-container", ".chapter-title");
-}
-
-function grabHelioscans() {
-    return grabStandard("#pages div.novel-reader");
-}
-
-function grabUnknown() {
-    return grabStandard();
-}
-
 function grabStandard(contentSelector = "body", titleSelector = "title") {
-    const title = document.querySelector(titleSelector).textContent;
-    const content = document.querySelector(contentSelector);
-    standardCleanup(content);
-    return `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
+    // Return a function that closes over the selectors
+    return function() {
+        const title = document.querySelector(titleSelector)?.textContent || "";
+        const content = document.querySelector(contentSelector);
+        standardCleanup(content);
+        return `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
+    };
 }
 
 function standardCleanup(content) {
