@@ -55,12 +55,12 @@ function getFileBlobFromContent(title, bodyText) {
 function grabKakaoPage() {
     const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
-    const content = shadowRoot.querySelector(".DC2CN");
+    let content = shadowRoot.querySelector(".DC2CN");
+    // content = content.cloneNode(true);
     content.querySelectorAll("*").forEach(element => {
         removeFontTags(element);
-        if (element.tagName === "P") {
-            removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height", "style"]);
-        }
+        replaceSemanticInlineStylesWithTags(element, true);
+        removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);
     });
     return content.innerHTML.trim();
 }
