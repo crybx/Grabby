@@ -17,6 +17,13 @@ function ensureHeading(content, title) {
     }
 }
 
+function trimWhitespace(element) {
+    // trim whitespace from the beginning and end of the text if tag is p
+    if (element.tagName === "P") {
+        element.textContent = element.textContent.trim();
+    }
+}
+
 function removeTag(element, tagName) {
     if (element.tagName.toLowerCase() === tagName.toLowerCase()) {
         element.remove();
@@ -191,6 +198,36 @@ function removeEmptyAttributes(content) {
     }
 }
 
+function removeEmptyDivElements(element) {
+    removeElements(getElements(element, "div", e => isElementWhiteSpace(e)));
+}
+
+function getElements(dom, tagName, filter) {
+    let array = Array.from(dom.getElementsByTagName(tagName));
+    return (filter === undefined || typeof filter !== 'function')
+        ? array : array.filter(filter);
+}
+
+function isElementWhiteSpace(element) {
+    switch (element.nodeType) {
+        case Node.TEXT_NODE:
+            return isStringWhiteSpace(element.textContent);
+        case Node.COMMENT_NODE:
+            return true;
+    }
+    if ((element.tagName === "IMG") || (element.tagName === "image")) {
+        return false;
+    }
+    if (element.querySelector("img, image") !== null) {
+        return false;
+    }
+    return isStringWhiteSpace(element.innerText);
+}
+
+function isStringWhiteSpace(s) {
+    return !(/\S/.test(s));
+}
+
 function unwrapSpansWithNoAttributes(content) {
     // within p or div tags, spans with no attributes have no purpose
     const spans = content.querySelectorAll("p span, div span");
@@ -282,6 +319,7 @@ function standardElementCleanup(element) {
         "donation-msg"
     ];
     const elementsWithClass = [
+        "adsbygoogle",
         "chapternav",
         "confuse",
         "code-block",

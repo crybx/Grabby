@@ -295,9 +295,11 @@ function grabHyacinth() {
 
     const content = document.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, false);
+        replaceSemanticInlineStylesWithTags(element, true);
+        trimWhitespace(element);
         standardElementCleanup(element);
     });
+    removeEmptyDivElements(content);
     standardContentCleanup(content);
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
@@ -317,10 +319,16 @@ function grabJjwxc() {
 function grabStorySeedling() {
     //content is in <div x-html="content">
     const content = document.querySelector('div[x-html="content"]');
-    const title = document.querySelector("title").textContent.trim();
+    let title = document.querySelector("title").textContent.trim();
     const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     const alphab = "⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵";
     const warn = " This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.";
+
+    // get textContent of div with classes font-medium and max-w-2x1
+    let storyTitle = document.querySelector(".font-medium.max-w-2xl")?.textContent?.trim();
+    if (storyTitle) {
+        title = `${storyTitle} ${title}`;
+    }
 
     standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
@@ -400,10 +408,12 @@ function grabStarlightStream() {
     const content = document.querySelector('[data-id="content-viewer"]');
     const title = document.querySelector("title").textContent;
 
-    standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
+        replaceSemanticInlineStylesWithTags(element, true);
         standardElementCleanup(element);
     });
+    unwrapAllOfTag(content, "span");
+    standardContentCleanup(content);
 
     // get all the p tags
     let fullText = "";
