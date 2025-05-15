@@ -39,5 +39,19 @@
       "matches": ["*://*.youtube.com/*"],
       "css": ["styles/youtube-nyan-cat.css"]
     }
-  ]
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+X"
+      },
+      "description": "Run Grabby on current page"
+    },
+    "grab-content": {
+      "suggested_key": {
+        "default": "Alt+G"
+      },
+      "description": "Grab content without opening popup"
+    }
+  }
 }
