@@ -281,10 +281,10 @@ function replaceSemanticInlineStylesWithTags(element, removeLeftoverStyles = fal
 
         // Map of style patterns to their semantic HTML equivalents
         const styleToTag = [
-            { regex: /font-style\s*:\s*(italic|oblique)\s*;/g, tag: "i" },
-            { regex: /font-weight\s*:\s*(bold|[7-9]\d\d)\s*;/g, tag: "b" },
-            { regex: /text-decoration\s*:\s*underline\s*;/g, tag: "u" },
-            { regex: /text-decoration\s*:\s*line-through\s*;/g, tag: "s" }
+            { regex: /font-style\s*:\s*(italic|oblique)\s*;?/g, tag: "i" },
+            { regex: /font-weight\s*:\s*(bold|[7-9]\d\d)\s*;?/g, tag: "b" },
+            { regex: /text-decoration\s*:\s*underline\s*;?/g, tag: "u" },
+            { regex: /text-decoration\s*:\s*line-through\s*;?/g, tag: "s" }
         ];
 
         // Apply semantic tags and remove corresponding styles
@@ -298,7 +298,7 @@ function replaceSemanticInlineStylesWithTags(element, removeLeftoverStyles = fal
         }
 
         // Remove non-semantic font-weight
-        styleText = styleText.replace(/font-weight\s*:\s*(normal|[1-4]\d\d)\s*;/g, "");
+        styleText = styleText.replace(/font-weight\s*:\s*(normal|[1-4]\d\d)\s*;?/g, "");
         styleText = styleText.trim();
 
         if (styleText && (!removeLeftoverStyles || /italic|bold|font-weight|underline|line-through/.test(styleText))) {
