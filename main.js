@@ -59,14 +59,23 @@ function main() {
     function findMatchingConfig(url) {
         // Check single domain configs first
         for (const [domain, config] of Object.entries(WEBSITE_CONFIGS.singleDomains)) {
-            if (url.includes(domain)) return config;
+            if (url.includes(domain))  {
+                console.log(`Domain: ${domain}`)
+                console.log(`Grabber function: ${config.grabber.name}`);
+                return config;
+            }
         }
 
         // Then check multi-domain configs
         for (const [key, config] of Object.entries(WEBSITE_CONFIGS.multiDomains)) {
-            if (config.domains.some(domain => url.includes(domain))) return config;
+            if (config.domains.some(domain => url.includes(domain))) {
+                console.log(`Multi-domain: ${key}`)
+                console.log(`Grabber function: ${config.grabber.name}`);
+                return config;
+            }
         }
 
+        console.log("Using default grabber (no specific configuration found)");
         return null;
     }
 
@@ -80,9 +89,9 @@ function main() {
     }
 
     function handleLocalFile(url) {
-        const title = url.split("/").pop().split(".").slice(0, -1).join(".");
+        const filename = url.split("/").pop().split(".").slice(0, -1).join(".");
         const content = grabLocalFile();
-        return { title, content };
+        return { filename, content };
     }
 
     async function grabFromWebsite() {

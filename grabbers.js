@@ -580,10 +580,6 @@ function grabAO3() {
 function grabLocalFile() {
     const content = document.querySelector("body");
     content.querySelectorAll("*").forEach(element => {
-        // trim whitespace from the beginning and end of the text if tag is p
-        if (element.tagName === "P") {
-            element.textContent = element.textContent.trim();
-        }
         removeElementWithIds(element, ["goog-gt-tt"]);
     });
     unwrapAllOfTag(content, "font");
