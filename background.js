@@ -26,6 +26,33 @@ chrome.action.onClicked.addListener(async () => {
 async function injectScriptsAndExecute(tabId) {
     const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
 
+    // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
+    const coreCheckResult = await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: () => {
+            return typeof GrabbyCore !== 'undefined';
+        }
+    });
+
+    const grabbyExists = coreCheckResult[0].result;
+
+    // If GrabbyCore already exists, just run the grabbing function
+    if (grabbyExists) {
+        console.log("GrabbyCore already exists, skipping script injection");
+        return chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: () => {
+                // Use the shared core functionality
+                return GrabbyCore.grabFromWebsite().then(result => {
+                    if (result && result.filename && result.content) {
+                        return GrabbyCore.handleContentDownload(result.filename, result.content);
+                    }
+                    return false;
+                });
+            }
+        });
+    }
+
     // Helper function to inject scripts sequentially
     async function injectScriptsSequentially(index) {
         if (index >= scripts.length) {
@@ -44,7 +71,35 @@ async function injectScriptsAndExecute(tabId) {
             });
         }
 
+        // Check if this script needs to be injected
+        const scriptName = scripts[index].replace('.js', '');
+        const variablesToCheck = {
+            'utils': ['removeTag', 'unwrapTag'], // Functions from utils.js
+            'grabbers': ['grabRidi', 'grabPatreon'], // Functions from grabbers.js
+            'grabber-core': ['GrabbyCore'] // Object from grabber-core.js
+        };
+
+        const checkResult = await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: (vars) => {
+                // For each variable to check, see if it exists in the global scope
+                return vars.some(v => typeof window[v] !== 'undefined' ||
+                    (typeof window.GrabbyCore !== 'undefined' &&
+                        typeof window.GrabbyCore[v] !== 'undefined'));
+            },
+            args: [variablesToCheck[scriptName] || []]
+        });
+
+        const scriptExists = checkResult[0].result;
+
+        if (scriptExists) {
+            console.log(`Script ${scripts[index]} appears to be already loaded, skipping`);
+            // Skip to the next script
+            return injectScriptsSequentially(index + 1);
+        }
+
         // Inject the current script
+        console.log(`Injecting ${scripts[index]}`);
         return chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: [scripts[index]]
