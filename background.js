@@ -96,7 +96,7 @@ async function sendMessageToOffscreenDocument(type, data) {
 
 // This function performs basic filtering and error checking on messages before
 // dispatching the message to a more specific message handler.
-function handleMessages(message, sender, sendResponse) {
+async function handleMessages(message, sender, sendResponse) {
     // Return early if this message isn't meant for the background script
     if (message.target !== 'background') {
         return false;
@@ -105,11 +105,11 @@ function handleMessages(message, sender, sendResponse) {
     // Dispatch the message to an appropriate handler.
     switch (message.type) {
         case 'add-exclamationmarks-result':
-            handleAddExclamationMarkResult(message.data);
-            closeOffscreenDocument();
+            await handleAddExclamationMarkResult(message.data);
+            await closeOffscreenDocument();
             break;
         case 'downloadAsFile':
-            downloadAsFile(message.title, message.blobUrl, message.cleanup);
+            await downloadAsFile(message.title, message.blobUrl, message.cleanup);
             break;
         case 'showError':
             // You could implement a notification system here
