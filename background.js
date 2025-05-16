@@ -94,14 +94,12 @@ async function sendMessageToOffscreenDocument(type, data) {
     });
 }
 
-chrome.runtime.onMessage.addListener(handleMessages);
-
 // This function performs basic filtering and error checking on messages before
 // dispatching the message to a more specific message handler.
-async function handleMessages(message) {
+function handleMessages(message, sender, sendResponse) {
     // Return early if this message isn't meant for the background script
     if (message.target !== 'background') {
-        return;
+        return false;
     }
 
     // Dispatch the message to an appropriate handler.
@@ -117,10 +115,37 @@ async function handleMessages(message) {
             // You could implement a notification system here
             console.error(message.message);
             break;
+        case 'grab-content':
+            // Get the tab ID from the message or the sender
+            const tabId = message.tabId || (sender.tab && sender.tab.id);
+
+            if (!tabId) {
+                console.error("No tab ID provided for content grabbing");
+                sendResponse({ success: false, error: "No tab ID provided" });
+                return true;
+            }
+
+            // Inject scripts and execute grabbing function
+            injectScriptsAndExecute(tabId)
+                .then(() => {
+                    console.log("Content grabbing initiated via message");
+                    sendResponse({ success: true });
+                })
+                .catch(error => {
+                    console.error("Error during script injection or execution:", error);
+                    sendResponse({ success: false, error: error.message });
+                });
+
+            // Return true to indicate we'll send a response asynchronously
+            return true;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }
+    return false;
 }
+
+// Register the message listener
+chrome.runtime.onMessage.addListener(handleMessages);
 
 async function downloadAsFile(title, blobUrl, cleanup) {
     let fileName = title;
