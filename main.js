@@ -1,182 +1,53 @@
 // this file is loaded by grabby.html
 
-function main() {
-    // Website configurations
-    const WEBSITE_CONFIGS = {
-        // Grabbers for single domains
-        singleDomains: {
-            "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
-            "blogspot.com": { grabber: grabBlogspot },
-            "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
-            "darkstartranslations.com": { grabber: grabStandard(".chapter-content") },
-            "docs.google.com": { grabber: grabGoogleDocMobileBasic },
-            "fanfiction.ws": { grabber: grabStandard(".storytext") },
-            "fenrirealm.com": { grabber: grabFenrir },
-            "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
-            "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
-            "jjwxc.net": { grabber: grabJjwxc },
-            "joara.com": { grabber: grabJoara },
-            "karistudio.com": { grabber: grabKaristudio },
-            "lightnovelworld.co": { grabber: grabStandard("#chapter-container", ".chapter-title") },
-            "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
-            "noveltranslation.net": { grabber: grabNovelTranslationNet },
-            "patreon.com": { grabber: grabPatreon },
-            "peachtea.agency": { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
-            "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
-            "reaperscans.com": { grabber: grabReaperScans },
-            "requiemtls.com": { grabber: grabRequiemtls },
-            "ridibooks.com": { grabber: grabRidi },
-            "page.kakao.com": { grabber: grabKakaoPage },
-            "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
-            "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },
-            "starlightstream.net": { grabber: grabStarlightStream },
-            "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
-            "syosetu.com": { grabber: grabSyosetu },
-            "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },
-            "watashiwasugoidesu.com": { grabber: grabWatashiWaSugoiDesu },
-            "yoru.world": { grabber: grabYoruWorld, useFirstHeadingTitle: true },
-            "zenithtls.com": { grabber: grabZenithtls, useFirstHeadingTitle: true },
-        },
-        multiDomains: {
-            fictioneerSites: {
-                domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz", "igniforge.com", "lilyonthevalley.com",
-                    "novelib.com", "springofromance.com", "razentl.com"],
-                grabber: grabFictioneer,
-                useFirstHeadingTitle: true
-            },
-            madaraWpSites: {
-                domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
-                grabber: madaraWpTheme
-            },
-            wordpressSites: {
-                domains: ["eatapplepies.com", "ladyhotcombtranslations.com",
-                    "littlepinkstarfish.com", "mendacity.me", "transweaver.com", "wordpress.com"],
-                grabber: grabStandard(".entry-content")
-            }
-        }
-    };
+function injectScriptsAndExecute(tabId) {
+    const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
 
-    function findMatchingConfig(url) {
-        // Check single domain configs first
-        for (const [domain, config] of Object.entries(WEBSITE_CONFIGS.singleDomains)) {
-            if (url.includes(domain))  {
-                console.log(`Domain: ${domain}`)
-                console.log(`Grabber function: ${config.grabber.name}`);
-                return config;
-            }
-        }
-
-        // Then check multi-domain configs
-        for (const [key, config] of Object.entries(WEBSITE_CONFIGS.multiDomains)) {
-            if (config.domains.some(domain => url.includes(domain))) {
-                console.log(`Multi-domain: ${key}`)
-                console.log(`Grabber function: ${config.grabber.name}`);
-                return config;
-            }
-        }
-
-        console.log("Using default grabber (no specific configuration found)");
-        return null;
-    }
-
-    function extractTitle(content, useFirstHeadingTitle) {
-        if (useFirstHeadingTitle) {
-            return getTitleFromFirstHeading(content);
-        }
-        return document.querySelector("title")?.textContent ||
-            document.querySelector("h1")?.textContent ||
-            "chapter";
-    }
-
-    function handleLocalFile(url) {
-        const filename = url.split("/").pop().split(".").slice(0, -1).join(".");
-        const content = grabLocalFile();
-        return { filename, content };
-    }
-
-    async function grabFromWebsite() {
-        const url = window.location.href;
-        let filename, content;
-
-        try {
-            if (url.includes("file://")) {
-                ({ filename, content } = handleLocalFile(url));
-            } else {
-                const config = findMatchingConfig(url);
-
-                if (config) {
-                    try {
-                        content = config.grabber();
-                    } catch (grabError) {
-                        console.error(`Error in grabber for ${url}:`, grabError);
-                        content = grabStandard()(); // Fallback to generic grabber
-                    }
-                    filename = extractTitle(content, config.useFirstHeadingTitle);
-                } else {
-                    content = grabStandard()();
-                    filename = extractTitle(content, false);
-                    console.log("This website is not specifically supported: ", url);
+    // Helper function to inject scripts sequentially
+    async function injectScriptsSequentially(index) {
+        if (index >= scripts.length) {
+            // All scripts injected, now execute the main function
+            return chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                func: () => {
+                    // Use the shared core functionality
+                    return GrabbyCore.grabFromWebsite().then(result => {
+                        if (result && result.filename && result.content) {
+                            return GrabbyCore.handleContentDownload(result.filename, result.content);
+                        }
+                        return false;
+                    });
                 }
-
-                // append domain name to the filename for easier search
-                const domain = new URL(url).hostname;
-                filename = `${filename}_${domain}`;
-            }
-
-            if (!content || content.trim() === "") {
-                throw new Error("No content could be extracted from this page");
-            }
-
-            await handleContentDownload(filename, content);
-        } catch (error) {
-            console.error("Error grabbing content:", error);
-            // Consider showing a user-friendly error notification
-            chrome.runtime.sendMessage({
-                target: "background",
-                type: "showError",
-                message: `Failed to grab content: ${error.message}`
             });
         }
+
+        // Inject the current script
+        return chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: [scripts[index]]
+        }).then(() => {
+            // Move to the next script
+            return injectScriptsSequentially(index + 1);
+        });
     }
 
-    async function handleContentDownload(filename, content) {
-        let blobUrl;
-        try {
-            copyToClipboard(content);
-
-            const blob = getFileBlobFromContent(filename, content);
-            blobUrl = URL.createObjectURL(blob);
-
-            await chrome.runtime.sendMessage({
-                target: "background",
-                type: "downloadAsFile",
-                title: filename,
-                blobUrl: blobUrl,
-                cleanup: () => URL.revokeObjectURL(blobUrl)
-            });
-        } catch (error) {
-            console.error("Error downloading content:", error);
-            URL.revokeObjectURL(blobUrl);
-        } finally {
-            if (blobUrl) URL.revokeObjectURL(blobUrl);
-        }
-    }
-
-    return grabFromWebsite();
+    // Start the injection sequence with the first script
+    return injectScriptsSequentially(0);
 }
 
 // Initialize content grabbing
-chrome.windows.getCurrent(function (currentWindow) {
-    chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (activeTabs) {
+chrome.windows.getCurrent(function(currentWindow) {
+    chrome.tabs.query({ active: true, windowId: currentWindow.id }, function(activeTabs) {
         if (!activeTabs || activeTabs.length === 0) {
             console.error("No active tab found");
             return;
         }
 
-        activeTabs.map(function (tab) {
-            chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                func: main
+        activeTabs.forEach(function(tab) {
+            injectScriptsAndExecute(tab.id).then(() => {
+                console.log("Scripts injected and executed successfully");
+            }).catch(error => {
+                console.error("Error injecting scripts:", error);
             });
         });
     });

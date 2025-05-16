@@ -29,10 +29,6 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": [
-        "utils.js",
-        "grabbers.js"
-      ],
       "css": ["styles/grabby.css"]
     },
     {
@@ -43,13 +39,15 @@
   "commands": {
     "_execute_action": {
       "suggested_key": {
-        "default": "Alt+X"
+        "default": "Alt+X",
+        "mac": "Alt+X"
       },
       "description": "Run Grabby on current page"
     },
     "grab-content": {
       "suggested_key": {
-        "default": "Alt+G"
+        "default": "Alt+G",
+        "mac": "Alt+G"
       },
       "description": "Grab content without opening popup"
     }

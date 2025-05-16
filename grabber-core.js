@@ -1,0 +1,234 @@
+// This file contains the core grabbing functionality shared between main.js and background.js
+
+// Website configurations
+const WEBSITE_CONFIGS = {
+    // Grabbers for single domains
+    singleDomains: {
+        "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
+        "blogspot.com": { grabber: grabBlogspot },
+        "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
+        "darkstartranslations.com": { grabber: grabStandard(".chapter-content") },
+        "docs.google.com": { grabber: grabGoogleDocMobileBasic },
+        "fanfiction.ws": { grabber: grabStandard(".storytext") },
+        "fenrirealm.com": { grabber: grabFenrir },
+        "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
+        "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
+        "jjwxc.net": { grabber: grabJjwxc },
+        "joara.com": { grabber: grabJoara },
+        "karistudio.com": { grabber: grabKaristudio },
+        "lightnovelworld.co": { grabber: grabStandard("#chapter-container", ".chapter-title") },
+        "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
+        "noveltranslation.net": { grabber: grabNovelTranslationNet },
+        "patreon.com": { grabber: grabPatreon },
+        "peachtea.agency": { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
+        "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
+        "reaperscans.com": { grabber: grabReaperScans },
+        "requiemtls.com": { grabber: grabRequiemtls },
+        "ridibooks.com": { grabber: grabRidi },
+        "page.kakao.com": { grabber: grabKakaoPage },
+        "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
+        "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },
+        "starlightstream.net": { grabber: grabStarlightStream },
+        "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
+        "syosetu.com": { grabber: grabSyosetu },
+        "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },
+        "watashiwasugoidesu.com": { grabber: grabWatashiWaSugoiDesu },
+        "yoru.world": { grabber: grabYoruWorld, useFirstHeadingTitle: true },
+        "zenithtls.com": { grabber: grabZenithtls, useFirstHeadingTitle: true },
+    },
+    multiDomains: {
+        fictioneerSites: {
+            domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz", "igniforge.com", "lilyonthevalley.com",
+                "novelib.com", "springofromance.com", "razentl.com"],
+            grabber: grabFictioneer,
+            useFirstHeadingTitle: true
+        },
+        madaraWpSites: {
+            domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
+            grabber: madaraWpTheme
+        },
+        wordpressSites: {
+            domains: ["eatapplepies.com", "ladyhotcombtranslations.com",
+                "littlepinkstarfish.com", "mendacity.me", "transweaver.com", "wordpress.com"],
+            grabber: grabStandard(".entry-content")
+        }
+    }
+};
+
+function findMatchingConfig(url) {
+    // Check single domain configs first
+    for (const [domain, config] of Object.entries(WEBSITE_CONFIGS.singleDomains)) {
+        if (url.includes(domain))  {
+            console.log(`Domain: ${domain}`)
+            console.log(`Grabber function: ${config.grabber.name}`);
+            return config;
+        }
+    }
+
+    // Then check multi-domain configs
+    for (const [key, config] of Object.entries(WEBSITE_CONFIGS.multiDomains)) {
+        if (config.domains.some(domain => url.includes(domain))) {
+            console.log(`Multi-domain: ${key}`)
+            console.log(`Grabber function: ${config.grabber.name}`);
+            return config;
+        }
+    }
+
+    console.log("Using default grabber (no specific configuration found)");
+    return null;
+}
+
+function extractTitle(content, useFirstHeadingTitle) {
+    if (useFirstHeadingTitle) {
+        return getTitleFromFirstHeading(content);
+    }
+    return document.querySelector("title")?.textContent ||
+        document.querySelector("h1")?.textContent ||
+        "chapter";
+}
+
+function handleLocalFile(url) {
+    const filename = url.split("/").pop().split(".").slice(0, -1).join(".");
+    const content = grabLocalFile();
+    return { filename, content };
+}
+
+async function grabFromWebsite() {
+    const url = window.location.href;
+    let filename, content;
+
+    try {
+        if (url.includes("file://")) {
+            ({ filename, content } = handleLocalFile(url));
+        } else {
+            const config = findMatchingConfig(url);
+
+            if (config) {
+                try {
+                    content = config.grabber();
+                } catch (grabError) {
+                    console.error(`Error in grabber for ${url}:`, grabError);
+                    content = grabStandard()(); // Fallback to generic grabber
+                }
+                filename = extractTitle(content, config.useFirstHeadingTitle);
+            } else {
+                content = grabStandard()();
+                filename = extractTitle(content, false);
+                console.log("This website is not specifically supported: ", url);
+            }
+
+            // append domain name to the filename for easier search
+            const domain = new URL(url).hostname;
+            filename = `${filename}_${domain}`;
+        }
+
+        if (!content || content.trim() === "") {
+            throw new Error("No content could be extracted from this page");
+        }
+
+        return { filename, content };
+
+    } catch (error) {
+        console.error("Error grabbing content:", error);
+        // Consider showing a user-friendly error notification
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "showError",
+            message: `Failed to grab content: ${error.message}`
+        });
+        return null;
+    }
+}
+
+function getFileBlobFromContent(title, bodyText) {
+    let blobText = getHtmlFromContent(title, bodyText);
+    return new Blob([blobText], {type: "text/html"});
+}
+
+function getHtmlFromContent(title, bodyText) {
+    return `<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>${title}</title>
+  <link type="text/css" rel="stylesheet" href="../styles/stylesheet.css"/>
+</head>
+<body>
+${bodyText}
+</body>
+</html>
+    `;
+}
+
+function copyToClipboard(text) {
+    console.log(text);
+
+    // Create a textbox field where we can insert text to.
+    let copyFrom = document.createElement("textarea");
+
+    // Set the text content to be the text you wished to copy.
+    copyFrom.textContent = text;
+
+    // Append the textbox field into the body as a child.
+    document.body.appendChild(copyFrom);
+
+    // Select all the text!
+    copyFrom.select();
+
+    // Execute command
+    document.execCommand("copy");
+
+    // (Optional) De-select the text using blur().
+    copyFrom.blur();
+
+    // Remove the textbox field from the document.body
+    document.body.removeChild(copyFrom);
+}
+
+async function handleContentDownload(filename, content) {
+    let blobUrl;
+    try {
+        copyToClipboard(content);
+
+        const blob = getFileBlobFromContent(filename, content);
+        blobUrl = URL.createObjectURL(blob);
+
+        await chrome.runtime.sendMessage({
+            target: "background",
+            type: "downloadAsFile",
+            title: filename,
+            blobUrl: blobUrl,
+            cleanup: () => URL.revokeObjectURL(blobUrl)
+        });
+
+        // Show feedback to user
+        const notification = document.createElement('div');
+        notification.textContent = "Content grabbed!";
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.backgroundColor = '#4CAF50';
+        notification.style.color = 'white';
+        notification.style.padding = '15px';
+        notification.style.borderRadius = '5px';
+        notification.style.zIndex = '10000';
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+
+        return true;
+    } catch (error) {
+        console.error("Error downloading content:", error);
+        URL.revokeObjectURL(blobUrl);
+        return false;
+    } finally {
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+    }
+}
+
+// Export functions for use in other files
+window.GrabbyCore = {
+    grabFromWebsite,
+    handleContentDownload
+};
