@@ -14,14 +14,6 @@
 
 const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
 
-// Listen for the extension icon click
-chrome.action.onClicked.addListener(async () => {
-    sendMessageToOffscreenDocument(
-        'add-exclamationmarks-to-headings',
-        '<html><head></head><body><h1>Hello World</h1></body></html>'
-    );
-});
-
 // Function to inject scripts sequentially and then execute a callback function
 async function injectScriptsAndExecute(tabId) {
     const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
