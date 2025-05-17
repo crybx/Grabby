@@ -1,19 +1,3 @@
-// Copyright 2023 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-const OFFSCREEN_DOCUMENT_PATH = '/offscreen.html';
-
 // Function to inject scripts sequentially and then execute a callback function
 async function injectScriptsAndExecute(tabId) {
     const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
@@ -123,33 +107,14 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
 });
 
-async function sendMessageToOffscreenDocument(type, data) {
-    // Create an offscreen document if one doesn't exist yet
-    if (!(await hasDocument())) {
-        await chrome.offscreen.createDocument({
-            url: OFFSCREEN_DOCUMENT_PATH,
-            reasons: [chrome.offscreen.Reason.DOM_PARSER],
-            justification: 'Parse DOM'
-        });
-    }
-    // Now that we have an offscreen document, we can dispatch the
-    // message.
-    chrome.runtime.sendMessage({
-        type,
-        target: 'offscreen',
-        data
-    });
-}
-
-// This function performs basic filtering and error checking on messages before
-// dispatching the message to a more specific message handler.
+// Basic filtering and error checking on messages before dispatching
+// the message to a more specific functions or message handlers.
 async function handleMessages(message, sender, sendResponse) {
     // Return early if this message isn't meant for the background script
     if (message.target !== 'background') {
         return false;
     }
 
-    // Dispatch the message to an appropriate handler.
     switch (message.type) {
         case 'add-exclamationmarks-result':
             await handleAddExclamationMarkResult(message.data);
@@ -219,27 +184,4 @@ async function downloadAsFile(title, blobUrl, cleanup) {
 
     const downloadId = await chrome.downloads.download(options, cleanup);
     console.log(`Download started with ID ${downloadId}`);
-}
-
-async function handleAddExclamationMarkResult(dom) {
-    console.log('Received dom', dom);
-}
-
-async function closeOffscreenDocument() {
-    if (!(await hasDocument())) {
-        return;
-    }
-    await chrome.offscreen.closeDocument();
-}
-
-async function hasDocument() {
-    // Check all windows controlled by the service worker if one of them
-    // is the offscreen document
-    const matchedClients = await clients.matchAll();
-    for (const client of matchedClients) {
-        if (client.url.endsWith(OFFSCREEN_DOCUMENT_PATH)) {
-            return true;
-        }
-    }
-    return false;
 }

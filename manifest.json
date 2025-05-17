@@ -1,29 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Grabby",
-  "description": "A content extractor for web novels and articles.",
+  "description": "Extract only the readable text from a web page.",
   "version": "1.0",
   "icons": {
-    "128": "clipboard128.png"
+    "128": "images/clipboard128.png"
   },
   "action": {
     "default_popup": "grabby.html",
-    "default_icon": "clipboard128.png"
+    "default_icon": "images/clipboard128.png"
   },
   "background": {
     "service_worker": "background.js"
   },
   "permissions": [
     "activeTab",
-    "cookies",
-    "declarativeContent",
     "downloads",
-    "offscreen",
     "scripting",
-    "storage",
-    "tabs",
-    "unlimitedStorage",
-    "webRequest"
+    "tabs"
   ],
   "host_permissions": ["*://*/*"],
   "content_scripts": [

@@ -1,5 +1,3 @@
-// This file contains the core grabbing functionality shared between main.js and background.js
-
 // Website configurations
 const WEBSITE_CONFIGS = {
     // Grabbers for single domains
@@ -22,7 +20,7 @@ const WEBSITE_CONFIGS = {
         "patreon.com": { grabber: grabPatreon },
         "peachtea.agency": { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
         "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
-        "reaperscans.com": { grabber: grabReaperScans },
+        "reaperscans.com": { grabber: grabStandard("#reader-container", null) },
         "requiemtls.com": { grabber: grabRequiemtls },
         "ridibooks.com": { grabber: grabRidi },
         "page.kakao.com": { grabber: grabKakaoPage },
@@ -76,6 +74,12 @@ function findMatchingConfig(url) {
 
     console.log("Using default grabber (no specific configuration found)");
     return null;
+}
+
+function getTitleFromFirstHeading(content) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+    return doc.querySelector("h1").textContent;
 }
 
 function extractTitle(content, useFirstHeadingTitle) {
@@ -160,6 +164,8 @@ ${bodyText}
 }
 
 function copyToClipboard(text) {
+    // Seeing and being able to copy the result from
+    // the console when things go wrong is very handy.
     console.log(text);
 
     // Create a textbox field where we can insert text to.
@@ -203,14 +209,7 @@ async function handleContentDownload(filename, content) {
         // Show feedback to user
         const notification = document.createElement('div');
         notification.textContent = "Content grabbed!";
-        notification.style.position = 'fixed';
-        notification.style.top = '20px';
-        notification.style.right = '20px';
-        notification.style.backgroundColor = '#4CAF50';
-        notification.style.color = 'white';
-        notification.style.padding = '15px';
-        notification.style.borderRadius = '5px';
-        notification.style.zIndex = '10000';
+        notification.classList.add('notification');
         document.body.appendChild(notification);
 
         setTimeout(() => {

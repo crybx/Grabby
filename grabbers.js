@@ -1,57 +1,3 @@
-function copyToClipboard(text) {
-    console.log(text);
-
-    // Create a textbox field where we can insert text to.
-    let copyFrom = document.createElement("textarea");
-
-    // Set the text content to be the text you wished to copy.
-    copyFrom.textContent = text;
-
-    // Append the textbox field into the body as a child.
-    // "execCommand()" only works when there exists selected text, and the text is inside
-    // document.body (meaning the text is part of a valid rendered HTML element).
-    document.body.appendChild(copyFrom);
-
-    // Select all the text!
-    copyFrom.select();
-
-    // Execute command
-    document.execCommand("copy");
-
-    // (Optional) De-select the text using blur().
-    copyFrom.blur();
-
-    // Remove the textbox field from the document.body, so no other JavaScript nor
-    // other elements can get access to this.
-    document.body.removeChild(copyFrom);
-}
-
-function getHtmlFromContent(title, bodyText) {
-    return `<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>${title}</title>
-  <link type="text/css" rel="stylesheet" href="../styles/stylesheet.css"/>
-</head>
-<body>
-${bodyText}
-</body>
-</html>
-    `;
-}
-
-function getTitleFromFirstHeading(content) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(content, "text/html");
-    title = doc.querySelector("h1").textContent;
-    return title;
-}
-
-function getFileBlobFromContent(title, bodyText) {
-    let blobText = getHtmlFromContent(title, bodyText);
-    return new Blob([blobText], {type: "text/html"});
-}
-
 function grabKakaoPage() {
     const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
@@ -332,7 +278,7 @@ function grabStorySeedling() {
 
     standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        // remove all instances of cls followed by 18 other
+        // remove all instances of cls followed by 18 other characters that are not whitespace
         // e.g. clsf7ee7eab1744489659
         element.textContent = element.textContent.replace(/cls[^\s]{18}/g, "");
         cipherSubstitution(element, cipher, alphab);
@@ -347,7 +293,8 @@ function grabRequiemtls() {
     let content = document.querySelector(".entry-content");
     const cipher = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*.!?,;:\"'-[()]0123456789~"
     const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ"
-    // the alphabet changes between pages
+    // the alphabet changes between pages! this only works on a few pages right now
+    // apparently the fonts can be downloaded, check them out
 
     content = standardCleanup(content);
     content.querySelectorAll("*").forEach(element => {
@@ -598,16 +545,10 @@ function grabLocalFile() {
 
 function grabFenrir() {
     const content = document.querySelector("#reader-area");
-    // title is the first h1
     const title = document.querySelector("h1")?.textContent
     ??  document.querySelector("title").textContent;
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
-}
-
-function grabReaperScans() {
-    const content = document.querySelector("#reader-container");
-    return standardCleanup(content).innerHTML;
 }
 
 function grabNovelTranslationNet() {
@@ -630,13 +571,25 @@ function grabKaristudio() {
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
+/**
+ * Creates a standard grabber function
+ * @param {string} [contentSelector="body"] - Selector for content
+ * @param {string|null} [titleSelector="title"] - Selector for title, null to skip title
+ * @returns {Function} Grabber function
+ */
 function grabStandard(contentSelector = "body", titleSelector = "title") {
     // Return a function that closes over the selectors
     return function() {
-        const title = document.querySelector(titleSelector)?.textContent || "";
+        let result = "";
+        if (titleSelector !== null) {
+            const title = document.querySelector(titleSelector)?.textContent || "";
+            result += `<h1>${title.trim()}</h1>\n\n`;
+        }
+
         const content = document.querySelector(contentSelector);
         standardCleanup(content);
-        return `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
+        result += content.innerHTML.trim();
+        return result;
     };
 }
 

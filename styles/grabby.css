@@ -1,4 +1,20 @@
+/*
+Track visited links by turning visited ones a specific color
+despite whatever styles individual websites use. Very handy
+to know where you've been.
+*/
 a:visited,
 a:visited > div > span {
     color: #7e5dff !important;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 10000;
 }
