@@ -18,3 +18,49 @@ a:visited > div > span {
     border-radius: 5px;
     z-index: 10000;
 }
+
+/* Grabby button styles */
+#grabby-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#grabby-button img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+#grabby-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+#grabby-button.clicked {
+    background-color: rgba(66, 133, 244, 0.9);
+}
+
+/* Animation for button click */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+#grabby-button:active {
+    animation: pulse 0.3s ease;
+}
+
+

@@ -1,0 +1,63 @@
+/* Popup styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 320px;
+    margin: 0;
+    padding: 16px;
+    color: #333;
+}
+
+h1 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #7e5dff;
+}
+
+.settings-section {
+    margin-bottom: 16px;
+}
+
+h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.shortcut {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.key {
+    background-color: #f2f2f2;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-right: 8px;
+}
+
+.description {
+    font-size: 13px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 16px 0;
+}
+
+p {
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 8px 0;
+}
+
+.footer {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    margin-top: 16px;
+}

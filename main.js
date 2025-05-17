@@ -1,4 +1,4 @@
-// this file is loaded by grabby.html
+// this file used to be loaded by popup.html to trigger grabbing
 
 // Initialize content grabbing by sending a message to the background script
 chrome.windows.getCurrent(function(currentWindow) {
@@ -13,7 +13,7 @@ chrome.windows.getCurrent(function(currentWindow) {
 
         chrome.runtime.sendMessage({
             target: 'background',
-            type: 'grab-content',
+            type: 'grabContent',
             tabId: activeTab.id
         });
     });

@@ -1,5 +1,5 @@
 // Function to inject scripts sequentially and then execute a callback function
-async function injectScriptsAndExecute(tabId) {
+async function injectGrabbingScriptsAndExecute(tabId) {
     const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
 
     // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
@@ -91,13 +91,38 @@ async function injectScriptsAndExecute(tabId) {
 
 // Listen for keyboard commands
 chrome.commands.onCommand.addListener(async (command) => {
-    if (command === 'grab-content') {
-        // Get the active tab
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab) return;
+    if (command === "grab_content") {
+        await grabContent();
+    }
+});
 
+async function getTabId(message, sender) {
+    let tabId = message?.tabId;
+
+    if (!tabId && sender?.tab) {
+        tabId = sender.tab.id;
+    }
+
+    if (!tabId) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            tabId = tab.id;
+        }
+    }
+
+    if (!tabId) {
+        console.error("No tab ID found for content grabbing");
+        return null;
+    }
+
+    return tabId;
+}
+
+async function grabContent(message, sender) {
+    let tabId = await getTabId(message, sender);
+    if (tabId) {
         // Inject scripts and execute grabbing function
-        injectScriptsAndExecute(tab.id)
+        injectGrabbingScriptsAndExecute(tabId)
             .then(() => {
                 console.log("Content grabbing initiated via keyboard shortcut");
             })
@@ -105,7 +130,7 @@ chrome.commands.onCommand.addListener(async (command) => {
                 console.error("Error during script injection or execution:", error);
             });
     }
-});
+}
 
 // Basic filtering and error checking on messages before dispatching
 // the message to a more specific functions or message handlers.
@@ -116,10 +141,6 @@ async function handleMessages(message, sender, sendResponse) {
     }
 
     switch (message.type) {
-        case 'add-exclamationmarks-result':
-            await handleAddExclamationMarkResult(message.data);
-            await closeOffscreenDocument();
-            break;
         case 'downloadAsFile':
             await downloadAsFile(message.title, message.blobUrl, message.cleanup);
             break;
@@ -127,29 +148,9 @@ async function handleMessages(message, sender, sendResponse) {
             // You could implement a notification system here
             console.error(message.message);
             break;
-        case 'grab-content':
-            // Get the tab ID from the message or the sender
-            const tabId = message.tabId || (sender.tab && sender.tab.id);
-
-            if (!tabId) {
-                console.error("No tab ID provided for content grabbing");
-                sendResponse({ success: false, error: "No tab ID provided" });
-                return true;
-            }
-
-            // Inject scripts and execute grabbing function
-            injectScriptsAndExecute(tabId)
-                .then(() => {
-                    console.log("Content grabbing initiated via message");
-                    sendResponse({ success: true });
-                })
-                .catch(error => {
-                    console.error("Error during script injection or execution:", error);
-                    sendResponse({ success: false, error: error.message });
-                });
-
-            // Return true to indicate we'll send a response asynchronously
-            return true;
+        case 'grabContent':
+            await grabContent(message, sender);
+            break;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }

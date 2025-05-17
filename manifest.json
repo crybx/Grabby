@@ -7,7 +7,7 @@
     "128": "images/clipboard128.png"
   },
   "action": {
-    "default_popup": "grabby.html",
+    "default_popup": "popup.html",
     "default_icon": "images/clipboard128.png"
   },
   "background": {
@@ -23,7 +23,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "css": ["styles/grabby.css"]
+      "css": ["styles/grabby.css"],
+      "js": ["grabby-button.js"]
     },
     {
       "matches": ["*://*.youtube.com/*"],
@@ -31,19 +32,18 @@
     }
   ],
   "commands": {
-    "_execute_action": {
-      "suggested_key": {
-        "default": "Alt+X",
-        "mac": "Alt+X"
-      },
-      "description": "Run Grabby on current page"
-    },
-    "grab-content": {
+    "grab_content": {
       "suggested_key": {
         "default": "Alt+G",
         "mac": "Alt+G"
       },
       "description": "Grab content without opening popup"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["images/clipboard128.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
