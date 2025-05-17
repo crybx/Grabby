@@ -8,22 +8,13 @@ chrome.windows.getCurrent(function(currentWindow) {
             return;
         }
 
-        // For each active tab, send a message to the background script to grab content
-        activeTabs.forEach(function(tab) {
-            chrome.runtime.sendMessage(
-                {
-                    target: 'background',
-                    type: 'grab-content',
-                    tabId: tab.id
-                },
-                function(response) {
-                    if (response && response.success) {
-                        console.log("Content grabbing initiated successfully");
-                    } else {
-                        console.error("Content grabbing failed:", response ? response.error : "Unknown error");
-                    }
-                }
-            );
+        // There's only one active tab per window
+        const activeTab = activeTabs[0];
+
+        chrome.runtime.sendMessage({
+            target: 'background',
+            type: 'grab-content',
+            tabId: activeTab.id
         });
     });
 });

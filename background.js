@@ -241,7 +241,8 @@ async function closeOffscreenDocument() {
 }
 
 async function hasDocument() {
-    // Check all windows controlled by the service worker if one of them is the offscreen document
+    // Check all windows controlled by the service worker if one of them
+    // is the offscreen document
     const matchedClients = await clients.matchAll();
     for (const client of matchedClients) {
         if (client.url.endsWith(OFFSCREEN_DOCUMENT_PATH)) {
