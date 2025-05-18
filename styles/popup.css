@@ -11,11 +11,50 @@ h1 {
     font-size: 18px;
     margin-top: 0;
     margin-bottom: 16px;
-    color: #7e5dff;
 }
 
 .settings-section {
     margin-bottom: 16px;
+
+    #grabby-button {
+        margin: 0 auto;
+        width: 30px;
+        height: 30px;
+        border-radius: 0 0 3px 3px;
+        background-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    #grabby-button img {
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+    }
+
+    #grabby-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #grabby-button.clicked {
+        background-color: rgba(66, 133, 244, 0.9);
+    }
+
+    /* Animation for button click */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    #grabby-button:active {
+        animation: pulse 0.3s ease;
+    }
 }
 
 h2 {
@@ -47,6 +86,7 @@ hr {
     border: none;
     border-top: 1px solid #eee;
     margin: 16px 0;
+    color: #9d80ff;
 }
 
 p {

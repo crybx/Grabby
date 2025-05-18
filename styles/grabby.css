@@ -5,13 +5,13 @@ to know where you've been.
 */
 a:visited,
 a:visited > div > span {
-    color: #7e5dff !important;
+    color: #9d80ff !important;
 }
 
 .notification {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 15px;
+    right: 15px;
     background-color: #4CAF50;
     color: white;
     padding: 15px;
@@ -22,12 +22,12 @@ a:visited > div > span {
 /* Grabby button styles */
 #grabby-button {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 0;
+    right: 200px;
     z-index: 9999;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 0 0 3px 3px;
     background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     display: flex;
@@ -38,8 +38,8 @@ a:visited > div > span {
 }
 
 #grabby-button img {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
