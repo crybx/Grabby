@@ -3,10 +3,10 @@ function grabKakaoPage() {
     const shadowRoot = shadowHost.shadowRoot;
     const content = shadowRoot.querySelector(".DC2CN");
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, true);
-        removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);
     });
-    unwrapAllOfTag(content, "font");
+    utils.unwrapAllOfTag(content, "font");
     return content.innerHTML.trim();
 }
 
@@ -24,16 +24,16 @@ function grabRidi() {
         });
     });
 
-    removeComments(content);
+    utils.removeComments(content);
     content.querySelectorAll("*").forEach(element => {
-        removeTags(element, ["PRE", "TITLE", "LINK"]);
-        removeClassesThatStartWith(element, "block_");
-        removeClasses(element, ["body", "story_part_header_title"]);
-        replaceSemanticInlineStylesWithTags(element, true);
-        removeEmptyParagraphAndHeadings(element);
+        utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
+        utils.removeClassesThatStartWith(element, "block_");
+        utils.removeClasses(element, ["body", "story_part_header_title"]);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.removeEmptyParagraphAndHeadings(element);
     });
-    unwrapAllOfTag(content, "font");
-    ensureHeading(content, title);
+    utils.unwrapAllOfTag(content, "font");
+    utils.ensureHeading(content, title);
 
     return content.innerHTML;
 }
@@ -45,7 +45,7 @@ function grabPublang() {
     let temp = document.createElement("div");
     temp.innerHTML = srcdoc;
     temp.querySelectorAll("*").forEach(element => {
-        removeTags(element, ["LINK", "BASE", "META"]);
+        utils.removeTags(element, ["LINK", "BASE", "META"]);
 
         if (element.tagName === "TITLE") {
             element.outerHTML = "<h1>" + element.innerHTML + "</h1>";
@@ -58,8 +58,8 @@ function grabSyosetu() {
     const title = document.querySelector(".p-novel__title");
     const content = document.querySelector("div.p-novel__body");
 
-    unwrapAllOfTag(title, "font");
-    unwrapAllOfTag(content, "font");
+    utils.unwrapAllOfTag(title, "font");
+    utils.unwrapAllOfTag(content, "font");
     content.querySelectorAll("*").forEach(element => {
         if (element.tagName === "P") {
             element.removeAttribute("id");
@@ -77,21 +77,21 @@ function grabTapas() {
 
     const content = document.querySelector("#viewport");
     content.querySelectorAll("*").forEach(element => {
-        removeAttributes(element, ["dir", "role", "lang"]);
-        replaceSemanticInlineStylesWithTags(element, true);
-        removeClasses(element, ["MsoNormal"]);
-        removeIdsThatStartWith(element, "docs-internal-guid-");
+        utils.removeAttributes(element, ["dir", "role", "lang"]);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.removeClasses(element, ["MsoNormal"]);
+        utils.removeIdsThatStartWith(element, "docs-internal-guid-");
 
         // tag <w:sdt> is not valid XHTML, convert it to span with class="sdttag"
         if (element.tagName && element.tagName.toLowerCase() === "w:sdt") {
-            removeAttributes(element, ["id", "sdttag"]);
+            utils.removeAttributes(element, ["id", "sdttag"]);
             const spanElement = element.ownerDocument.createElement("span");
             spanElement.classList.add("sdttag");
-            replaceTag(element, spanElement);
+            utils.replaceTag(element, spanElement);
         }
-        standardElementCleanup(element);
+        utils.standardElementCleanup(element);
     });
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
@@ -99,12 +99,12 @@ function grabTapas() {
 function grabJoara() {
     const content = document.querySelector(".text-wrap");
     content.querySelectorAll("*").forEach(element => {
-        removeTag(element, "SMALL")
+        utils.removeTag(element, "SMALL")
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
     });
-    unwrapAllOfTag(content, "font");
+    utils.unwrapAllOfTag(content, "font");
     return content.innerHTML;
 }
 
@@ -126,9 +126,9 @@ function grabChrysanthemum() {
         }
 
         if (element.classList.contains("jum")) {
-            cipherSubstitution(element, cipher);
+            utils.cipherSubstitution(element, cipher);
         }
-        removeClasses(element, ["jum", "emoji"]);
+        utils.removeClasses(element, ["jum", "emoji"]);
     });
     return "<h1>" + title + "</h1>" + "\n\n" + content.innerHTML;
 }
@@ -140,13 +140,13 @@ function grabSecondLifeTranslations() {
 
     content.querySelectorAll("*").forEach(element => {
         if (element.classList.contains("jmbl")) {
-            cipherSubstitution(element, cipher);
+            utils.cipherSubstitution(element, cipher);
         }
-        removeClasses(element, ["jmbl"]);
-        removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
-        standardElementCleanup(element);
+        utils.removeClasses(element, ["jmbl"]);
+        utils.removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
+        utils.standardElementCleanup(element);
     });
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -191,11 +191,11 @@ function grabBlogspot() {
         if (nextChapter) {
             element.remove();
         } else {
-            standardElementCleanup(element);
+            utils.standardElementCleanup(element);
         }
     });
-    unwrapAllOfTag(content, "A");
-    standardContentCleanup(content);
+    utils.unwrapAllOfTag(content, "A");
+    utils.standardContentCleanup(content);
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -211,8 +211,8 @@ function madaraWpTheme() {
         document.querySelector(".entry-content_wrap");
 
     content.querySelectorAll("*").forEach(element => {
-        removeSpansInsideParagraph(element);
-        removeTags(element, ["SCRIPT", "INS", "DIV"]);
+        utils.removeSpansInsideParagraph(element);
+        utils.removeTags(element, ["SCRIPT", "INS", "DIV"]);
     });
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
@@ -222,10 +222,10 @@ function grabWatashiWaSugoiDesu() {
     const content = document.querySelector("#wtr-content");
 
     content.querySelectorAll("*").forEach(element => {
-        removeAttributes(element, ["class", "style"]);
-        removeTags(element, ["SCRIPT", "SELECT"]);
-        removeElementWithClasses(element, ["ezoic-autoinsert-ad"]);
-        removeElementWithAttributes(element, ["data-ez-ph-id"]);
+        utils.removeAttributes(element, ["class", "style"]);
+        utils.removeTags(element, ["SCRIPT", "SELECT"]);
+        utils.removeElementWithClasses(element, ["ezoic-autoinsert-ad"]);
+        utils.removeElementWithAttributes(element, ["data-ez-ph-id"]);
     });
     return content.innerHTML.trim();
 }
@@ -241,12 +241,12 @@ function grabHyacinth() {
 
     const content = document.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, true);
-        trimWhitespace(element);
-        standardElementCleanup(element);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.trimWhitespace(element);
+        utils.standardElementCleanup(element);
     });
-    removeEmptyDivElements(content);
-    standardContentCleanup(content);
+    utils.removeEmptyDivElements(content);
+    utils.standardContentCleanup(content);
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
@@ -276,15 +276,15 @@ function grabStorySeedling() {
         title = `${storyTitle} ${title}`;
     }
 
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
         // remove all instances of cls followed by 18 other characters that are not whitespace
         // e.g. clsf7ee7eab1744489659
         element.textContent = element.textContent.replace(/cls[^\s]{18}/g, "");
-        cipherSubstitution(element, cipher, alphab);
+        utils.cipherSubstitution(element, cipher, alphab);
         // replace warn with nothing
         element.textContent = element.textContent.replace(warn, "");
-        removeAttributes(element, ["class"]);
+        utils.removeAttributes(element, ["class"]);
     });
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
 }
@@ -298,7 +298,7 @@ function grabRequiemtls() {
 
     content = standardCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        cipherSubstitution(element, cipher, alphab);
+        utils.cipherSubstitution(element, cipher, alphab);
     });
 
     return content.innerHTML.trim();
@@ -318,9 +318,9 @@ function grabFictioneer() {
     const footnotes = document.querySelector(".chapter__footnotes");
 
     content.querySelectorAll("*").forEach(element => {
-        removeSpansInsideParagraph(element);
-        removeAttributes(element, ["id", "data-paragraph-id"]);
-        removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
+        utils.removeSpansInsideParagraph(element);
+        utils.removeAttributes(element, ["id", "data-paragraph-id"]);
+        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
     });
     content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
     if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
@@ -356,11 +356,11 @@ function grabStarlightStream() {
     const title = document.querySelector("title").textContent;
 
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, true);
-        standardElementCleanup(element);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.standardElementCleanup(element);
     });
-    unwrapAllOfTag(content, "span");
-    standardContentCleanup(content);
+    utils.unwrapAllOfTag(content, "span");
+    utils.standardContentCleanup(content);
 
     // get all the p tags
     let fullText = "";
@@ -383,17 +383,17 @@ function grabNovelingua() {
     const content = document.querySelector(".entry-content")
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
-        replaceSemanticInlineStylesWithTags(element, true);
-        removeIdsThatStartWith(element, "docs-internal-guid-");
-        removeElementWithClasses(element, [
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.removeIdsThatStartWith(element, "docs-internal-guid-");
+        utils.removeElementWithClasses(element, [
             "pagelayer-btn-holder", "pagelayer-share", "pagelayer-anim-par",
             "pagelayer-image_slider", "pagelayer-embed"
         ])
-        removeClasses(element, ["pagelayer-text-holder"])
-        standardElementCleanup(element);
+        utils.removeClasses(element, ["pagelayer-text-holder"])
+        utils.standardElementCleanup(element);
     });
-    standardContentCleanup(content);
-    unwrapAllOfTag(content, "div");
+    utils.standardContentCleanup(content);
+    utils.unwrapAllOfTag(content, "div");
 
     // now that everything is flatter inside content, look for the end of the content
     let contentEnded = false;
@@ -431,9 +431,9 @@ function grabZenithtls() {
         title = title.replace(/'/g, "");
     }
 
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        standardElementCleanup(element);
+        utils.standardElementCleanup(element);
 
         // if element is div or span, remove it but keep the inner text
         if (element.tagName === "DIV" || element.tagName === "SPAN") {
@@ -460,15 +460,15 @@ function grabReadhive() {
     // remove " – Readhive" from the title
     title = title.replace(" – Readhive", "");
 
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        standardElementCleanup(element);
+        utils.standardElementCleanup(element);
         // remove "span" tag elements while keeping the inner text
         if (element.tagName === "SPAN") {
             element.outerHTML = element.innerHTML;
         }
-        removeElementWithClasses(element, ["absolute", "fixed", "flex", "sticky"]);
-        removeAttributes(element, ["@click"]);
+        utils.removeElementWithClasses(element, ["absolute", "fixed", "flex", "sticky"]);
+        utils.removeAttributes(element, ["@click"]);
     });
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
@@ -537,9 +537,9 @@ function grabAO3() {
 function grabLocalFile() {
     const content = document.querySelector("body");
     content.querySelectorAll("*").forEach(element => {
-        removeElementWithIds(element, ["goog-gt-tt"]);
+        utils.removeElementWithIds(element, ["goog-gt-tt"]);
     });
-    unwrapAllOfTag(content, "font");
+    utils.unwrapAllOfTag(content, "font");
     return content.innerHTML.trim();
 }
 
@@ -562,10 +562,10 @@ function grabKaristudio() {
     const content = document.querySelector("article");
     const title = document.querySelector(".title").textContent;
 
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
-        standardElementCleanup(element);
-        removeClasses(element, ["chapter_content"]);
+        utils.standardElementCleanup(element);
+        utils.removeClasses(element, ["chapter_content"]);
     });
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
@@ -595,8 +595,8 @@ function grabStandard(contentSelector = "body", titleSelector = "title") {
 
 function standardCleanup(content) {
     content.querySelectorAll("*").forEach(element => {
-        standardElementCleanup(element);
+        utils.standardElementCleanup(element);
     });
-    standardContentCleanup(content);
+    utils.standardContentCleanup(content);
     return content;
 }
