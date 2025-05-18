@@ -46,8 +46,8 @@ const WEBSITE_CONFIGS = {
             grabber: madaraWpTheme
         },
         wordpressSites: {
-            domains: ["eatapplepies.com", "ladyhotcombtranslations.com",
-                "littlepinkstarfish.com", "mendacity.me", "transweaver.com", "wordpress.com"],
+            domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
+                "maplesantl.com", "mendacity.me", "transweaver.com", "wordpress.com"],
             grabber: grabStandard(".entry-content")
         }
     }
