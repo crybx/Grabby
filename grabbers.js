@@ -242,7 +242,7 @@ function grabHyacinth() {
     const content = document.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
         utils.replaceSemanticInlineStylesWithTags(element, true);
-        utils.trimWhitespace(element);
+        // utils.trimWhitespace(element); (this is removing <b> tags?
         utils.standardElementCleanup(element);
     });
     utils.removeEmptyDivElements(content);

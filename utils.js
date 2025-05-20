@@ -20,6 +20,7 @@ const utils = (function() {
     }
 
     function trimWhitespace(element) {
+        // TODO: fix this removing <b> and other tags within <p>
         // trim whitespace from the beginning and end of the text if tag is p
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
