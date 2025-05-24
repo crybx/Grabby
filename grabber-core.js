@@ -36,7 +36,9 @@ const WEBSITE_CONFIGS = {
     },
     multiDomains: {
         fictioneerSites: {
-            domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz", "igniforge.com", "lilyonthevalley.com",
+            domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz",
+                "floraegarden.com",
+                "igniforge.com", "lilyonthevalley.com",
                 "novelib.com", "springofromance.com", "razentl.com"],
             grabber: grabFictioneer,
             useFirstHeadingTitle: true
