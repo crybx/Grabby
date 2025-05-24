@@ -319,8 +319,9 @@ const utils = (function() {
     function standardElementCleanup(element) {
         const ids = [
             "chapter-comments",
-            "novel_nav",
-            "donation-msg"
+            "donation-msg",
+            "grabby-button",
+            "novel_nav"
         ];
         const elementsWithClass = [
             "adsbygoogle",

@@ -537,7 +537,7 @@ function grabAO3() {
 function grabLocalFile() {
     const content = document.querySelector("body");
     content.querySelectorAll("*").forEach(element => {
-        utils.removeElementWithIds(element, ["goog-gt-tt"]);
+        utils.removeElementWithIds(element, ["goog-gt-tt", "grabby-button"]);
     });
     utils.unwrapAllOfTag(content, "font");
     return content.innerHTML.trim();
