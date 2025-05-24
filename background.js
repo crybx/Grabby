@@ -184,7 +184,7 @@ async function downloadAsFile(title, blobUrl, cleanup) {
     fileName = fileName.replace(/\./g, '_');
     // replace comma with nothing
     fileName = fileName.split(',').join('');
-    fileName = fileName + '.xhtml';
+    fileName = fileName + '.html';
     console.log(fileName);
 
     let options = {
