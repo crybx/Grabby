@@ -30,6 +30,10 @@
     {
       "matches": ["*://*.youtube.com/*"],
       "css": ["styles/youtube-nyan-cat.css"]
+    },
+    {
+      "matches": ["*://*.ridibooks.com/*"],
+      "css": ["styles/ridibooks.css"]
     }
   ],
   "commands": {

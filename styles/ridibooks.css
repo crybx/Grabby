@@ -1,0 +1,7 @@
+/* Site-specific styles for ridibooks.com */
+p {
+    font-family: Helvetica, serif !important;
+    text-align: left !important;
+    overflow-wrap: break-word;
+    word-break: break-word !important;
+}
