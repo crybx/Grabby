@@ -82,6 +82,9 @@ async function injectGrabbingScriptsAndExecute(tabId) {
         }).then(() => {
             // Move to the next script
             return injectScriptsSequentially(index + 1);
+        }).catch(error => {
+            console.error(`Failed to inject ${scripts[index]}:`, error);
+            throw error;
         });
     }
 
@@ -121,14 +124,21 @@ async function getTabId(message, sender) {
 async function grabContent(message, sender) {
     let tabId = await getTabId(message, sender);
     if (tabId) {
-        // Inject scripts and execute grabbing function
-        injectGrabbingScriptsAndExecute(tabId)
-            .then(() => {
-                console.log("Content grabbing initiated via keyboard shortcut");
-            })
-            .catch(error => {
-                console.error("Error during script injection or execution:", error);
-            });
+        try {
+            // Get tab info to check if it's a file URL
+            const tab = await chrome.tabs.get(tabId);
+            console.log("Grabbing content from:", tab.url);
+            
+            // Inject scripts and execute grabbing function
+            await injectGrabbingScriptsAndExecute(tabId);
+            console.log("Content grabbing initiated successfully");
+        } catch (error) {
+            console.error("Error during script injection or execution:", error);
+            // If it's a file URL and scripting fails, we might need a different approach
+            if (error.message && error.message.includes("Cannot access")) {
+                console.error("Cannot access file:// URL. Make sure 'Allow access to file URLs' is enabled for this extension.");
+            }
+        }
     }
 }
 

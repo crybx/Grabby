@@ -19,10 +19,11 @@
     "scripting",
     "tabs"
   ],
-  "host_permissions": ["*://*/*"],
+  "host_permissions": ["*://*/*", "file:///*"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "match_origin_as_fallback": true,
       "css": ["styles/grabby.css"],
       "js": ["grabby-button.js"]
     },
@@ -43,7 +44,8 @@
   "web_accessible_resources": [
     {
       "resources": ["images/clipboard128.png"],
-      "matches": ["<all_urls>"]
+      "matches": ["<all_urls>"],
+      "match_origin_as_fallback": true
     }
   ]
 }
