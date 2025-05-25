@@ -23,7 +23,7 @@ const WEBSITE_CONFIGS = {
         "reaperscans.com": { grabber: grabStandard("#reader-container", null) },
         "requiemtls.com": { grabber: grabRequiemtls },
         "ridibooks.com": { grabber: grabRidi },
-        "page.kakao.com": { grabber: grabKakaoPage },
+        "page.kakao.com": { grabber: grabKakaoPage, useFirstHeadingTitle: true },
         "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
         "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },
         "starlightstream.net": { grabber: grabStarlightStream },

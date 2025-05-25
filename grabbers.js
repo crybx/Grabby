@@ -1,7 +1,8 @@
 function grabKakaoPage() {
     const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
-    const content = shadowRoot.querySelector(".DC2CN");
+    const content = shadowRoot.querySelector(".DC2CN") ||
+        shadowRoot.querySelector(".DC1CN");
     content.querySelectorAll("*").forEach(element => {
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);
