@@ -572,6 +572,26 @@ function grabKaristudio() {
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
+function grabWebnovel() {
+    const contentOrig = document.querySelector(".chapter_content");
+    // create a clone of the content to not disrupt the original content
+    const content = contentOrig.cloneNode(true);
+
+    utils.standardContentCleanup(content);
+    content.querySelectorAll("*").forEach(element => {
+        utils.removeClasses(element, ["db", "pr", "hover-light"]);
+        utils.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
+        utils.removeAttributesThatStartWith(element, ["data-"]);
+        utils.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment"]);
+        utils.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.standardElementCleanup(element);
+    });
+    utils.unwrapAllOfTag(content, "div");
+
+    return content.innerHTML.trim();
+}
+
 /**
  * Creates a standard grabber function
  * @param {string} [contentSelector="body"] - Selector for content

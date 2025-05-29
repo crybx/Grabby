@@ -30,6 +30,7 @@ const WEBSITE_CONFIGS = {
         "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
         "syosetu.com": { grabber: grabSyosetu },
         "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },
+        "webnovel.com": { grabber: grabWebnovel },
         "watashiwasugoidesu.com": { grabber: grabWatashiWaSugoiDesu },
         "yoru.world": { grabber: grabYoruWorld, useFirstHeadingTitle: true },
         "zenithtls.com": { grabber: grabZenithtls, useFirstHeadingTitle: true },
