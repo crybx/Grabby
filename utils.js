@@ -9,8 +9,6 @@ const utils = (function() {
                 const h1 = document.createElement("h1");
                 replaceTag(firstP, h1);
             } else if (title && title.trim()) {
-                console.log("I SEE NO HEADER and no chapter/episode numbering in this p:");
-                console.log(firstP.textContent);
                 // add h1 with title
                 const h1 = document.createElement("h1");
                 h1.textContent = title;
@@ -20,10 +18,33 @@ const utils = (function() {
     }
 
     function trimWhitespace(element) {
-        // TODO: fix this removing <b>, <i> and other tags within <p>
-        // trim whitespace from the beginning and end of the text if tag is p
+        // Only process paragraph elements
         if (element.tagName === "P") {
-            element.textContent = element.textContent.trim();
+            // Check if the element has any child nodes
+            if (element.childNodes.length > 0) {
+                // Trim leading whitespace
+                let firstNode = element.childNodes[0];
+                if (firstNode.nodeType === Node.TEXT_NODE && firstNode.nodeValue.trim() === '') {
+                    // If it's an empty text node, remove it
+                    firstNode.remove();
+                } else if (firstNode.nodeType === Node.TEXT_NODE) {
+                    // If it's a text node with content, trim the leading whitespace
+                    firstNode.nodeValue = firstNode.nodeValue.replace(/^\s+/, '');
+                }
+
+                // Trim trailing whitespace
+                let lastNode = element.childNodes[element.childNodes.length - 1];
+                if (lastNode.nodeType === Node.TEXT_NODE && lastNode.nodeValue.trim() === '') {
+                    // If it's an empty text node, remove it
+                    lastNode.remove();
+                } else if (lastNode.nodeType === Node.TEXT_NODE) {
+                    // If it's a text node with content, trim the trailing whitespace
+                    lastNode.nodeValue = lastNode.nodeValue.replace(/\s+$/, '');
+                }
+            } else {
+                // If there are no child nodes, just use the simple approach
+                element.textContent = element.textContent.trim();
+            }
         }
     }
 
@@ -34,16 +55,24 @@ const utils = (function() {
     }
 
     function removeTags(element, tagNames) {
-        // Something is a little off about the name of this method for what it does
-        // TODO: handle if tagNames is not an array and make it case insensitive
-        if (tagNames.includes(element.tagName)) {
+        // Handle if tagNames is not an array
+        const tagNamesArray = Array.isArray(tagNames) ? tagNames : [tagNames];
+
+        // Make comparison case-insensitive by converting element's tag name to uppercase
+        // and ensuring all tagNames are uppercase for comparison
+        const elementTagUpper = element.tagName.toUpperCase();
+
+        // Check if the element's tag (case-insensitive) is in the tagNames array
+        if (tagNamesArray.some(tag => tag.toUpperCase() === elementTagUpper)) {
             element.remove();
         }
     }
 
     function removeTagsFromContent(content, tagNames) {
-        // TODO: handle if tagNames is not an array
-        for (let tagName of tagNames) {
+        // Convert single tagName to array for consistent handling
+        const tagNamesArray = Array.isArray(tagNames) ? tagNames : [tagNames];
+
+        for (let tagName of tagNamesArray) {
             let elements = content?.querySelectorAll(tagName);
             if (elements?.length > 0) {
                 removeElements(elements);
@@ -51,37 +80,56 @@ const utils = (function() {
         }
     }
 
-    // TODO: handle if elements is not an array
-
     function removeElements(elements) {
+        // Handle if elements is not an array or NodeList
+        if (!elements) {
+            return; // Handle null/undefined case
+        }
+
+        // If it's a single element (not iterable)
+        if (elements.nodeType || !elements[Symbol.iterator]) {
+            elements.remove();
+            return;
+        }
+
+        // Handle array, NodeList, or other iterable collections
         for (let e of elements) {
             e.remove();
         }
     }
 
     function removeElementWithClasses(element, classNames) {
-        // TODO: handle if classNames is not an array
-        for (let className of classNames) {
+        // Convert single string to array for consistent handling
+        const classNamesArray = Array.isArray(classNames) ? classNames : [classNames];
+
+        for (let className of classNamesArray) {
             if (element.classList.contains(className)) {
                 element.remove();
+                break; // Once element is removed, no need to check other classes
             }
         }
     }
 
     function removeElementWithAttributes(element, attributes) {
-        // TODO: handle if attributes is not an array
-        for (let attribute of attributes) {
+        // Convert single attribute to array for consistent handling
+        const attributesArray = Array.isArray(attributes) ? attributes : [attributes];
+
+        for (let attribute of attributesArray) {
             if (element.hasAttribute(attribute)) {
                 element.remove();
+                break; // Once element is removed, no need to check other attributes
             }
         }
     }
 
     function removeElementWithIds(element, ids) {
-        // TODO: handle if ids is not an array
-        for (let id of ids) {
+        // Convert single id to array for consistent handling
+        const idsArray = Array.isArray(ids) ? ids : [ids];
+
+        for (let id of idsArray) {
             if (element.id === id) {
                 element.remove();
+                break; // Once element is removed, no need to check other ids
             }
         }
     }
@@ -115,21 +163,72 @@ const utils = (function() {
         }
     }
 
-    function removeClassesThatStartWith(element, prefix) {
+    function removeClassesThatStartWith(element, prefixes) {
+        // Convert single string to array for consistent handling
+        const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+
+        // Get all classes
         let classes = element.classList;
+        let classesToRemove = [];
+
+        // First collect all classes to remove
         for (let c of classes) {
-            if (c.startsWith(prefix)) {
-                element.classList.remove(c);
+            for (let prefix of prefixArray) {
+                if (c.startsWith(prefix)) {
+                    classesToRemove.push(c);
+                    break; // No need to check other prefixes for this class
+                }
             }
         }
+
+        // Then remove them
+        for (let classToRemove of classesToRemove) {
+            element.classList.remove(classToRemove);
+        }
+
+        // Remove the class attribute if no classes remain
         if (element.classList.length === 0) {
             removeAttributes(element, "class");
         }
     }
 
-    function removeIdsThatStartWith(element, prefix) {
-        if (element.id?.startsWith(prefix)) {
-            removeAttributes(element, "id");
+    function removeIdsThatStartWith(element, prefixes) {
+        // Convert single string to array for consistent handling
+        const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+
+        // Check if element has an id and if it starts with any of the prefixes
+        if (element.id) {
+            for (let prefix of prefixArray) {
+                if (element.id.startsWith(prefix)) {
+                    removeAttributes(element, "id");
+                    break; // No need to check other prefixes once id is removed
+                }
+            }
+        }
+    }
+
+    function removeAttributesThatStartWith(element, prefixes) {
+        // Convert single string to array for consistent handling
+        const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+
+        // Get all attributes
+        const attributes = element.attributes;
+        const attributesToRemove = [];
+
+        // First collect all attributes to remove
+        for (let i = 0; i < attributes.length; i++) {
+            const attr = attributes[i];
+            for (let prefix of prefixArray) {
+                if (attr.name.startsWith(prefix)) {
+                    attributesToRemove.push(attr.name);
+                    break; // No need to check other prefixes for this attribute
+                }
+            }
+        }
+
+        // Then remove them
+        for (let attrName of attributesToRemove) {
+            element.removeAttribute(attrName);
         }
     }
 
@@ -316,12 +415,49 @@ const utils = (function() {
         }
     }
 
+    function removeElementWithClassesThatStartWith(element, prefixes) {
+        // Convert single string to array for consistent handling
+        const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+
+        // Check if element has classes
+        if (element.classList && element.classList.length > 0) {
+            // Check each class against each prefix
+            for (let prefix of prefixArray) {
+                for (let className of element.classList) {
+                    if (className.startsWith(prefix)) {
+                        element.remove();
+                        return; // Once element is removed, no need to continue
+                    }
+                }
+            }
+        }
+    }
+
+    function removeElementWithIdsThatStartWith(element, prefixes) {
+        // Convert single string to array for consistent handling
+        const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
+
+        // Check if element has an id
+        if (element.id) {
+            // Check if the id starts with any of the prefixes
+            for (let prefix of prefixArray) {
+                if (element.id.startsWith(prefix)) {
+                    element.remove();
+                    return; // Once element is removed, no need to continue
+                }
+            }
+        }
+    }
+
     function standardElementCleanup(element) {
         const ids = [
             "chapter-comments",
             "donation-msg",
             "grabby-button",
             "novel_nav"
+        ];
+        const idPrefixes = [
+            "google-ads"
         ];
         const elementsWithClass = [
             "adsbygoogle",
@@ -361,6 +497,7 @@ const utils = (function() {
             "role"
         ];
         removeElementWithIds(element, ids);
+        removeElementWithIdsThatStartWith(element, idPrefixes);
         removeElementWithClasses(element, elementsWithClass);
         removeElementWithAttributes(element, elementsWithAttribute);
         replaceSemanticInlineStylesWithTags(element, false);
@@ -423,10 +560,13 @@ const utils = (function() {
         removeTagsFromContent: removeTagsFromContent,
         removeElements: removeElements,
         removeElementWithClasses: removeElementWithClasses,
+        removeElementWithClassesThatStartWith: removeElementWithClassesThatStartWith,
         removeElementWithAttributes: removeElementWithAttributes,
         removeElementWithIds: removeElementWithIds,
+        removeElementWithIdsThatStartWith: removeElementWithIdsThatStartWith,
         removeSpansInsideParagraph: removeSpansInsideParagraph,
         removeEmptyParagraphAndHeadings: removeEmptyParagraphAndHeadings,
+        removeAttributesThatStartWith: removeAttributesThatStartWith,
         removeClasses: removeClasses,
         removeClassesThatStartWith: removeClassesThatStartWith,
         removeIdsThatStartWith: removeIdsThatStartWith,
