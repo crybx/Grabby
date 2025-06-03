@@ -15,6 +15,7 @@ const WEBSITE_CONFIGS = {
         "joara.com": { grabber: grabJoara },
         "karistudio.com": { grabber: grabKaristudio },
         "lightnovelworld.co": { grabber: grabStandard("#chapter-container", ".chapter-title") },
+        "lilyonthevalley.com": { grabber: grabLilyonthevalley, useFirstHeadingTitle: true },
         "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
         "noveltranslation.net": { grabber: grabNovelTranslationNet },
         "patreon.com": { grabber: grabPatreon },
@@ -39,7 +40,7 @@ const WEBSITE_CONFIGS = {
         fictioneerSites: {
             domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz",
                 "floraegarden.com",
-                "igniforge.com", "lilyonthevalley.com",
+                "igniforge.com",
                 "novelib.com", "springofromance.com", "razentl.com"],
             grabber: grabFictioneer,
             useFirstHeadingTitle: true

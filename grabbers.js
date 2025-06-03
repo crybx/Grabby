@@ -329,6 +329,46 @@ function grabFictioneer() {
     return content;
 }
 
+function grabLilyonthevalley() {
+    let storyName = document.querySelector(".chapter__story-link")?.textContent;
+    console.log("storyName: " + storyName);
+    let title = document.querySelector(".chapter__title")?.textContent;
+    let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
+        document.querySelector(".chapter__group")?.textContent;
+    if (subtitle) { title += ": " + subtitle; }
+    if (storyName) { title = storyName + ": " + title; }
+
+    let content = document.querySelector(".chapter-formatting") ||
+        document.querySelector("#chapter-content");
+
+    const footnotes = document.querySelector(".chapter__footnotes");
+
+    content.querySelectorAll("*").forEach(element => {
+        // if it's a p tag and does not have attribute data-paragraph-id, remove it
+        if (element.tagName === "P" && !element.hasAttribute("data-paragraph-id")) {
+            element.remove();
+        }
+        // if it's a span
+        // and its text content has no spaces or punctuation .!?"“”'‘’,~
+        // and there is one class with a name longer than 8 characters and no dashes or underscores
+        if (element.tagName === "SPAN"
+           && /^[^\s.!?"“”'‘’,~]+$/.test(element.textContent.trim())
+            && element.classList?.length === 1
+            && element.classList[0].length >= 5
+            && !/[-_]/.test(element.classList[0])) {
+            // and if the class name matches the regex
+            element.remove();
+        }
+
+        utils.removeAttributes(element, ["id", "data-paragraph-id"]);
+        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
+    });
+    content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
+    if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
+
+    return content;
+}
+
 function grabPatreon() {
     const content = document.querySelector("body");
 
