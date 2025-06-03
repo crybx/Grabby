@@ -1,0 +1,9 @@
+/* This blocks covers the content when adblockers are detected */
+#gsvtiyrlc-blanket {
+    visibility: hidden !important;
+}
+
+/* This undoes the disabling of scrolling that happens when adblockers are detected */
+.gsvtiyrlc-disable-scroll {
+    overflow-y: auto !important;
+}
