@@ -153,6 +153,8 @@ Enable Ctrl+click functionality on peachtea.agency to open chapter links in new 
 - `/mnt/r/repos/grabby/manifest.json` - Added content script injection
 - `/mnt/r/repos/grabby/background.js` - Added debug log handling and background tab creation
 - `/mnt/r/repos/grabby/uuid-finder.js` - UUID search utility script
+- `/mnt/r/repos/grabby/pre-grab-actions.js` - Pre-grab utility functions
+- `/mnt/r/repos/grabby/post-grab-actions.js` - Post-grab utility functions
 
 ## Debugging
 

@@ -1,6 +1,6 @@
 // Function to inject scripts sequentially and then execute a callback function
 async function injectGrabbingScriptsAndExecute(tabId) {
-    const scripts = ['utils.js', 'grabbers.js', 'grabber-core.js'];
+    const scripts = ['utils.js', 'pre-grab-actions.js', 'post-grab-actions.js', 'grabbers.js', 'grabber-core.js'];
 
     // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
     const coreCheckResult = await chrome.scripting.executeScript({
@@ -51,6 +51,8 @@ async function injectGrabbingScriptsAndExecute(tabId) {
         const scriptName = scripts[index].replace('.js', '');
         const variablesToCheck = {
             'utils': ['removeTag', 'unwrapTag'], // Functions from utils.js
+            'pre-grab-actions': ['PreGrabActions'], // Object from pre-grab-actions.js
+            'post-grab-actions': ['PostGrabActions'], // Object from post-grab-actions.js
             'grabbers': ['grabRidi', 'grabPatreon'], // Functions from grabbers.js
             'grabber-core': ['GrabbyCore'] // Object from grabber-core.js
         };
@@ -127,11 +129,9 @@ async function grabContent(message, sender) {
         try {
             // Get tab info to check if it's a file URL
             const tab = await chrome.tabs.get(tabId);
-            console.log("Grabbing content from:", tab.url);
             
             // Inject scripts and execute grabbing function
             await injectGrabbingScriptsAndExecute(tabId);
-            console.log("Content grabbing initiated successfully");
         } catch (error) {
             console.error("Error during script injection or execution:", error);
             // If it's a file URL and scripting fails, we might need a different approach

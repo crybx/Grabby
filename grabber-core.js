@@ -1,4 +1,17 @@
 // Website configurations
+// Each site config can have:
+// - grabber: function to extract content (required)
+// - useFirstHeadingTitle: boolean to use first <h1> as title (optional)
+// - preGrab: function to run before grabbing content (optional)
+// - postGrab: function to run after grabbing content (optional)
+//
+// Example usage:
+// "example.com": { 
+//     grabber: grabExample,
+//     useFirstHeadingTitle: true,
+//     preGrab: PreGrabActions.scrollToBottom,  // Pre-grab actions
+//     postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true })  // Post-grab actions
+// }
 const WEBSITE_CONFIGS = {
     // Grabbers for single domains
     singleDomains: {
@@ -19,7 +32,12 @@ const WEBSITE_CONFIGS = {
         "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
         "noveltranslation.net": { grabber: grabNovelTranslationNet },
         "patreon.com": { grabber: grabPatreon },
-        "peachtea.agency": { grabber: grabPeachTeaAgency, useFirstHeadingTitle: true },
+        "peachtea.agency": { 
+            grabber: grabPeachTeaAgency, 
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.peachTeaClickAllOnOnePageButton,
+            postGrab: PostGrabActions.peachTeaClickNextChapterLink
+        },
         "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
         "reaperscans.com": { grabber: grabStandard("#reader-container", null) },
         "requiemtls.com": { grabber: grabRequiemtls },
@@ -44,6 +62,9 @@ const WEBSITE_CONFIGS = {
                 "novelib.com", "springofromance.com", "razentl.com"],
             grabber: grabFictioneer,
             useFirstHeadingTitle: true
+            // Example: You can add preGrab and postGrab functions here too
+            // preGrab: PreGrabActions.scrollToBottom,
+            // postGrab: PostGrabActions.clickElementWithText("Next Chapter")
         },
         madaraWpSites: {
             domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
@@ -112,6 +133,15 @@ async function grabFromWebsite() {
             const config = findMatchingConfig(url);
 
             if (config) {
+                // Run pre-grab function if it exists
+                if (config.preGrab && typeof config.preGrab === 'function') {
+                    try {
+                        await config.preGrab();
+                    } catch (preGrabError) {
+                        console.error("Error in pre-grab function:", preGrabError);
+                    }
+                }
+
                 try {
                     content = config.grabber();
                 } catch (grabError) {
@@ -132,6 +162,18 @@ async function grabFromWebsite() {
 
         if (!content || content.trim() === "") {
             throw new Error("No content could be extracted from this page");
+        }
+
+        // Run post-grab function if it exists
+        if (!url.includes("file://")) {
+            const config = findMatchingConfig(url);
+            if (config && config.postGrab && typeof config.postGrab === 'function') {
+                try {
+                    config.postGrab();
+                } catch (postGrabError) {
+                    console.error("Error in post-grab function:", postGrabError);
+                }
+            }
         }
 
         return { filename, content };
@@ -229,6 +271,7 @@ async function handleContentDownload(filename, content) {
         if (blobUrl) URL.revokeObjectURL(blobUrl);
     }
 }
+
 
 // Export functions for use in other files
 window.GrabbyCore = {
