@@ -161,6 +161,18 @@ async function handleMessages(message, sender, sendResponse) {
         case 'grabContent':
             await grabContent(message, sender);
             break;
+        case 'openBackgroundTab':
+            // Open URL in background tab (for Ctrl+click functionality)
+            try {
+                chrome.tabs.create({
+                    url: message.url,
+                    active: false
+                });
+                console.log('Opened background tab:', message.url);
+            } catch (error) {
+                console.error('Failed to open background tab:', error);
+            }
+            break;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }

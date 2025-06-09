@@ -17,7 +17,8 @@
     "activeTab",
     "downloads",
     "scripting",
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "host_permissions": ["*://*/*", "file:///*"],
   "content_scripts": [
@@ -38,6 +39,10 @@
     {
       "matches": ["*://*.hyacinthbloom.com/*"],
       "css": ["styles/hyacinth.css"]
+    },
+    {
+      "matches": ["*://*.peachtea.agency/*"],
+      "js": ["ctrl-click-enhancer.js"]
     }
   ],
   "commands": {
