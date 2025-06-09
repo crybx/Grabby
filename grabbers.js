@@ -331,7 +331,6 @@ function grabFictioneer() {
 
 function grabLilyonthevalley() {
     let storyName = document.querySelector(".chapter__story-link")?.textContent;
-    console.log("storyName: " + storyName);
     let title = document.querySelector(".chapter__title")?.textContent;
     let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
         document.querySelector(".chapter__group")?.textContent;
@@ -527,12 +526,19 @@ function grabPeachTeaAgency() {
             // text is in the a tag
             title += li[i].querySelector("a").textContent + " ";
         }
-
-        // replace all spaces and apostrophes with underscores
-        title = title.trim().replace(/ /g, "_");
-        // remove apostrophes and make sure to properly escape the ' character in the regex
-        title = title.replace(/'/g, "");
     }
+    document.querySelectorAll(".text-lg").forEach(element => {
+        // if textContent contains [number] or Episode, then it's the episode
+        if (element.textContent.match(/\[\d+\]/) || element.textContent.toLowerCase().includes("episode")) {
+            let episode = element.textContent.trim();
+            // Add episode to title if found
+            if (episode) {
+                title = `${title} ${episode}`;
+                // add a space after ]
+                title = title.replace(/\]/g, "] ");
+            }
+        }
+    });
 
     // TODO: make this a util function
     // wrap raw text in p tags
@@ -562,6 +568,11 @@ function grabPeachTeaAgency() {
         }
     });
 
+    // convert title to Title case
+    title = title.split(' ').map(word => {
+        if (word.length === 0) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    }).join(' ');
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 
