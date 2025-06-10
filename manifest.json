@@ -18,7 +18,8 @@
     "downloads",
     "scripting",
     "tabs",
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": ["*://*/*", "file:///*"],
   "content_scripts": [
