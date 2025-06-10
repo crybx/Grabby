@@ -177,17 +177,21 @@ async function handleMessages(message, sender, sendResponse) {
         await startBulkGrab(message.pageCount, message.delaySeconds, sender);
         break;
     case "stopBulkGrab":
-        stopBulkGrab();
+        await stopBulkGrab(sender);
         break;
     case "getBulkGrabStatus":
         // Handle async response properly
-        (async () => {
-            const status = await getBulkGrabStatus();
+        void (async () => {
+            const tabId = await getTabId(message, sender);
+            const status = await getBulkGrabStatus(tabId);
             sendResponse(status);
         })();
         return true; // Keep message channel open for async response
     case "clearBulkGrabStatus":
-        await chrome.storage.local.remove(BULK_GRAB_STORAGE_KEY);
+        void (async () => {
+            const tabId = await getTabId(message, sender);
+            await removeBulkGrabState(tabId);
+        })();
         break;
     default:
         console.warn(`Unexpected message type received: '${message.type}'.`);
@@ -229,8 +233,14 @@ async function downloadAsFile(title, blobUrl, cleanup) {
 // BULK GRABBING FUNCTIONALITY - Using alarms for persistence across service worker restarts
 // =============================================================================
 
-const BULK_GRAB_ALARM = "bulkGrabNextPage";
-const BULK_GRAB_STORAGE_KEY = "bulkGrabState";
+// Helper functions for tab-specific storage and alarms
+function getBulkGrabAlarmName(tabId) {
+    return `bulkGrabNextPage_${tabId}`;
+}
+
+function getBulkGrabStorageKey(tabId) {
+    return `bulkGrabState_${tabId}`;
+}
 
 // Send status update to popup
 function sendStatusToPopup(status, progress) {
@@ -245,14 +255,16 @@ function sendStatusToPopup(status, progress) {
 }
 
 // Send completion message to popup
-async function sendCompletionToPopup() {
-    const state = await loadBulkGrabState();
-    if (state) {
-        // Save completion status
-        state.isRunning = false;
-        state.lastStatus = "Completed!";
-        state.lastProgress = 100;
-        await saveBulkGrabState(state);
+async function sendCompletionToPopup(tabId) {
+    if (tabId) {
+        const state = await loadBulkGrabState(tabId);
+        if (state) {
+            // Save completion status
+            state.isRunning = false;
+            state.lastStatus = "Completed!";
+            state.lastProgress = 100;
+            await saveBulkGrabState(tabId, state);
+        }
     }
     
     chrome.runtime.sendMessage({
@@ -264,15 +276,17 @@ async function sendCompletionToPopup() {
 }
 
 // Send stopped message to popup
-async function sendStoppedToPopup() {
-    const state = await loadBulkGrabState();
-    if (state) {
-        // Save stopped status
-        state.isRunning = false;
-        state.lastStatus = "Stopped";
-        state.lastProgress = state.currentPage && state.totalPages ? 
-            Math.round((state.currentPage / state.totalPages) * 100) : 0;
-        await saveBulkGrabState(state);
+async function sendStoppedToPopup(tabId) {
+    if (tabId) {
+        const state = await loadBulkGrabState(tabId);
+        if (state) {
+            // Save stopped status
+            state.isRunning = false;
+            state.lastStatus = "Stopped";
+            state.lastProgress = state.currentPage && state.totalPages ? 
+                Math.round((state.currentPage / state.totalPages) * 100) : 0;
+            await saveBulkGrabState(tabId, state);
+        }
     }
     
     chrome.runtime.sendMessage({
@@ -283,10 +297,17 @@ async function sendStoppedToPopup() {
     });
 }
 
-// Get current bulk grab status from storage
-async function getBulkGrabStatus() {
-    const result = await chrome.storage.local.get(BULK_GRAB_STORAGE_KEY);
-    const state = result[BULK_GRAB_STORAGE_KEY];
+// Get current bulk grab status from storage for a specific tab
+async function getBulkGrabStatus(tabId) {
+    if (!tabId) return {
+        isRunning: false,
+        status: "Ready", 
+        progress: 0
+    };
+    
+    const storageKey = getBulkGrabStorageKey(tabId);
+    const result = await chrome.storage.session.get(storageKey);
+    const state = result[storageKey];
     
     if (!state) {
         return {
@@ -318,20 +339,26 @@ async function getBulkGrabStatus() {
     };
 }
 
-// Save bulk grab state to storage
-async function saveBulkGrabState(state) {
-    await chrome.storage.local.set({ [BULK_GRAB_STORAGE_KEY]: state });
+// Save bulk grab state to storage for a specific tab
+async function saveBulkGrabState(tabId, state) {
+    if (!tabId) return;
+    const storageKey = getBulkGrabStorageKey(tabId);
+    await chrome.storage.session.set({ [storageKey]: state });
 }
 
-// Load bulk grab state from storage
-async function loadBulkGrabState() {
-    const result = await chrome.storage.local.get(BULK_GRAB_STORAGE_KEY);
-    return result[BULK_GRAB_STORAGE_KEY] || null;
+// Load bulk grab state from storage for a specific tab
+async function loadBulkGrabState(tabId) {
+    if (!tabId) return null;
+    const storageKey = getBulkGrabStorageKey(tabId);
+    const result = await chrome.storage.session.get(storageKey);
+    return result[storageKey] || null;
 }
 
 // Clear bulk grab state (but preserve last status for popup display)
-async function clearBulkGrabState() {
-    const state = await loadBulkGrabState();
+async function clearBulkGrabState(tabId) {
+    if (!tabId) return;
+    
+    const state = await loadBulkGrabState(tabId);
     if (state) {
         // Keep the last status info but clear running state
         const preservedState = {
@@ -342,26 +369,36 @@ async function clearBulkGrabState() {
             totalPages: state.totalPages,
             delaySeconds: state.delaySeconds
         };
-        await saveBulkGrabState(preservedState);
+        await saveBulkGrabState(tabId, preservedState);
     }
-    chrome.alarms.clear(BULK_GRAB_ALARM);
+    chrome.alarms.clear(getBulkGrabAlarmName(tabId));
+}
+
+// Completely remove bulk grab state for a tab (used when tab closes)
+async function removeBulkGrabState(tabId) {
+    if (!tabId) return;
+    
+    const storageKey = getBulkGrabStorageKey(tabId);
+    await chrome.storage.session.remove(storageKey);
+    chrome.alarms.clear(getBulkGrabAlarmName(tabId));
 }
 
 // Start bulk grab process
 async function startBulkGrab(pageCount, delaySeconds, sender) {
-    const existingState = await loadBulkGrabState();
-    if (existingState && existingState.isRunning) {
-        console.log("Bulk grab already running");
-        return;
-    }
-    
     const tabId = await getTabId(null, sender);
     if (!tabId) {
         console.error("No tab ID available for bulk grab");
         return;
     }
     
-    // Initialize state
+    // Check if this tab already has a running bulk grab
+    const existingState = await loadBulkGrabState(tabId);
+    if (existingState && existingState.isRunning) {
+        console.log(`Bulk grab already running for tab ${tabId}`);
+        return;
+    }
+    
+    // Initialize state for this tab
     const state = {
         isRunning: true,
         shouldStop: false,
@@ -372,54 +409,65 @@ async function startBulkGrab(pageCount, delaySeconds, sender) {
         tabId: tabId
     };
     
-    await saveBulkGrabState(state);
+    await saveBulkGrabState(tabId, state);
     
-    console.log(`Starting bulk grab: ${pageCount} pages with ${delaySeconds}s delay`);
+    console.log(`Starting bulk grab for tab ${tabId}: ${pageCount} pages with ${delaySeconds}s delay`);
     sendStatusToPopup("Starting bulk grab...", 0);
     
     // Start the first grab immediately
-    performNextBulkGrab();
+    performNextBulkGrab(tabId);
 }
 
-// Stop bulk grab process
-async function stopBulkGrab() {
-    const state = await loadBulkGrabState();
+// Stop bulk grab process for current tab
+async function stopBulkGrab(sender) {
+    const tabId = await getTabId(null, sender);
+    if (!tabId) {
+        console.error("No tab ID available for stopping bulk grab");
+        return;
+    }
+    
+    const state = await loadBulkGrabState(tabId);
     if (!state || !state.isRunning) {
         return;
     }
     
-    console.log("Stopping bulk grab");
-    await clearBulkGrabState();
-    sendStoppedToPopup();
+    console.log(`Stopping bulk grab for tab ${tabId}`);
+    await clearBulkGrabState(tabId);
+    sendStoppedToPopup(tabId);
 }
 
 // Perform the next bulk grab - called by alarm or directly
-async function performNextBulkGrab() {
-    const state = await loadBulkGrabState();
+async function performNextBulkGrab(tabId) {
+    if (!tabId) {
+        console.error("No tab ID provided for performNextBulkGrab");
+        return;
+    }
+    
+    const state = await loadBulkGrabState(tabId);
     
     if (!state || !state.isRunning || state.shouldStop) {
-        console.log("Bulk grab stopped or not running");
-        await clearBulkGrabState();
+        console.log(`Bulk grab stopped or not running for tab ${tabId}`);
+        await clearBulkGrabState(tabId);
         return;
     }
     
     // Check if we're done
     if (state.currentPage >= state.totalPages) {
         const duration = Math.round((Date.now() - state.startTime) / 1000);
-        console.log(`Bulk grab completed: ${state.totalPages} pages in ${duration}s`);
-        sendCompletionToPopup();
-        await clearBulkGrabState();
+        console.log(`Bulk grab completed for tab ${tabId}: ${state.totalPages} pages in ${duration}s`);
+        sendCompletionToPopup(tabId);
+        await clearBulkGrabState(tabId);
         return;
     }
     
     state.currentPage++;
     const progress = Math.round((state.currentPage / state.totalPages) * 100);
     
-    console.log(`Bulk grab: page ${state.currentPage} of ${state.totalPages}`);
+    console.log(`Bulk grab tab ${tabId}: page ${state.currentPage} of ${state.totalPages}`);
     sendStatusToPopup(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
     
     // Save updated state
-    await saveBulkGrabState(state);
+    await saveBulkGrabState(tabId, state);
     
     try {
         // Perform the grab
@@ -431,39 +479,39 @@ async function performNextBulkGrab() {
             
             // Use Chrome alarms API for delays >= 60s, setTimeout with keepalive for shorter delays
             if (state.delaySeconds >= 60) {
-                chrome.alarms.create(BULK_GRAB_ALARM, { 
+                chrome.alarms.create(getBulkGrabAlarmName(tabId), { 
                     delayInMinutes: state.delaySeconds / 60 
                 });
             } else {
                 // For delays < 60s, use setTimeout with keepalive to prevent service worker timeout
-                keepAliveAndSchedule(state.delaySeconds);
+                keepAliveAndSchedule(tabId, state.delaySeconds);
             }
         } else {
             // This was the last page, finish up
-            setTimeout(() => performNextBulkGrab(), 100);
+            setTimeout(() => performNextBulkGrab(tabId), 100);
         }
         
     } catch (error) {
-        console.error(`Error during bulk grab page ${state.currentPage}:`, error);
+        console.error(`Error during bulk grab page ${state.currentPage} for tab ${tabId}:`, error);
         sendStatusToPopup(`Error on page ${state.currentPage}, continuing...`, progress);
         
         // Continue to next page even after error
         if (state.currentPage < state.totalPages) {
             if (state.delaySeconds >= 60) {
-                chrome.alarms.create(BULK_GRAB_ALARM, { 
+                chrome.alarms.create(getBulkGrabAlarmName(tabId), { 
                     delayInMinutes: state.delaySeconds / 60 
                 });
             } else {
-                keepAliveAndSchedule(state.delaySeconds);
+                keepAliveAndSchedule(tabId, state.delaySeconds);
             }
         } else {
-            setTimeout(() => performNextBulkGrab(), 100);
+            setTimeout(() => performNextBulkGrab(tabId), 100);
         }
     }
 }
 
 // Keep service worker alive during short delays by performing periodic activities
-function keepAliveAndSchedule(delaySeconds) {
+function keepAliveAndSchedule(tabId, delaySeconds) {
     const startTime = Date.now();
     const endTime = startTime + (delaySeconds * 1000);
     
@@ -472,13 +520,13 @@ function keepAliveAndSchedule(delaySeconds) {
         
         // Check if delay period is over
         if (now >= endTime) {
-            performNextBulkGrab();
+            performNextBulkGrab(tabId);
             return;
         }
         
         // Keep service worker alive with storage activity
-        chrome.storage.local.set({ 
-            "bulkGrabKeepalive": now 
+        chrome.storage.session.set({ 
+            [`bulkGrabKeepalive_${tabId}`]: now 
         });
         
         // Schedule next keepalive in 20 seconds (well under the 30s timeout)
@@ -494,27 +542,29 @@ function keepAliveAndSchedule(delaySeconds) {
 
 // Listen for alarm events
 chrome.alarms.onAlarm.addListener((alarm) => {
-    if (alarm.name === BULK_GRAB_ALARM) {
-        console.log("Bulk grab alarm triggered");
-        performNextBulkGrab();
+    // Check if this is a bulk grab alarm (format: bulkGrabNextPage_<tabId>)
+    if (alarm.name.startsWith("bulkGrabNextPage_")) {
+        const tabId = parseInt(alarm.name.split("_")[1]);
+        console.log(`Bulk grab alarm triggered for tab ${tabId}`);
+        performNextBulkGrab(tabId);
     }
 });
 
-// Restore bulk grab state on service worker startup
+// Restore bulk grab states on service worker startup
+// Note: Session storage is cleared on browser restart, so this mainly helps with service worker restarts
 chrome.runtime.onStartup.addListener(async () => {
-    const state = await loadBulkGrabState();
-    if (state && state.isRunning) {
-        console.log("Resuming bulk grab after service worker restart");
-        // Small delay to ensure everything is initialized
-        setTimeout(() => performNextBulkGrab(), 1000);
-    }
+    console.log("Service worker startup - checking for running bulk grabs");
+    // Session storage will be empty on full browser restart, which is what we want
 });
 
-// Also check on service worker install/restart
+// Also check on service worker install/restart  
 chrome.runtime.onInstalled.addListener(async () => {
-    const state = await loadBulkGrabState();
-    if (state && state.isRunning) {
-        console.log("Found existing bulk grab, resuming...");
-        setTimeout(() => performNextBulkGrab(), 1000);
-    }
+    console.log("Service worker installed - session storage will be clean");
+    // Session storage automatically cleans up, no need to resume anything
+});
+
+// Clean up bulk grab state when tabs are closed
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+    console.log(`Tab ${tabId} closed, cleaning up bulk grab state`);
+    await removeBulkGrabState(tabId);
 });

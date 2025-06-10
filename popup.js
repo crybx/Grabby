@@ -121,28 +121,35 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    // Restore bulk grab status on popup open using direct storage access
-    // This is more reliable than message passing for popup state restoration
-    chrome.storage.local.get("bulkGrabState", (result) => {
-        const state = result.bulkGrabState;
-        if (state) {
-            // Restore form values
-            if (state.totalPages) {
-                pageCountInput.value = state.totalPages;
-            }
-            if (state.delaySeconds) {
-                delayInput.value = state.delaySeconds;
-            }
+    // Restore bulk grab status for current tab on popup open
+    // Get current tab and restore its specific state
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+            const tabId = tabs[0].id;
+            const storageKey = `bulkGrabState_${tabId}`;
             
-            // Restore UI state
-            if (state.isRunning) {
-                updateUIForBulkGrabbing(true);
-                const progress = Math.round((state.currentPage / state.totalPages) * 100);
-                updateStatus(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
-            } else if (state.lastStatus && state.lastStatus !== "Ready") {
-                statusDisplay.style.display = "block";
-                updateStatus(state.lastStatus, state.lastProgress || 0);
-            }
+            chrome.storage.session.get(storageKey, (result) => {
+                const state = result[storageKey];
+                if (state) {
+                    // Restore form values
+                    if (state.totalPages) {
+                        pageCountInput.value = state.totalPages;
+                    }
+                    if (state.delaySeconds) {
+                        delayInput.value = state.delaySeconds;
+                    }
+                    
+                    // Restore UI state
+                    if (state.isRunning) {
+                        updateUIForBulkGrabbing(true);
+                        const progress = Math.round((state.currentPage / state.totalPages) * 100);
+                        updateStatus(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
+                    } else if (state.lastStatus && state.lastStatus !== "Ready") {
+                        statusDisplay.style.display = "block";
+                        updateStatus(state.lastStatus, state.lastProgress || 0);
+                    }
+                }
+            });
         }
     });
     
