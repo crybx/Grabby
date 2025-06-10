@@ -180,8 +180,15 @@ async function handleMessages(message, sender, sendResponse) {
             stopBulkGrab();
             break;
         case 'getBulkGrabStatus':
-            sendResponse(getBulkGrabStatus());
+            // Handle async response properly
+            (async () => {
+                const status = await getBulkGrabStatus();
+                sendResponse(status);
+            })();
             return true; // Keep message channel open for async response
+        case 'clearBulkGrabStatus':
+            await chrome.storage.local.remove(BULK_GRAB_STORAGE_KEY);
+            break;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }
@@ -238,7 +245,16 @@ function sendStatusToPopup(status, progress) {
 }
 
 // Send completion message to popup
-function sendCompletionToPopup() {
+async function sendCompletionToPopup() {
+    const state = await loadBulkGrabState();
+    if (state) {
+        // Save completion status
+        state.isRunning = false;
+        state.lastStatus = 'Completed!';
+        state.lastProgress = 100;
+        await saveBulkGrabState(state);
+    }
+    
     chrome.runtime.sendMessage({
         target: 'popup',
         type: 'bulkGrabComplete'
@@ -248,7 +264,17 @@ function sendCompletionToPopup() {
 }
 
 // Send stopped message to popup
-function sendStoppedToPopup() {
+async function sendStoppedToPopup() {
+    const state = await loadBulkGrabState();
+    if (state) {
+        // Save stopped status
+        state.isRunning = false;
+        state.lastStatus = 'Stopped';
+        state.lastProgress = state.currentPage && state.totalPages ? 
+            Math.round((state.currentPage / state.totalPages) * 100) : 0;
+        await saveBulkGrabState(state);
+    }
+    
     chrome.runtime.sendMessage({
         target: 'popup',
         type: 'bulkGrabStopped'
@@ -262,11 +288,22 @@ async function getBulkGrabStatus() {
     const result = await chrome.storage.local.get(BULK_GRAB_STORAGE_KEY);
     const state = result[BULK_GRAB_STORAGE_KEY];
     
-    if (!state || !state.isRunning) {
+    if (!state) {
         return {
             isRunning: false,
             status: 'Ready',
             progress: 0
+        };
+    }
+    
+    // Return state information even if not currently running
+    if (!state.isRunning) {
+        return {
+            isRunning: false,
+            status: state.lastStatus || 'Ready',
+            progress: state.lastProgress || 0,
+            pageCount: state.totalPages,
+            delaySeconds: state.delaySeconds
         };
     }
     
@@ -275,7 +312,9 @@ async function getBulkGrabStatus() {
         status: `Grabbing page ${state.currentPage} of ${state.totalPages}`,
         progress: state.totalPages > 0 ? 
             Math.round((state.currentPage / state.totalPages) * 100) : 
-            0
+            0,
+        pageCount: state.totalPages,
+        delaySeconds: state.delaySeconds
     };
 }
 
@@ -290,9 +329,21 @@ async function loadBulkGrabState() {
     return result[BULK_GRAB_STORAGE_KEY] || null;
 }
 
-// Clear bulk grab state
+// Clear bulk grab state (but preserve last status for popup display)
 async function clearBulkGrabState() {
-    await chrome.storage.local.remove(BULK_GRAB_STORAGE_KEY);
+    const state = await loadBulkGrabState();
+    if (state) {
+        // Keep the last status info but clear running state
+        const preservedState = {
+            isRunning: false,
+            lastStatus: state.lastStatus || (state.isRunning ? 'Stopped' : 'Ready'),
+            lastProgress: state.lastProgress || (state.currentPage && state.totalPages ? 
+                Math.round((state.currentPage / state.totalPages) * 100) : 0),
+            totalPages: state.totalPages,
+            delaySeconds: state.delaySeconds
+        };
+        await saveBulkGrabState(preservedState);
+    }
     chrome.alarms.clear(BULK_GRAB_ALARM);
 }
 

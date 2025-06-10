@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const grabbyButton = document.getElementById('grabby-button');
     const startBulkBtn = document.getElementById('start-bulk-grab');
     const stopBulkBtn = document.getElementById('stop-bulk-grab');
+    const clearStatusBtn = document.getElementById('clear-status');
     const pageCountInput = document.getElementById('page-count');
     const delayInput = document.getElementById('delay-seconds');
     const statusDisplay = document.getElementById('bulk-status');
@@ -63,6 +64,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update UI state
             updateUIForBulkGrabbing(true);
             updateStatus('Starting bulk grab...', 0);
+            
+            // Clear any previous completion status
+            statusDisplay.style.display = 'block';
         });
     }
     
@@ -79,6 +83,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Add click handler for clear status button
+    if (clearStatusBtn) {
+        clearStatusBtn.addEventListener('click', () => {
+            // Send message to background to clear the stored state
+            chrome.runtime.sendMessage({
+                target: 'background',
+                type: 'clearBulkGrabStatus'
+            });
+            
+            // Hide status display and reset form
+            statusDisplay.style.display = 'none';
+            pageCountInput.value = '5';
+            delayInput.value = '3';
+            updateStatus('Ready', 0);
+        });
+    }
+    
     // Listen for status updates from background script
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.target === 'popup') {
@@ -89,29 +110,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'bulkGrabComplete':
                     updateUIForBulkGrabbing(false);
                     updateStatus('Completed!', 100);
-                    setTimeout(() => {
-                        statusDisplay.style.display = 'none';
-                    }, 3000);
+                    // Don't auto-hide - let user manually clear with × button
                     break;
                 case 'bulkGrabStopped':
                     updateUIForBulkGrabbing(false);
                     updateStatus('Stopped', 0);
-                    setTimeout(() => {
-                        statusDisplay.style.display = 'none';
-                    }, 2000);
+                    // Don't auto-hide - let user manually clear with × button
                     break;
             }
         }
     });
     
-    // Request current bulk grab status on popup open
-    chrome.runtime.sendMessage({
-        target: 'background',
-        type: 'getBulkGrabStatus'
-    }, (response) => {
-        if (response && response.isRunning) {
-            updateUIForBulkGrabbing(true);
-            updateStatus(response.status, response.progress);
+    // Restore bulk grab status on popup open using direct storage access
+    // This is more reliable than message passing for popup state restoration
+    chrome.storage.local.get('bulkGrabState', (result) => {
+        const state = result.bulkGrabState;
+        if (state) {
+            // Restore form values
+            if (state.totalPages) {
+                pageCountInput.value = state.totalPages;
+            }
+            if (state.delaySeconds) {
+                delayInput.value = state.delaySeconds;
+            }
+            
+            // Restore UI state
+            if (state.isRunning) {
+                updateUIForBulkGrabbing(true);
+                const progress = Math.round((state.currentPage / state.totalPages) * 100);
+                updateStatus(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
+            } else if (state.lastStatus && state.lastStatus !== 'Ready') {
+                statusDisplay.style.display = 'block';
+                updateStatus(state.lastStatus, state.lastProgress || 0);
+            }
         }
     });
     
