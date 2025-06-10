@@ -12,8 +12,8 @@ chrome.windows.getCurrent(function(currentWindow) {
         const activeTab = activeTabs[0];
 
         chrome.runtime.sendMessage({
-            target: 'background',
-            type: 'grabContent',
+            target: "background",
+            type: "grabContent",
             tabId: activeTab.id
         });
     });

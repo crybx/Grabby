@@ -82,7 +82,7 @@ function findMatchingConfig(url) {
     // Check single domain configs first
     for (const [domain, config] of Object.entries(WEBSITE_CONFIGS.singleDomains)) {
         if (url.includes(domain))  {
-            console.log(`Domain: ${domain}`)
+            console.log(`Domain: ${domain}`);
             console.log(`Grabber function: ${config.grabber.name}`);
             return config;
         }
@@ -91,7 +91,7 @@ function findMatchingConfig(url) {
     // Then check multi-domain configs
     for (const [key, config] of Object.entries(WEBSITE_CONFIGS.multiDomains)) {
         if (config.domains.some(domain => url.includes(domain))) {
-            console.log(`Multi-domain: ${key}`)
+            console.log(`Multi-domain: ${key}`);
             console.log(`Grabber function: ${config.grabber.name}`);
             return config;
         }
@@ -134,7 +134,7 @@ async function grabFromWebsite() {
 
             if (config) {
                 // Run pre-grab function if it exists
-                if (config.preGrab && typeof config.preGrab === 'function') {
+                if (config.preGrab && typeof config.preGrab === "function") {
                     try {
                         await config.preGrab();
                     } catch (preGrabError) {
@@ -167,7 +167,7 @@ async function grabFromWebsite() {
         // Run post-grab function if it exists
         if (!url.includes("file://")) {
             const config = findMatchingConfig(url);
-            if (config && config.postGrab && typeof config.postGrab === 'function') {
+            if (config && config.postGrab && typeof config.postGrab === "function") {
                 try {
                     config.postGrab();
                 } catch (postGrabError) {
@@ -253,9 +253,9 @@ async function handleContentDownload(filename, content) {
         });
 
         // Show feedback to user
-        const notification = document.createElement('div');
+        const notification = document.createElement("div");
         notification.textContent = "Content grabbed!";
-        notification.classList.add('notification');
+        notification.classList.add("notification");
         document.body.appendChild(notification);
 
         setTimeout(() => {

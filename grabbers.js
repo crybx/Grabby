@@ -100,7 +100,7 @@ function grabTapas() {
 function grabJoara() {
     const content = document.querySelector(".text-wrap");
     content.querySelectorAll("*").forEach(element => {
-        utils.removeTag(element, "SMALL")
+        utils.removeTag(element, "SMALL");
         if (element.tagName === "P") {
             element.textContent = element.textContent.trim();
         }
@@ -265,7 +265,7 @@ function grabJjwxc() {
 
 function grabStorySeedling() {
     //content is in <div x-html="content">
-    const content = document.querySelector('div[x-html="content"]');
+    const content = document.querySelector("div[x-html=\"content\"]");
     let title = document.querySelector("title").textContent.trim();
     const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     const alphab = "⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵";
@@ -292,8 +292,8 @@ function grabStorySeedling() {
 
 function grabRequiemtls() {
     let content = document.querySelector(".entry-content");
-    const cipher = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*.!?,;:\"'-[()]0123456789~"
-    const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ"
+    const cipher = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*.!?,;:\"'-[()]0123456789~";
+    const alphab = "რსტუფქღყშჩცძწჭხჯჰჱჲჳჴჵჶჷჸჹჀჁჂჃჄჅ჆Ⴧ჈჉K჋჌Ⴭ჎჏QბგდევზXიZႩႭႠႾႫ;:ႡႦႬლႧႨნႯႰ234ႴႵ789ჽ";
     // the alphabet changes between pages! this only works on a few pages right now
     // apparently the fonts can be downloaded, check them out
 
@@ -386,13 +386,13 @@ function grabYoruWorld() {
     // the content is inside the section tag
     // it is in the first div that has a class that starts with __className_
     let content = document.querySelector("section");
-    content = content.querySelector('div[class^="__className_"]');
+    content = content.querySelector("div[class^=\"__className_\"]");
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 
 function grabStarlightStream() {
-    const content = document.querySelector('[data-id="content-viewer"]');
+    const content = document.querySelector("[data-id=\"content-viewer\"]");
     const title = document.querySelector("title").textContent;
 
     content.querySelectorAll("*").forEach(element => {
@@ -420,7 +420,7 @@ function grabNovelingua() {
     }
     title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
-    const content = document.querySelector(".entry-content")
+    const content = document.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
         utils.replaceSemanticInlineStylesWithTags(element, true);
@@ -428,8 +428,8 @@ function grabNovelingua() {
         utils.removeElementWithClasses(element, [
             "pagelayer-btn-holder", "pagelayer-share", "pagelayer-anim-par",
             "pagelayer-image_slider", "pagelayer-embed"
-        ])
-        utils.removeClasses(element, ["pagelayer-text-holder"])
+        ]);
+        utils.removeClasses(element, ["pagelayer-text-holder"]);
         utils.standardElementCleanup(element);
     });
     utils.standardContentCleanup(content);
@@ -569,10 +569,10 @@ function grabPeachTeaAgency() {
     });
 
     // convert title to Title case
-    title = title.split(' ').map(word => {
+    title = title.split(" ").map(word => {
         if (word.length === 0) return word;
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-    }).join(' ');
+    }).join(" ");
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
 

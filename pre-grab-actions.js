@@ -1,13 +1,13 @@
 // Function to scroll to bottom of page (useful for infinite scroll sites)
 function scrollToBottom() {
     window.scrollTo(0, document.body.scrollHeight);
-    console.log('Scrolled to bottom of page');
+    console.log("Scrolled to bottom of page");
 }
 
 // Function to scroll to top of page
 function scrollToTop() {
     window.scrollTo(0, 0);
-    console.log('Scrolled to top of page');
+    console.log("Scrolled to top of page");
 }
 
 // Function to wait for an element to appear (useful for dynamic content)
@@ -37,7 +37,7 @@ function waitForElement(selector, timeout = 5000) {
 }
 
 // Function to remove overlay/modal elements (useful for sites with popups)
-function removeOverlays(selectors = ['.modal', '.overlay', '.popup', '[role="dialog"]']) {
+function removeOverlays(selectors = [".modal", ".overlay", ".popup", "[role=\"dialog\"]"]) {
     selectors.forEach(selector => {
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
@@ -48,7 +48,7 @@ function removeOverlays(selectors = ['.modal', '.overlay', '.popup', '[role="dia
 }
 
 // Function to expand collapsed content (useful for sites that hide content behind "read more")
-function expandContent(selectors = ['.read-more', '.expand', '.show-more']) {
+function expandContent(selectors = [".read-more", ".expand", ".show-more"]) {
     selectors.forEach(selector => {
         const buttons = document.querySelectorAll(selector);
         buttons.forEach(button => {
@@ -60,7 +60,7 @@ function expandContent(selectors = ['.read-more', '.expand', '.show-more']) {
 
 // Function to disable page animations/transitions (useful for faster grabbing)
 function disableAnimations() {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
         *, *::before, *::after {
             animation-duration: 0.01ms !important;
@@ -70,12 +70,12 @@ function disableAnimations() {
         }
     `;
     document.head.appendChild(style);
-    console.log('Disabled page animations');
+    console.log("Disabled page animations");
 }
 
 // Function to load all images (useful for sites with lazy loading)
 function loadAllImages() {
-    const images = document.querySelectorAll('img[data-src], img[data-lazy]');
+    const images = document.querySelectorAll("img[data-src], img[data-lazy]");
     images.forEach(img => {
         if (img.dataset.src) {
             img.src = img.dataset.src;
@@ -90,7 +90,7 @@ function loadAllImages() {
 // Peach Tea Agency specific: Click "All on one page?" button if it exists
 async function peachTeaClickAllOnOnePageButton() {
     // Look for buttons/links with "All on one page?" text
-    const allElements = document.querySelectorAll('button, a, [role="button"]');
+    const allElements = document.querySelectorAll("button, a, [role=\"button\"]");
     
     for (const element of allElements) {
         if (element.textContent.trim() === "All on one page?") {
@@ -103,7 +103,7 @@ async function peachTeaClickAllOnOnePageButton() {
         }
     }
     
-    console.log('No "All on one page?" button found - continuing with normal grab');
+    console.log("No \"All on one page?\" button found - continuing with normal grab");
     return false;
 }
 

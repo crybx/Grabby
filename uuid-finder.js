@@ -2,7 +2,7 @@
 // Run this in the browser console to find all UUIDs on the page
 
 (function() {
-    'use strict';
+    "use strict";
     
     function findAllUUIDs() {
         const found = {
@@ -13,19 +13,19 @@
         };
         
         // Search through any object recursively
-        function searchObject(obj, path = 'root', depth = 0, maxDepth = 5) {
+        function searchObject(obj, path = "root", depth = 0, maxDepth = 5) {
             if (depth > maxDepth) return;
-            if (!obj || typeof obj !== 'object') return;
+            if (!obj || typeof obj !== "object") return;
             
             try {
                 for (const key in obj) {
-                    if (obj.hasOwnProperty && !obj.hasOwnProperty(key)) continue;
+                    if (obj.hasOwnProperty && !Object.prototype.hasOwnProperty.call(obj, key)) continue;
                     
                     try {
                         const value = obj[key];
                         const currentPath = `${path}.${key}`;
                         
-                        if (typeof value === 'string') {
+                        if (typeof value === "string") {
                             // UUID pattern (36 chars with dashes)
                             if (value.match(/^[0-9a-f-]{36}$/i)) {
                                 found.uuids.add(value);
@@ -41,7 +41,7 @@
                                 found.otherHashes.add(value);
                                 found.locations.push(`Hash at ${currentPath}: ${value}`);
                             }
-                        } else if (typeof value === 'object' && value !== null && depth < maxDepth) {
+                        } else if (typeof value === "object" && value !== null && depth < maxDepth) {
                             searchObject(value, currentPath, depth + 1, maxDepth);
                         }
                     } catch (e) {
@@ -53,20 +53,20 @@
             }
         }
         
-        console.log('🔍 Searching window object...');
-        searchObject(window, 'window');
+        console.log("🔍 Searching window object...");
+        searchObject(window, "window");
         
         // Search common Next.js/React locations
         const commonLocations = [
-            { obj: window.__NEXT_DATA__, name: '__NEXT_DATA__' },
-            { obj: window.next, name: 'next' },
-            { obj: window.__INITIAL_STATE__, name: '__INITIAL_STATE__' },
-            { obj: window.__APP_DATA__, name: '__APP_DATA__' },
-            { obj: window.pageProps, name: 'pageProps' },
-            { obj: window._store, name: '_store' },
-            { obj: window.store, name: 'store' },
-            { obj: window.Redux, name: 'Redux' },
-            { obj: window.__REDUX_STORE__, name: '__REDUX_STORE__' }
+            { obj: window.__NEXT_DATA__, name: "__NEXT_DATA__" },
+            { obj: window.next, name: "next" },
+            { obj: window.__INITIAL_STATE__, name: "__INITIAL_STATE__" },
+            { obj: window.__APP_DATA__, name: "__APP_DATA__" },
+            { obj: window.pageProps, name: "pageProps" },
+            { obj: window._store, name: "_store" },
+            { obj: window.store, name: "store" },
+            { obj: window.Redux, name: "Redux" },
+            { obj: window.__REDUX_STORE__, name: "__REDUX_STORE__" }
         ];
         
         commonLocations.forEach(({ obj, name }) => {
@@ -77,8 +77,8 @@
         });
         
         // Search all script tags
-        console.log('🔍 Searching script tags...');
-        const scripts = document.querySelectorAll('script');
+        console.log("🔍 Searching script tags...");
+        const scripts = document.querySelectorAll("script");
         scripts.forEach((script, index) => {
             if (script.textContent && !script.src) {
                 const content = script.textContent;
@@ -117,9 +117,9 @@
         });
         
         // Search localStorage and sessionStorage
-        console.log('🔍 Searching browser storage...');
+        console.log("🔍 Searching browser storage...");
         [localStorage, sessionStorage].forEach((storage, storageIndex) => {
-            const storageName = storageIndex === 0 ? 'localStorage' : 'sessionStorage';
+            const storageName = storageIndex === 0 ? "localStorage" : "sessionStorage";
             try {
                 for (let i = 0; i < storage.length; i++) {
                     const key = storage.key(i);
@@ -128,7 +128,7 @@
                     if (value) {
                         // Check key and value for hashes
                         [key, value].forEach((str, isValue) => {
-                            const location = isValue ? 'value' : 'key';
+                            const location = isValue ? "value" : "key";
                             
                             if (str.match(/^[0-9a-f-]{36}$/i)) {
                                 found.uuids.add(str);
@@ -152,26 +152,26 @@
     window.findAllUUIDs = findAllUUIDs;
     
     // Auto-run and display results
-    console.log('🚀 Starting UUID/Hash search...');
+    console.log("🚀 Starting UUID/Hash search...");
     const results = findAllUUIDs();
     
-    console.log('\n📊 RESULTS SUMMARY:');
+    console.log("\n📊 RESULTS SUMMARY:");
     console.log(`UUIDs found: ${results.uuids.size}`);
     console.log(`MD5 hashes found: ${results.md5Hashes.size}`);
     console.log(`Other hashes found: ${results.otherHashes.size}`);
     
     if (results.uuids.size > 0) {
-        console.log('\n🆔 UUIDs:');
+        console.log("\n🆔 UUIDs:");
         Array.from(results.uuids).forEach(uuid => console.log(`  ${uuid}`));
     }
     
     if (results.md5Hashes.size > 0) {
-        console.log('\n🔐 MD5 Hashes:');
+        console.log("\n🔐 MD5 Hashes:");
         Array.from(results.md5Hashes).forEach(hash => console.log(`  ${hash}`));
     }
     
     if (results.otherHashes.size > 0) {
-        console.log('\n🔢 Other Hashes:');
+        console.log("\n🔢 Other Hashes:");
         Array.from(results.otherHashes).slice(0, 20).forEach(hash => console.log(`  ${hash}`));
         if (results.otherHashes.size > 20) {
             console.log(`  ... and ${results.otherHashes.size - 20} more`);
@@ -179,7 +179,7 @@
     }
     
     // Show detailed locations (limited to avoid spam)
-    console.log('\n📍 DETAILED LOCATIONS (first 50):');
+    console.log("\n📍 DETAILED LOCATIONS (first 50):");
     results.locations.slice(0, 50).forEach(location => console.log(`  ${location}`));
     if (results.locations.length > 50) {
         console.log(`  ... and ${results.locations.length - 50} more locations`);
@@ -203,7 +203,7 @@
         }
     }
     
-    console.log('\n✅ Search complete! Results stored in window.lastUUIDResults');
+    console.log("\n✅ Search complete! Results stored in window.lastUUIDResults");
     window.lastUUIDResults = results;
     
     return results;

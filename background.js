@@ -1,12 +1,12 @@
 // Function to inject scripts sequentially and then execute a callback function
 async function injectGrabbingScriptsAndExecute(tabId) {
-    const scripts = ['utils.js', 'pre-grab-actions.js', 'post-grab-actions.js', 'grabbers.js', 'grabber-core.js'];
+    const scripts = ["utils.js", "pre-grab-actions.js", "post-grab-actions.js", "grabbers.js", "grabber-core.js"];
 
     // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
     const coreCheckResult = await chrome.scripting.executeScript({
         target: { tabId: tabId },
         func: () => {
-            return typeof GrabbyCore !== 'undefined';
+            return typeof GrabbyCore !== "undefined";
         }
     });
 
@@ -48,22 +48,22 @@ async function injectGrabbingScriptsAndExecute(tabId) {
         }
 
         // Check if this script needs to be injected
-        const scriptName = scripts[index].replace('.js', '');
+        const scriptName = scripts[index].replace(".js", "");
         const variablesToCheck = {
-            'utils': ['removeTag', 'unwrapTag'], // Functions from utils.js
-            'pre-grab-actions': ['PreGrabActions'], // Object from pre-grab-actions.js
-            'post-grab-actions': ['PostGrabActions'], // Object from post-grab-actions.js
-            'grabbers': ['grabRidi', 'grabPatreon'], // Functions from grabbers.js
-            'grabber-core': ['GrabbyCore'] // Object from grabber-core.js
+            "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
+            "pre-grab-actions": ["PreGrabActions"], // Object from pre-grab-actions.js
+            "post-grab-actions": ["PostGrabActions"], // Object from post-grab-actions.js
+            "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
+            "grabber-core": ["GrabbyCore"] // Object from grabber-core.js
         };
 
         const checkResult = await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: (vars) => {
                 // For each variable to check, see if it exists in the global scope
-                return vars.some(v => typeof window[v] !== 'undefined' ||
-                    (typeof window.GrabbyCore !== 'undefined' &&
-                        typeof window.GrabbyCore[v] !== 'undefined'));
+                return vars.some(v => typeof window[v] !== "undefined" ||
+                    (typeof window.GrabbyCore !== "undefined" &&
+                        typeof window.GrabbyCore[v] !== "undefined"));
             },
             args: [variablesToCheck[scriptName] || []]
         });
@@ -146,51 +146,51 @@ async function grabContent(message, sender) {
 // the message to a more specific functions or message handlers.
 async function handleMessages(message, sender, sendResponse) {
     // Return early if this message isn't meant for the background script
-    if (message.target !== 'background') {
+    if (message.target !== "background") {
         return false;
     }
 
     switch (message.type) {
-        case 'downloadAsFile':
-            await downloadAsFile(message.title, message.blobUrl, message.cleanup);
-            break;
-        case 'showError':
-            // You could implement a notification system here
-            console.error(message.message);
-            break;
-        case 'grabContent':
-            await grabContent(message, sender);
-            break;
-        case 'openBackgroundTab':
-            // Open URL in background tab (for Ctrl+click functionality)
-            try {
-                chrome.tabs.create({
-                    url: message.url,
-                    active: false
-                });
-                console.log('Opened background tab:', message.url);
-            } catch (error) {
-                console.error('Failed to open background tab:', error);
-            }
-            break;
-        case 'startBulkGrab':
-            await startBulkGrab(message.pageCount, message.delaySeconds, sender);
-            break;
-        case 'stopBulkGrab':
-            stopBulkGrab();
-            break;
-        case 'getBulkGrabStatus':
-            // Handle async response properly
-            (async () => {
-                const status = await getBulkGrabStatus();
-                sendResponse(status);
-            })();
-            return true; // Keep message channel open for async response
-        case 'clearBulkGrabStatus':
-            await chrome.storage.local.remove(BULK_GRAB_STORAGE_KEY);
-            break;
-        default:
-            console.warn(`Unexpected message type received: '${message.type}'.`);
+    case "downloadAsFile":
+        await downloadAsFile(message.title, message.blobUrl, message.cleanup);
+        break;
+    case "showError":
+        // You could implement a notification system here
+        console.error(message.message);
+        break;
+    case "grabContent":
+        await grabContent(message, sender);
+        break;
+    case "openBackgroundTab":
+        // Open URL in background tab (for Ctrl+click functionality)
+        try {
+            chrome.tabs.create({
+                url: message.url,
+                active: false
+            });
+            console.log("Opened background tab:", message.url);
+        } catch (error) {
+            console.error("Failed to open background tab:", error);
+        }
+        break;
+    case "startBulkGrab":
+        await startBulkGrab(message.pageCount, message.delaySeconds, sender);
+        break;
+    case "stopBulkGrab":
+        stopBulkGrab();
+        break;
+    case "getBulkGrabStatus":
+        // Handle async response properly
+        (async () => {
+            const status = await getBulkGrabStatus();
+            sendResponse(status);
+        })();
+        return true; // Keep message channel open for async response
+    case "clearBulkGrabStatus":
+        await chrome.storage.local.remove(BULK_GRAB_STORAGE_KEY);
+        break;
+    default:
+        console.warn(`Unexpected message type received: '${message.type}'.`);
     }
     return false;
 }
@@ -202,17 +202,17 @@ async function downloadAsFile(title, blobUrl, cleanup) {
     let fileName = title;
     // # and , are not illegal, but they are annoying
     let illegalWindowsFileNameRegex = /[<>:"#!/\\|?*]/g;
-    fileName = fileName.replace(illegalWindowsFileNameRegex, '');
+    fileName = fileName.replace(illegalWindowsFileNameRegex, "");
 
     // remove 'Ridi' from the filename
-    fileName = fileName.replace(' - Ridi', '');
+    fileName = fileName.replace(" - Ridi", "");
     // remove any other whitespace
-    fileName = fileName.replace(/\s/g, '_');
+    fileName = fileName.replace(/\s/g, "_");
     // replace . with _ in the filename
-    fileName = fileName.replace(/\./g, '_');
+    fileName = fileName.replace(/\./g, "_");
     // replace comma with nothing
-    fileName = fileName.split(',').join('');
-    fileName = fileName + '.html';
+    fileName = fileName.split(",").join("");
+    fileName = fileName + ".html";
     console.log(fileName);
 
     let options = {
@@ -229,14 +229,14 @@ async function downloadAsFile(title, blobUrl, cleanup) {
 // BULK GRABBING FUNCTIONALITY - Using alarms for persistence across service worker restarts
 // =============================================================================
 
-const BULK_GRAB_ALARM = 'bulkGrabNextPage';
-const BULK_GRAB_STORAGE_KEY = 'bulkGrabState';
+const BULK_GRAB_ALARM = "bulkGrabNextPage";
+const BULK_GRAB_STORAGE_KEY = "bulkGrabState";
 
 // Send status update to popup
 function sendStatusToPopup(status, progress) {
     chrome.runtime.sendMessage({
-        target: 'popup',
-        type: 'bulkGrabStatus',
+        target: "popup",
+        type: "bulkGrabStatus",
         status: status,
         progress: progress
     }).catch(() => {
@@ -250,14 +250,14 @@ async function sendCompletionToPopup() {
     if (state) {
         // Save completion status
         state.isRunning = false;
-        state.lastStatus = 'Completed!';
+        state.lastStatus = "Completed!";
         state.lastProgress = 100;
         await saveBulkGrabState(state);
     }
     
     chrome.runtime.sendMessage({
-        target: 'popup',
-        type: 'bulkGrabComplete'
+        target: "popup",
+        type: "bulkGrabComplete"
     }).catch(() => {
         // Popup might be closed, that's ok
     });
@@ -269,15 +269,15 @@ async function sendStoppedToPopup() {
     if (state) {
         // Save stopped status
         state.isRunning = false;
-        state.lastStatus = 'Stopped';
+        state.lastStatus = "Stopped";
         state.lastProgress = state.currentPage && state.totalPages ? 
             Math.round((state.currentPage / state.totalPages) * 100) : 0;
         await saveBulkGrabState(state);
     }
     
     chrome.runtime.sendMessage({
-        target: 'popup',
-        type: 'bulkGrabStopped'
+        target: "popup",
+        type: "bulkGrabStopped"
     }).catch(() => {
         // Popup might be closed, that's ok
     });
@@ -291,7 +291,7 @@ async function getBulkGrabStatus() {
     if (!state) {
         return {
             isRunning: false,
-            status: 'Ready',
+            status: "Ready",
             progress: 0
         };
     }
@@ -300,7 +300,7 @@ async function getBulkGrabStatus() {
     if (!state.isRunning) {
         return {
             isRunning: false,
-            status: state.lastStatus || 'Ready',
+            status: state.lastStatus || "Ready",
             progress: state.lastProgress || 0,
             pageCount: state.totalPages,
             delaySeconds: state.delaySeconds
@@ -336,7 +336,7 @@ async function clearBulkGrabState() {
         // Keep the last status info but clear running state
         const preservedState = {
             isRunning: false,
-            lastStatus: state.lastStatus || (state.isRunning ? 'Stopped' : 'Ready'),
+            lastStatus: state.lastStatus || (state.isRunning ? "Stopped" : "Ready"),
             lastProgress: state.lastProgress || (state.currentPage && state.totalPages ? 
                 Math.round((state.currentPage / state.totalPages) * 100) : 0),
             totalPages: state.totalPages,
@@ -351,13 +351,13 @@ async function clearBulkGrabState() {
 async function startBulkGrab(pageCount, delaySeconds, sender) {
     const existingState = await loadBulkGrabState();
     if (existingState && existingState.isRunning) {
-        console.log('Bulk grab already running');
+        console.log("Bulk grab already running");
         return;
     }
     
     const tabId = await getTabId(null, sender);
     if (!tabId) {
-        console.error('No tab ID available for bulk grab');
+        console.error("No tab ID available for bulk grab");
         return;
     }
     
@@ -375,7 +375,7 @@ async function startBulkGrab(pageCount, delaySeconds, sender) {
     await saveBulkGrabState(state);
     
     console.log(`Starting bulk grab: ${pageCount} pages with ${delaySeconds}s delay`);
-    sendStatusToPopup('Starting bulk grab...', 0);
+    sendStatusToPopup("Starting bulk grab...", 0);
     
     // Start the first grab immediately
     performNextBulkGrab();
@@ -388,7 +388,7 @@ async function stopBulkGrab() {
         return;
     }
     
-    console.log('Stopping bulk grab');
+    console.log("Stopping bulk grab");
     await clearBulkGrabState();
     sendStoppedToPopup();
 }
@@ -398,7 +398,7 @@ async function performNextBulkGrab() {
     const state = await loadBulkGrabState();
     
     if (!state || !state.isRunning || state.shouldStop) {
-        console.log('Bulk grab stopped or not running');
+        console.log("Bulk grab stopped or not running");
         await clearBulkGrabState();
         return;
     }
@@ -478,7 +478,7 @@ function keepAliveAndSchedule(delaySeconds) {
         
         // Keep service worker alive with storage activity
         chrome.storage.local.set({ 
-            'bulkGrabKeepalive': now 
+            "bulkGrabKeepalive": now 
         });
         
         // Schedule next keepalive in 20 seconds (well under the 30s timeout)
@@ -495,7 +495,7 @@ function keepAliveAndSchedule(delaySeconds) {
 // Listen for alarm events
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === BULK_GRAB_ALARM) {
-        console.log('Bulk grab alarm triggered');
+        console.log("Bulk grab alarm triggered");
         performNextBulkGrab();
     }
 });
@@ -504,7 +504,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.runtime.onStartup.addListener(async () => {
     const state = await loadBulkGrabState();
     if (state && state.isRunning) {
-        console.log('Resuming bulk grab after service worker restart');
+        console.log("Resuming bulk grab after service worker restart");
         // Small delay to ensure everything is initialized
         setTimeout(() => performNextBulkGrab(), 1000);
     }
@@ -514,7 +514,7 @@ chrome.runtime.onStartup.addListener(async () => {
 chrome.runtime.onInstalled.addListener(async () => {
     const state = await loadBulkGrabState();
     if (state && state.isRunning) {
-        console.log('Found existing bulk grab, resuming...');
+        console.log("Found existing bulk grab, resuming...");
         setTimeout(() => performNextBulkGrab(), 1000);
     }
 });

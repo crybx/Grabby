@@ -1,0 +1,15 @@
+{
+  "name": "grabby",
+  "version": "1.0.0",
+  "description": "Chrome extension for extracting readable content from web pages",
+  "scripts": {
+    "lint": "eslint *.js",
+    "lint:fix": "eslint *.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "keywords": ["chrome-extension", "content-extraction", "web-scraping"],
+  "author": "",
+  "license": "MIT"
+}

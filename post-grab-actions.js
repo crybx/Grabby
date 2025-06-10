@@ -1,29 +1,29 @@
 // specifically for Peach Tea Agency
 function peachTeaClickNextChapterLink() {
     // Find all links that contain "Next chapter" as exact text
-    const allLinks = document.querySelectorAll('a');
+    const allLinks = document.querySelectorAll("a");
     
     for (const link of allLinks) {
         // Check if the link text is exactly "Next chapter"
         if (link.textContent.trim() === "Next chapter") {
             // Check if it doesn't have honeypotButton class
-            if (!link.classList.contains('honeypotButton')) {
+            if (!link.classList.contains("honeypotButton")) {
                 // Check if it's not position: absolute
                 const styles = window.getComputedStyle(link);
-                if (styles.position !== 'absolute') {
-                    console.log('Found valid "Next chapter" link, clicking:', link);
+                if (styles.position !== "absolute") {
+                    console.log("Found valid \"Next chapter\" link, clicking:", link);
                     link.click();
                     return; // Exit after clicking the first valid link
                 } else {
-                    console.log('Skipped "Next chapter" link with position: absolute');
+                    console.log("Skipped \"Next chapter\" link with position: absolute");
                 }
             } else {
-                console.log('Skipped "Next chapter" link with honeypotButton class');
+                console.log("Skipped \"Next chapter\" link with honeypotButton class");
             }
         }
     }
     
-    console.log('No valid "Next chapter" link found');
+    console.log("No valid \"Next chapter\" link found");
 }
 
 // Generic function to click a link containing specific text
@@ -40,7 +40,7 @@ function clickLinkContaining(text, options = {}) {
         exact = false,           // Whether to match exact text or just contain
         excludeClasses = [],     // Array of classes to exclude
         excludeStyles = {},      // Object of CSS styles to exclude (e.g., {position: 'absolute'})
-        selector = 'a'           // CSS selector for elements to check
+        selector = "a"           // CSS selector for elements to check
     } = options;
     
     const elements = document.querySelectorAll(selector);
@@ -77,7 +77,7 @@ function clickLinkContaining(text, options = {}) {
 // Function to click any button/link with specific text (case insensitive)
 function clickElementWithText(text, options = {}) {
     const {
-        selector = 'a, button, [role="button"]',  // Default to clickable elements
+        selector = "a, button, [role=\"button\"]",  // Default to clickable elements
         exact = false,
         excludeClasses = [],
         excludeStyles = {}
@@ -88,7 +88,7 @@ function clickElementWithText(text, options = {}) {
 
 // Function to click the previous chapter/page link
 function clickPreviousChapterLink() {
-    const previousTexts = ['Previous chapter', 'Previous', 'Prev', '← Previous', '‹ Previous'];
+    const previousTexts = ["Previous chapter", "Previous", "Prev", "← Previous", "‹ Previous"];
     
     for (const text of previousTexts) {
         if (clickLinkContaining(text, { exact: true })) {
@@ -96,13 +96,13 @@ function clickPreviousChapterLink() {
         }
     }
     
-    console.log('No valid previous chapter link found');
+    console.log("No valid previous chapter link found");
     return false;
 }
 
 // Function to click the next page/chapter link (generic)
 function clickNextPageLink() {
-    const nextTexts = ['Next chapter', 'Next page', 'Next', '→', 'Continue', 'Read more'];
+    const nextTexts = ["Next chapter", "Next page", "Next", "→", "Continue", "Read more"];
     
     for (const text of nextTexts) {
         if (clickLinkContaining(text, { exact: false })) {
@@ -110,18 +110,18 @@ function clickNextPageLink() {
         }
     }
     
-    console.log('No valid next page link found');
+    console.log("No valid next page link found");
     return false;
 }
 
 // Function to bookmark the current page (add to favorites/reading list)
 function bookmarkPage() {
     const bookmarkSelectors = [
-        'button[title*="bookmark"]',
-        'button[title*="favorite"]',
-        '.bookmark-btn',
-        '.favorite-btn',
-        '.add-to-library'
+        "button[title*=\"bookmark\"]",
+        "button[title*=\"favorite\"]",
+        ".bookmark-btn",
+        ".favorite-btn",
+        ".add-to-library"
     ];
     
     for (const selector of bookmarkSelectors) {
@@ -133,18 +133,18 @@ function bookmarkPage() {
         }
     }
     
-    console.log('No bookmark button found');
+    console.log("No bookmark button found");
     return false;
 }
 
 // Function to close any notification/toast messages
 function closeNotifications() {
     const notificationSelectors = [
-        '.notification .close',
-        '.toast .close',
-        '.alert .close',
-        '[role="alert"] button',
-        '.dismiss-btn'
+        ".notification .close",
+        ".toast .close",
+        ".alert .close",
+        "[role=\"alert\"] button",
+        ".dismiss-btn"
     ];
     
     notificationSelectors.forEach(selector => {
@@ -167,7 +167,7 @@ function simulateKeyPress(key, options = {}) {
     } = options;
     
     // Create the key events
-    const keydownEvent = new KeyboardEvent('keydown', {
+    const keydownEvent = new KeyboardEvent("keydown", {
         key: key,
         code: getKeyCode(key),
         keyCode: getKeyCodeNumber(key),
@@ -180,7 +180,7 @@ function simulateKeyPress(key, options = {}) {
         cancelable: true
     });
     
-    const keyupEvent = new KeyboardEvent('keyup', {
+    const keyupEvent = new KeyboardEvent("keyup", {
         key: key,
         code: getKeyCode(key),
         keyCode: getKeyCodeNumber(key),
@@ -203,20 +203,20 @@ function simulateKeyPress(key, options = {}) {
 // Helper function to get the code for a key
 function getKeyCode(key) {
     const keyCodes = {
-        'ArrowLeft': 'ArrowLeft',
-        'ArrowRight': 'ArrowRight', 
-        'ArrowUp': 'ArrowUp',
-        'ArrowDown': 'ArrowDown',
-        'Enter': 'Enter',
-        'Space': 'Space',
-        'Escape': 'Escape',
-        'Tab': 'Tab',
-        'Backspace': 'Backspace',
-        'Delete': 'Delete',
-        'Home': 'Home',
-        'End': 'End',
-        'PageUp': 'PageUp',
-        'PageDown': 'PageDown'
+        "ArrowLeft": "ArrowLeft",
+        "ArrowRight": "ArrowRight", 
+        "ArrowUp": "ArrowUp",
+        "ArrowDown": "ArrowDown",
+        "Enter": "Enter",
+        "Space": "Space",
+        "Escape": "Escape",
+        "Tab": "Tab",
+        "Backspace": "Backspace",
+        "Delete": "Delete",
+        "Home": "Home",
+        "End": "End",
+        "PageUp": "PageUp",
+        "PageDown": "PageDown"
     };
     return keyCodes[key] || key;
 }
@@ -224,46 +224,46 @@ function getKeyCode(key) {
 // Helper function to get the numeric keyCode for a key
 function getKeyCodeNumber(key) {
     const keyCodes = {
-        'ArrowLeft': 37,
-        'ArrowRight': 39,
-        'ArrowUp': 38,
-        'ArrowDown': 40,
-        'Enter': 13,
-        'Space': 32,
-        'Escape': 27,
-        'Tab': 9,
-        'Backspace': 8,
-        'Delete': 46,
-        'Home': 36,
-        'End': 35,
-        'PageUp': 33,
-        'PageDown': 34
+        "ArrowLeft": 37,
+        "ArrowRight": 39,
+        "ArrowUp": 38,
+        "ArrowDown": 40,
+        "Enter": 13,
+        "Space": 32,
+        "Escape": 27,
+        "Tab": 9,
+        "Backspace": 8,
+        "Delete": 46,
+        "Home": 36,
+        "End": 35,
+        "PageUp": 33,
+        "PageDown": 34
     };
     return keyCodes[key] || key.charCodeAt(0);
 }
 
 // Convenience function to simulate right arrow key (for next chapter navigation)
 function pressRightArrow() {
-    simulateKeyPress('ArrowRight');
-    console.log('Pressed right arrow key for next chapter');
+    simulateKeyPress("ArrowRight");
+    console.log("Pressed right arrow key for next chapter");
 }
 
 // Convenience function to simulate left arrow key (for previous chapter navigation)
 function pressLeftArrow() {
-    simulateKeyPress('ArrowLeft');
-    console.log('Pressed left arrow key for previous chapter');
+    simulateKeyPress("ArrowLeft");
+    console.log("Pressed left arrow key for previous chapter");
 }
 
 // Function to simulate Enter key press
 function pressEnter() {
-    simulateKeyPress('Enter');
-    console.log('Pressed Enter key');
+    simulateKeyPress("Enter");
+    console.log("Pressed Enter key");
 }
 
 // Function to simulate Space key press (often used for next page)
 function pressSpace() {
-    simulateKeyPress('Space');
-    console.log('Pressed Space key');
+    simulateKeyPress("Space");
+    console.log("Pressed Space key");
 }
 
 // Export functions to window for global access

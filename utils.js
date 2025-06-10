@@ -1,7 +1,7 @@
 
 const utils = (function() {
     function ensureHeading(content, title) {
-        if (!content.querySelector('h1, h2, h3, h4, h5, h6')) {
+        if (!content.querySelector("h1, h2, h3, h4, h5, h6")) {
             const firstP = content.querySelector("p");
 
             if (firstP && /chapter|episode|#/i.test(firstP.textContent || "")) {
@@ -24,22 +24,22 @@ const utils = (function() {
             if (element.childNodes.length > 0) {
                 // Trim leading whitespace
                 let firstNode = element.childNodes[0];
-                if (firstNode.nodeType === Node.TEXT_NODE && firstNode.nodeValue.trim() === '') {
+                if (firstNode.nodeType === Node.TEXT_NODE && firstNode.nodeValue.trim() === "") {
                     // If it's an empty text node, remove it
                     firstNode.remove();
                 } else if (firstNode.nodeType === Node.TEXT_NODE) {
                     // If it's a text node with content, trim the leading whitespace
-                    firstNode.nodeValue = firstNode.nodeValue.replace(/^\s+/, '');
+                    firstNode.nodeValue = firstNode.nodeValue.replace(/^\s+/, "");
                 }
 
                 // Trim trailing whitespace
                 let lastNode = element.childNodes[element.childNodes.length - 1];
-                if (lastNode.nodeType === Node.TEXT_NODE && lastNode.nodeValue.trim() === '') {
+                if (lastNode.nodeType === Node.TEXT_NODE && lastNode.nodeValue.trim() === "") {
                     // If it's an empty text node, remove it
                     lastNode.remove();
                 } else if (lastNode.nodeType === Node.TEXT_NODE) {
                     // If it's a text node with content, trim the trailing whitespace
-                    lastNode.nodeValue = lastNode.nodeValue.replace(/\s+$/, '');
+                    lastNode.nodeValue = lastNode.nodeValue.replace(/\s+$/, "");
                 }
             } else {
                 // If there are no child nodes, just use the simple approach
@@ -307,16 +307,16 @@ const utils = (function() {
 
     function getElements(dom, tagName, filter) {
         let array = Array.from(dom.getElementsByTagName(tagName));
-        return (filter === undefined || typeof filter !== 'function')
+        return (filter === undefined || typeof filter !== "function")
             ? array : array.filter(filter);
     }
 
     function isElementWhiteSpace(element) {
         switch (element.nodeType) {
-            case Node.TEXT_NODE:
-                return isStringWhiteSpace(element.textContent);
-            case Node.COMMENT_NODE:
-                return true;
+        case Node.TEXT_NODE:
+            return isStringWhiteSpace(element.textContent);
+        case Node.COMMENT_NODE:
+            return true;
         }
         if ((element.tagName === "IMG") || (element.tagName === "image")) {
             return false;
@@ -479,10 +479,10 @@ const utils = (function() {
             "wp-image-16312",
             "wp-block-buttons",
             "wp-block-comments"
-        ]
+        ];
         const elementsWithAttribute = [
             "data-ez-ph-id"
-        ]
+        ];
 
         // Don't remove:
         // "class" story relevant styles and helps figure out what to remove/target
