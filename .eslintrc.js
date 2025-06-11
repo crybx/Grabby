@@ -5,7 +5,8 @@ module.exports = {
         "webextensions": true,
     },
     "parserOptions": {
-        "ecmaVersion": 2022
+        "ecmaVersion": 2022,
+        "sourceType": "module"
     },    
     "extends": "eslint:recommended",
     "rules": {
