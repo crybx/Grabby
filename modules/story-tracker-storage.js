@@ -84,6 +84,20 @@ export class StoryTrackerStorage {
         });
         
         if (story) {
+            // Check if this is the same chapter as before (potential loop detection)
+            if (story.lastChapterUrl === chapterUrl) {
+                console.log(`Duplicate chapter detected for "${story.title}": ${chapterUrl}`);
+                
+                // Send message to stop bulk grabbing
+                chrome.runtime.sendMessage({
+                    target: "background",
+                    type: "stopBulkGrab"
+                });
+                
+                console.log("Sent stopBulkGrab message due to duplicate chapter");
+                return story; // Don't update anything, just return
+            }
+            
             // Update the story object
             story.lastChapterUrl = chapterUrl;
             story.dateLastGrabbed = new Date().toISOString();
