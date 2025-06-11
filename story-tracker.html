@@ -22,6 +22,25 @@
         </header>
 
         <main>
+            <div class="table-controls">
+                <div class="controls-left">
+                    <input type="text" id="filter-input" placeholder="Filter stories..." class="filter-input">
+                    <select id="domain-filter" class="domain-filter">
+                        <option value="">All Domains</option>
+                    </select>
+                </div>
+                <div class="controls-right">
+                    <div class="selection-info">
+                        <span id="selection-count">0 selected</span>
+                        <button id="select-all-btn" class="btn secondary-btn">Select All</button>
+                        <button id="clear-selection-btn" class="btn secondary-btn">Clear</button>
+                    </div>
+                    <div class="bulk-actions">
+                        <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="no-stories" class="empty-state" style="display: none;">
                 <div class="empty-icon">📚</div>
                 <h2>No Stories Tracked Yet</h2>
@@ -29,8 +48,35 @@
                 <button id="add-first-story-btn" class="primary-btn">Add Your First Story</button>
             </div>
 
-            <div id="stories-container" class="stories-grid">
-                <!-- Stories will be populated here by JavaScript -->
+            <div class="table-container">
+                <table id="stories-table" class="stories-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col">
+                                <input type="checkbox" id="select-all-checkbox">
+                            </th>
+                            <th class="sortable" data-sort="title">
+                                Title <span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-sort="domain">
+                                Domain <span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-sort="lastChapter">
+                                Last Chapter <span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-sort="dateLastGrabbed">
+                                Last Grabbed <span class="sort-indicator"></span>
+                            </th>
+                            <th class="sortable" data-sort="dateAdded">
+                                Date Added <span class="sort-indicator"></span>
+                            </th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stories-tbody">
+                        <!-- Stories will be populated here by JavaScript -->
+                    </tbody>
+                </table>
             </div>
         </main>
     </div>
@@ -97,6 +143,6 @@
         </div>
     </div>
 
-    <script src="story-tracker.js"></script>
+    <script src="story-tracker-table.js"></script>
 </body>
 </html>
