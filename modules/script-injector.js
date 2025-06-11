@@ -20,13 +20,14 @@ export class ScriptInjector {
         });
     }
 
-    // Function to inject scripts sequentially and then execute a callback function
-    async injectGrabbingScriptsAndExecute(tabId) {
+    // Function to inject scripts sequentially without executing grab
+    async injectScriptsSequentially(tabId) {
         const scripts = [
             "content-scripts/utils.js",
             "content-scripts/pre-grab-actions.js",
             "content-scripts/post-grab-actions.js",
             "content-scripts/grabbers.js",
+            "website-configs.js",
             "content-scripts/grabber-core.js"
         ];
 
@@ -40,22 +41,23 @@ export class ScriptInjector {
 
         const grabbyExists = coreCheckResult[0].result;
 
-        // If GrabbyCore already exists, just run the grabbing function
+        // If GrabbyCore already exists, just return
         if (grabbyExists) {
             console.log("GrabbyCore already exists, skipping script injection");
-            return await this.executeGrabbingFunction(tabId);
+            return;
         }
 
         // Helper function to inject scripts sequentially
-        const injectScriptsSequentially = async (index) => {
+        const injectSequentially = async (index) => {
             if (index >= scripts.length) {
-                // All scripts injected, now execute the main function
-                return await this.executeGrabbingFunction(tabId);
+                // All scripts injected
+                return;
             }
 
             // Check if this script needs to be injected
             const scriptName = scripts[index].replace("content-scripts/", "").replace(".js", "");
             const variablesToCheck = {
+                "website-configs": ["WEBSITE_CONFIGS", "findMatchingConfig"], // Objects from website-configs.js
                 "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
                 "pre-grab-actions": ["PreGrabActions"], // Object from pre-grab-actions.js
                 "post-grab-actions": ["PostGrabActions"], // Object from post-grab-actions.js
@@ -79,7 +81,7 @@ export class ScriptInjector {
             if (scriptExists) {
                 console.log(`Script ${scripts[index]} appears to be already loaded, skipping`);
                 // Skip to the next script
-                return injectScriptsSequentially(index + 1);
+                return injectSequentially(index + 1);
             }
 
             // Inject the current script
@@ -89,7 +91,7 @@ export class ScriptInjector {
                 files: [scripts[index]]
             }).then(() => {
                 // Move to the next script
-                return injectScriptsSequentially(index + 1);
+                return injectSequentially(index + 1);
             }).catch(error => {
                 console.error(`Failed to inject ${scripts[index]}:`, error);
                 throw error;
@@ -97,9 +99,17 @@ export class ScriptInjector {
         };
 
         // Start the injection sequence with the first script
-        return injectScriptsSequentially(0);
+        return injectSequentially(0);
     }
 
+    // Function to inject scripts sequentially and then execute a callback function
+    async injectGrabbingScriptsAndExecute(tabId) {
+        // First inject all scripts
+        await this.injectScriptsSequentially(tabId);
+        
+        // Then execute the grabbing function
+        return await this.executeGrabbingFunction(tabId);
+    }
 
     async getTabId(message, sender) {
         let tabId = message?.tabId;

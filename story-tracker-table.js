@@ -99,6 +99,10 @@ class StoryTrackerTable {
             this.showManageTagsModal();
         });
 
+        document.getElementById("auto-grab-chapters-btn").addEventListener("click", () => {
+            this.handleAutoGrabNewChapters();
+        });
+
         // Sort headers
         document.querySelectorAll(".sortable").forEach(header => {
             header.addEventListener("click", () => {
@@ -507,9 +511,11 @@ class StoryTrackerTable {
         // Enable/disable bulk action buttons
         const openChaptersBtn = document.getElementById("open-last-chapters-btn");
         const openMainBtn = document.getElementById("open-main-stories-btn");
+        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
         const manageTagsBtn = document.getElementById("manage-tags-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
+        autoGrabBtn.disabled = count === 0;
         manageTagsBtn.disabled = count === 0;
     }
 
@@ -973,6 +979,57 @@ class StoryTrackerTable {
             alert(message);
         } else {
             alert("No stories were updated. All selected stories already have the specified tag state.");
+        }
+    }
+
+    // Handle auto grab new chapters for selected stories
+    async handleAutoGrabNewChapters() {
+        const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
+        
+        if (selectedStoriesData.length === 0) {
+            alert("Please select at least one story.");
+            return;
+        }
+
+        // Filter stories that have last chapters and are from supported sites
+        const eligibleStories = selectedStoriesData.filter(story => {
+            if (!story.lastChapterUrl) {
+                return false;
+            }
+            
+            // Check if the domain supports auto-grab using WEBSITE_CONFIGS
+            try {
+                const config = findMatchingConfig(story.lastChapterUrl);
+                return config?.autoGrab?.enabled === true;
+            } catch {
+                return false;
+            }
+        });
+
+        if (eligibleStories.length === 0) {
+            alert("No selected stories are eligible for auto-grab. Stories need:\n• A saved last chapter URL\n• Be from a site with auto-grab enabled in config");
+            return;
+        }
+
+        // Start auto-grab for each eligible story
+        for (const story of eligibleStories) {
+            try {
+                console.log(`Starting auto-grab for: ${story.title}`);
+                
+                // Send message to background to start auto-grab for this story
+                chrome.runtime.sendMessage({
+                    target: "background",
+                    type: "startAutoGrab",
+                    storyId: story.id,
+                    storyTitle: story.title,
+                    lastChapterUrl: story.lastChapterUrl
+                });
+                
+                // Small delay between starting each story to avoid overwhelming
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } catch (error) {
+                console.error(`Error starting auto-grab for ${story.title}:`, error);
+            }
         }
     }
 

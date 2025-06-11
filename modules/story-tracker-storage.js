@@ -133,6 +133,20 @@ export class StoryTrackerStorage {
                 }
             }
             
+            // Special handling for transweaver.com
+            // Chapter: https://transweaver.com/25/11/2024/46479/a-case-of-transmigrating-as-a-sick-villain-chapter-195/
+            // Should become: https://transweaver.com/series/a-case-of-transmigrating-as-a-sick-villain/
+            if (url.hostname === 'transweaver.com') {
+                const pathParts = url.pathname.split('/').filter(part => part);
+                if (pathParts.length >= 5) {
+                    // Last part contains the story slug with chapter info
+                    const lastPart = pathParts[pathParts.length - 1];
+                    // Extract story slug by removing chapter/epilogue suffix
+                    const storySlug = lastPart.replace(/-(?:chapter|epilogue).*$/i, '');
+                    return `${url.protocol}//${url.host}/series/${storySlug}/`;
+                }
+            }
+            
             // Common patterns to remove chapter-specific parts
             const patterns = [
                 /\/chapter[-_]?\d+.*$/i,

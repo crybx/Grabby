@@ -102,20 +102,21 @@ async function peachTeaClickAllOnOnePageButton() {
             return true;
         }
     }
-    
-    console.log("No \"All on one page?\" button found - continuing with normal grab");
+
     return false;
 }
 
 // Function to check for premium/locked content and abort if found
-function checkForPremiumContent(selectors = ["h3"]) {
+function checkForPremiumContent(selectors = ["h2, h3"]) {
     const premiumIndicators = [
         "Premium Content",
         "Locked Chapter",
         "Purchase Required",
         "Subscription Required",
         "VIP Content",
-        "Paid Content"
+        "Paid Content",
+        "Please Login or Register First",
+        "Login to buy access to the advanced chapters."
     ];
     
     for (const selector of selectors) {

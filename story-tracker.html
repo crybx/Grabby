@@ -41,6 +41,7 @@
                     <div class="bulk-actions">
                         <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
                         <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Main Stories</button>
+                        <button id="auto-grab-chapters-btn" class="btn primary-btn" disabled>Auto Grab New Chapters</button>
                         <button id="manage-tags-btn" class="btn secondary-btn" disabled>Manage Tags</button>
                     </div>
                 </div>
@@ -234,6 +235,11 @@
         </div>
     </div>
 
+    <script src="content-scripts/utils.js"></script>
+    <script src="content-scripts/grabbers.js"></script>
+    <script src="content-scripts/pre-grab-actions.js"></script>
+    <script src="content-scripts/post-grab-actions.js"></script>
+    <script src="website-configs.js"></script>
     <script src="story-tracker-table.js"></script>
 </body>
 </html>
