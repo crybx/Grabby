@@ -17,6 +17,7 @@
                 <div class="header-actions">
                     <button id="add-story-btn" class="primary-btn">+ Add Story</button>
                     <button id="import-stories-btn" class="secondary-btn">Import Stories</button>
+                    <button id="import-json-btn" class="secondary-btn">Import JSON</button>
                     <button id="export-stories-btn" class="secondary-btn">Export Stories</button>
                     <button id="refresh-btn" class="secondary-btn">Refresh</button>
                 </div>
@@ -40,6 +41,7 @@
                     <div class="bulk-actions">
                         <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
                         <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Main Stories</button>
+                        <button id="manage-tags-btn" class="btn secondary-btn" disabled>Manage Tags</button>
                     </div>
                 </div>
             </div>
@@ -175,6 +177,57 @@
                     <div class="form-actions">
                         <button type="button" id="cancel-import-btn" class="secondary-btn">Cancel</button>
                         <button type="submit" class="primary-btn">Import Stories</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import JSON Modal -->
+    <div id="import-json-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import from JSON Backup</h2>
+                <button id="close-json-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="import-json-form">
+                    <div class="form-group">
+                        <label for="json-file">JSON Backup File</label>
+                        <input type="file" id="json-file" accept=".json" required>
+                        <small class="form-help">Select a JSON backup file exported from Grabby Story Tracker</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-json-btn" class="secondary-btn">Cancel</button>
+                        <button type="submit" class="primary-btn">Import Stories</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Tags Modal -->
+    <div id="manage-tags-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Tags for Selected Stories</h2>
+                <button id="close-tags-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="manage-tags-form">
+                    <div class="form-group">
+                        <label for="tags-to-add">Tags to Add</label>
+                        <input type="text" id="tags-to-add" placeholder="fantasy, favorites, completed (comma-separated)">
+                        <small class="form-help">Enter tags to add to all selected stories. Existing tags will be skipped.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="tags-to-remove">Tags to Remove</label>
+                        <input type="text" id="tags-to-remove" placeholder="dropped, on-hold (comma-separated)">
+                        <small class="form-help">Enter tags to remove from all selected stories. Missing tags will be skipped.</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-tags-btn" class="secondary-btn">Cancel</button>
+                        <button type="submit" class="primary-btn">Update Tags</button>
                     </div>
                 </form>
             </div>

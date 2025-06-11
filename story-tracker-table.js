@@ -21,8 +21,13 @@ class StoryTrackerTable {
 
     async loadStories() {
         try {
-            const result = await chrome.storage.local.get("trackedStories");
-            this.stories = result.trackedStories || [];
+            // Get all storage data and filter for story entries
+            const allData = await chrome.storage.local.get();
+            const stories = Object.entries(allData)
+                .filter(([key]) => key.startsWith("story_"))
+                .map(([, story]) => story);
+            
+            this.stories = stories;
             this.applyFilters();
         } catch (error) {
             console.error("Error loading stories:", error);
@@ -30,12 +35,24 @@ class StoryTrackerTable {
         }
     }
 
-    async saveStories() {
+    async saveStory(story) {
         try {
-            await chrome.storage.local.set({ trackedStories: this.stories });
+            const key = `story_${story.id}`;
+            await chrome.storage.local.set({ [key]: story });
             return true;
         } catch (error) {
-            console.error("Error saving stories:", error);
+            console.error("Error saving story:", error);
+            return false;
+        }
+    }
+
+    async deleteStoryFromStorage(storyId) {
+        try {
+            const key = `story_${storyId}`;
+            await chrome.storage.local.remove(key);
+            return true;
+        } catch (error) {
+            console.error("Error deleting story:", error);
             return false;
         }
     }
@@ -75,6 +92,10 @@ class StoryTrackerTable {
 
         document.getElementById("open-main-stories-btn").addEventListener("click", () => {
             this.openMainStories();
+        });
+
+        document.getElementById("manage-tags-btn").addEventListener("click", () => {
+            this.showManageTagsModal();
         });
 
         // Sort headers
@@ -134,6 +155,11 @@ class StoryTrackerTable {
             this.showImportModal();
         });
 
+        // JSON import modal controls
+        document.getElementById("import-json-btn").addEventListener("click", () => {
+            this.showJsonImportModal();
+        });
+
         // Export stories
         document.getElementById("export-stories-btn").addEventListener("click", () => {
             this.exportStories();
@@ -155,6 +181,44 @@ class StoryTrackerTable {
         // Close import modal when clicking outside
         document.getElementById("import-stories-modal").addEventListener("click", (e) => {
             if (e.target.id === "import-stories-modal") this.hideImportModal();
+        });
+
+        // JSON import modal controls
+        document.getElementById("close-json-modal").addEventListener("click", () => {
+            this.hideJsonImportModal();
+        });
+
+        document.getElementById("cancel-json-btn").addEventListener("click", () => {
+            this.hideJsonImportModal();
+        });
+
+        document.getElementById("import-json-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleJsonImport();
+        });
+
+        // Close JSON import modal when clicking outside
+        document.getElementById("import-json-modal").addEventListener("click", (e) => {
+            if (e.target.id === "import-json-modal") this.hideJsonImportModal();
+        });
+
+        // Manage tags modal controls
+        document.getElementById("close-tags-modal").addEventListener("click", () => {
+            this.hideManageTagsModal();
+        });
+
+        document.getElementById("cancel-tags-btn").addEventListener("click", () => {
+            this.hideManageTagsModal();
+        });
+
+        document.getElementById("manage-tags-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleManageTags();
+        });
+
+        // Close manage tags modal when clicking outside
+        document.getElementById("manage-tags-modal").addEventListener("click", (e) => {
+            if (e.target.id === "manage-tags-modal") this.hideManageTagsModal();
         });
     }
 
@@ -393,8 +457,10 @@ class StoryTrackerTable {
         // Enable/disable bulk action buttons
         const openChaptersBtn = document.getElementById("open-last-chapters-btn");
         const openMainBtn = document.getElementById("open-main-stories-btn");
+        const manageTagsBtn = document.getElementById("manage-tags-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
+        manageTagsBtn.disabled = count === 0;
     }
 
     async openLastChapters() {
@@ -513,7 +579,7 @@ class StoryTrackerTable {
         };
 
         this.stories.push(story);
-        await this.saveStories();
+        await this.saveStory(story);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -541,7 +607,7 @@ class StoryTrackerTable {
             tags
         };
 
-        await this.saveStories();
+        await this.saveStory(this.stories[storyIndex]);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -557,7 +623,7 @@ class StoryTrackerTable {
         this.stories = this.stories.filter(s => s.id !== id);
         this.selectedStories.delete(id);
         
-        await this.saveStories();
+        await this.deleteStoryFromStorage(id);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -634,7 +700,10 @@ class StoryTrackerTable {
             }
 
             if (importedCount > 0) {
-                await this.saveStories();
+                // Save each imported story individually
+                for (const story of this.stories.slice(-importedCount)) {
+                    await this.saveStory(story);
+                }
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
@@ -685,6 +754,176 @@ class StoryTrackerTable {
         URL.revokeObjectURL(url);
 
         console.log(`Exported ${this.stories.length} stories to ${filename}`);
+    }
+
+    // JSON import modal management
+    showJsonImportModal() {
+        document.getElementById("import-json-modal").style.display = "flex";
+    }
+
+    hideJsonImportModal() {
+        document.getElementById("import-json-modal").style.display = "none";
+        document.getElementById("import-json-form").reset();
+    }
+
+    // Handle JSON file import
+    async handleJsonImport() {
+        const fileInput = document.getElementById("json-file");
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert("Please select a JSON file to import.");
+            return;
+        }
+
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            
+            // Validate the backup format
+            if (!data.stories || !Array.isArray(data.stories)) {
+                alert("Invalid backup file format. Expected a 'stories' array.");
+                return;
+            }
+
+            const confirmMessage = `Found ${data.stories.length} stories in backup. Import these stories?\n\nNote: Existing stories with the same URLs will be skipped.`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            let importedCount = 0;
+            const existingUrls = new Set(this.stories.map(s => s.mainStoryUrl));
+
+            for (const storyData of data.stories) {
+                // Skip if story with this URL already exists
+                if (existingUrls.has(storyData.mainStoryUrl)) {
+                    continue;
+                }
+
+                // Ensure the story has an ID
+                if (!storyData.id) {
+                    storyData.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+                }
+
+                // Add to local array and save individually
+                this.stories.push(storyData);
+                await this.saveStory(storyData);
+                existingUrls.add(storyData.mainStoryUrl);
+                importedCount++;
+            }
+
+            if (importedCount > 0) {
+                this.populateDomainFilter();
+                this.applyFilters();
+                this.renderTable();
+                this.hideJsonImportModal();
+                
+                const skipped = data.stories.length - importedCount;
+                let message = `Successfully imported ${importedCount} stories from JSON backup.`;
+                if (skipped > 0) {
+                    message += ` Skipped ${skipped} duplicates.`;
+                }
+                alert(message);
+            } else {
+                alert("No new stories to import. All stories in the backup already exist.");
+            }
+        } catch (error) {
+            console.error("Error importing JSON:", error);
+            alert("Error reading JSON file. Please check the file format and try again.");
+        }
+    }
+
+    // Manage tags modal management
+    showManageTagsModal() {
+        const selectedCount = this.selectedStories.size;
+        if (selectedCount === 0) {
+            alert("Please select at least one story.");
+            return;
+        }
+        
+        // Update modal title with count
+        document.querySelector("#manage-tags-modal h2").textContent = 
+            `Manage Tags for ${selectedCount} Selected Stories`;
+        
+        document.getElementById("manage-tags-modal").style.display = "flex";
+        document.getElementById("tags-to-add").focus();
+    }
+
+    hideManageTagsModal() {
+        document.getElementById("manage-tags-modal").style.display = "none";
+        document.getElementById("manage-tags-form").reset();
+    }
+
+    // Handle bulk tag management
+    async handleManageTags() {
+        const tagsToAddInput = document.getElementById("tags-to-add").value.trim();
+        const tagsToRemoveInput = document.getElementById("tags-to-remove").value.trim();
+        
+        if (!tagsToAddInput && !tagsToRemoveInput) {
+            alert("Please specify tags to add or remove.");
+            return;
+        }
+
+        // Parse tags from comma-separated input
+        const tagsToAdd = tagsToAddInput ? 
+            tagsToAddInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
+        const tagsToRemove = tagsToRemoveInput ? 
+            tagsToRemoveInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
+
+        const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
+        
+        let updatedCount = 0;
+        
+        for (const story of selectedStoriesData) {
+            let storyUpdated = false;
+            const currentTags = story.tags || [];
+            let newTags = [...currentTags];
+            
+            // Add tags (skip if already exists)
+            for (const tagToAdd of tagsToAdd) {
+                if (!newTags.includes(tagToAdd)) {
+                    newTags.push(tagToAdd);
+                    storyUpdated = true;
+                }
+            }
+            
+            // Remove tags (skip if doesn't exist)
+            for (const tagToRemove of tagsToRemove) {
+                const index = newTags.indexOf(tagToRemove);
+                if (index !== -1) {
+                    newTags.splice(index, 1);
+                    storyUpdated = true;
+                }
+            }
+            
+            // Update story if changes were made
+            if (storyUpdated) {
+                story.tags = newTags;
+                await this.saveStory(story);
+                
+                // Update the story in the local array
+                const storyIndex = this.stories.findIndex(s => s.id === story.id);
+                if (storyIndex !== -1) {
+                    this.stories[storyIndex] = story;
+                }
+                
+                updatedCount++;
+            }
+        }
+        
+        if (updatedCount > 0) {
+            this.applyFilters();
+            this.renderTable();
+            this.hideManageTagsModal();
+            
+            let message = `Updated tags for ${updatedCount} stories.`;
+            if (updatedCount < selectedStoriesData.length) {
+                message += ` ${selectedStoriesData.length - updatedCount} stories had no changes.`;
+            }
+            alert(message);
+        } else {
+            alert("No stories were updated. All selected stories already have the specified tag state.");
+        }
     }
 
     async refresh() {

@@ -1,28 +1,54 @@
 // StoryTrackerStorage - Handles story tracking data storage and updates
 export class StoryTrackerStorage {
     constructor() {
-        this.STORAGE_KEY = "trackedStories";
+        this.STORY_PREFIX = "story_";
     }
 
-    // Get all tracked stories
+    // Get story key for individual storage
+    getStoryKey(storyId) {
+        return `${this.STORY_PREFIX}${storyId}`;
+    }
+
+    // Get all tracked stories from individual storage
     async getAllStories() {
         try {
-            const result = await chrome.storage.local.get(this.STORAGE_KEY);
-            return result[this.STORAGE_KEY] || [];
+            // Get all storage data
+            const allData = await chrome.storage.local.get();
+            
+            // Filter for story entries and extract the story objects
+            const stories = Object.entries(allData)
+                .filter(([key]) => key.startsWith(this.STORY_PREFIX))
+                .map(([, story]) => story);
+                
+            return stories;
         } catch (error) {
             console.error("Error loading stories:", error);
             return [];
         }
     }
 
-    // Save stories array
-    async saveStories(stories) {
+    // Save individual story
+    async saveStory(story) {
         try {
-            await chrome.storage.local.set({ [this.STORAGE_KEY]: stories });
-            console.log("Stories saved successfully");
+            const key = this.getStoryKey(story.id);
+            await chrome.storage.local.set({ [key]: story });
+            console.log(`Story saved: ${story.title}`);
             return true;
         } catch (error) {
-            console.error("Error saving stories:", error);
+            console.error("Error saving story:", error);
+            return false;
+        }
+    }
+
+    // Delete individual story
+    async deleteStory(storyId) {
+        try {
+            const key = this.getStoryKey(storyId);
+            await chrome.storage.local.remove(key);
+            console.log(`Story deleted: ${storyId}`);
+            return true;
+        } catch (error) {
+            console.error("Error deleting story:", error);
             return false;
         }
     }
@@ -58,12 +84,15 @@ export class StoryTrackerStorage {
         });
         
         if (story) {
+            // Update the story object
             story.lastChapterUrl = chapterUrl;
             story.dateLastGrabbed = new Date().toISOString();
             if (chapterTitle) {
                 story.lastChapterTitle = chapterTitle;
             }
-            await this.saveStories(stories);
+            
+            // Save just this story
+            await this.saveStory(story);
             console.log(`Updated last chapter for story: ${story.title}`);
             return story;
         }
