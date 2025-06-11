@@ -27,32 +27,6 @@ export class StoryTrackerStorage {
         }
     }
 
-    // Add a new story
-    async addStory(title, mainUrl, lastChapterUrl = "") {
-        const stories = await this.getAllStories();
-        
-        // Check if story already exists
-        const existingStory = stories.find(s => s.mainStoryUrl === mainUrl);
-        if (existingStory) {
-            console.log("Story already exists:", existingStory);
-            return existingStory;
-        }
-
-        const story = {
-            id: this.generateId(),
-            title: title.trim(),
-            mainStoryUrl: mainUrl.trim(),
-            lastChapterUrl: lastChapterUrl.trim(),
-            dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
-            dateAdded: new Date().toISOString(),
-            totalChapters: 0
-        };
-
-        stories.push(story);
-        await this.saveStories(stories);
-        return story;
-    }
-
     // Update last grabbed chapter for a story
     async updateLastChapter(chapterUrl, chapterTitle = null) {
         const stories = await this.getAllStories();
@@ -97,26 +71,6 @@ export class StoryTrackerStorage {
         return null;
     }
 
-    // Auto-track story when grabbing (if not already tracked)
-    async autoTrackFromGrab(url, title = null) {
-        // Extract main story URL (remove chapter-specific parts)
-        const mainUrl = this.extractMainStoryUrl(url);
-        
-        const stories = await this.getAllStories();
-        let story = stories.find(s => s.mainStoryUrl === mainUrl);
-        
-        if (!story && title) {
-            // Auto-add new story
-            story = await this.addStory(title, mainUrl, url);
-            console.log("Auto-tracked new story:", story);
-        } else if (story) {
-            // Update existing story
-            story = await this.updateLastChapter(url);
-        }
-        
-        return story;
-    }
-
     // Extract main story URL from chapter URL
     extractMainStoryUrl(chapterUrl) {
         // This is a simple implementation - you might want to make it more sophisticated
@@ -146,72 +100,6 @@ export class StoryTrackerStorage {
         } catch (error) {
             console.error("Error extracting main URL:", error);
             return chapterUrl;
-        }
-    }
-
-    // Generate unique ID
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    // Check if a URL is likely a story/chapter URL
-    isStoryUrl(url) {
-        try {
-            const urlObj = new URL(url);
-            const hostname = urlObj.hostname.toLowerCase();
-            
-            // List of known story/novel websites
-            const storyDomains = [
-                "ridibooks.com",
-                "webnovel.com", 
-                "readlightnovel.org",
-                "novelfull.com",
-                "readnovelfull.com",
-                "wuxiaworld.com",
-                "chrysanthemumgarden.com",
-                "peachtea.agency",
-                "hyacinthbloom.com",
-                // Add more domains as needed
-            ];
-            
-            return storyDomains.some(domain => hostname.includes(domain));
-        } catch (error) {
-            return false;
-        }
-    }
-
-    // Get story by main URL
-    async getStoryByMainUrl(mainUrl) {
-        const stories = await this.getAllStories();
-        return stories.find(s => s.mainStoryUrl === mainUrl);
-    }
-
-    // Get story by any URL (main or chapter)
-    async getStoryByAnyUrl(url) {
-        const stories = await this.getAllStories();
-        
-        // First try exact match on main URL
-        let story = stories.find(s => s.mainStoryUrl === url);
-        if (story) return story;
-        
-        // Then try exact match on last chapter URL
-        story = stories.find(s => s.lastChapterUrl === url);
-        if (story) return story;
-        
-        // Finally try extracting main URL and matching
-        const mainUrl = this.extractMainStoryUrl(url);
-        return stories.find(s => s.mainStoryUrl === mainUrl);
-    }
-
-    // Update story tracker with current chapter URL (called from script injector)
-    async updateStoryTrackerFromTab(tabId) {
-        try {
-            const tab = await chrome.tabs.get(tabId);
-            if (tab && tab.url && !tab.url.startsWith("chrome://") && !tab.url.startsWith("chrome-extension://")) {
-                await this.updateLastChapter(tab.url);
-            }
-        } catch (error) {
-            console.error("Error updating story tracker:", error);
         }
     }
 }
