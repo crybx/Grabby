@@ -54,7 +54,7 @@ export class StoryTrackerStorage {
     }
 
     // Update last grabbed chapter for a story
-    async updateLastChapter(chapterUrl) {
+    async updateLastChapter(chapterUrl, chapterTitle = null) {
         const stories = await this.getAllStories();
         
         // Extract the main story URL from the chapter URL
@@ -70,6 +70,9 @@ export class StoryTrackerStorage {
         if (story) {
             story.lastChapterUrl = chapterUrl;
             story.dateLastGrabbed = new Date().toISOString();
+            if (chapterTitle) {
+                story.lastChapterTitle = chapterTitle;
+            }
             await this.saveStories(stories);
             console.log(`Updated last chapter for story: ${story.title}`);
             return story;

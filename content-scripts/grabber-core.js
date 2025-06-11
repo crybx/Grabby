@@ -252,6 +252,14 @@ async function handleContentDownload(filename, content) {
             cleanup: () => URL.revokeObjectURL(blobUrl)
         });
 
+        // Update story tracker with the grabbed content
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "updateStoryTracker",
+            url: window.location.href,
+            title: filename
+        });
+
         // Show feedback to user
         const notification = document.createElement("div");
         notification.textContent = "Content grabbed!";

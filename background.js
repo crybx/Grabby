@@ -9,18 +9,13 @@ const downloadHandler = new DownloadHandler();
 const scriptInjector = new ScriptInjector();
 const storyTracker = new StoryTrackerStorage();
 
-// Handle grab content with story tracking
+// Handle grab content
 async function handleGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
     if (tabId) {
         try {
             // Perform the content grab
-            const result = await scriptInjector.injectGrabbingScriptsAndExecute(tabId);
-            
-            // Update story tracker if grab was successful
-            if (result && result[0] && result[0].result) {
-                await storyTracker.updateStoryTrackerFromTab(tabId);
-            }
+            await scriptInjector.injectGrabbingScriptsAndExecute(tabId);
         } catch (error) {
             console.error("Error during grab content:", error);
         }
@@ -46,6 +41,9 @@ async function handleMessages(message, sender, sendResponse) {
         break;
     case "grabContent":
         await handleGrabContent(message, sender);
+        break;
+    case "updateStoryTracker":
+        await storyTracker.updateLastChapter(message.url, message.title);
         break;
     case "openBackgroundTab":
         // Open URL in background tab (for Ctrl+click functionality)

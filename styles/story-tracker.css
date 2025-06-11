@@ -161,6 +161,21 @@ h1 {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin: 0;
+}
+
+.story-title-link {
+    color: #333;
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.story-title-link:hover {
+    color: #4285f4;
+    text-decoration: underline;
 }
 
 .story-actions {
@@ -367,6 +382,12 @@ h1 {
     
     .story-title {
         margin-right: 0;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+    }
+    
+    .story-title-link {
         white-space: normal;
         overflow: visible;
         text-overflow: unset;

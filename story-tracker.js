@@ -113,13 +113,19 @@ class StoryTracker {
             : "Never grabbed";
 
         const lastChapterDisplay = story.lastChapterUrl 
-            ? `<a href="${story.lastChapterUrl}" target="_blank" class="chapter-link" title="Open last chapter">Last Chapter</a>`
+            ? `<a href="${story.lastChapterUrl}" target="_blank" class="chapter-link" title="Open last chapter">
+                 📄 ${story.lastChapterTitle || "Last Chapter"}
+               </a>`
             : "<span class=\"no-chapter\">No last chapter</span>";
 
         return `
             <div class="story-card" data-story-id="${story.id}">
                 <div class="story-header">
-                    <h3 class="story-title" title="${story.title}">${story.title}</h3>
+                    <h3 class="story-title">
+                        <a href="${story.mainStoryUrl}" target="_blank" class="story-title-link" title="Open main story">
+                            ${story.title}
+                        </a>
+                    </h3>
                     <div class="story-actions">
                         <button class="edit-story-btn" data-story-id="${story.id}" title="Edit story">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -130,9 +136,6 @@ class StoryTracker {
                 </div>
                 
                 <div class="story-links">
-                    <a href="${story.mainStoryUrl}" target="_blank" class="main-link" title="Open main story">
-                        📖 Main Story
-                    </a>
                     ${lastChapterDisplay}
                 </div>
                 
@@ -151,11 +154,20 @@ class StoryTracker {
         const diffTime = Math.abs(now - date);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 1) return "Today";
-        if (diffDays === 2) return "Yesterday";
-        if (diffDays <= 7) return `${diffDays - 1} days ago`;
+        // For recent dates, show relative time with actual time
+        if (diffDays === 1) {
+            const timeString = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+            return `Today at ${timeString}`;
+        }
+        if (diffDays === 2) {
+            const timeString = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+            return `Yesterday at ${timeString}`;
+        }
         
-        return date.toLocaleDateString();
+        // For older dates, show full date and time
+        const dateString = date.toLocaleDateString();
+        const timeString = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
+        return `${dateString} at ${timeString}`;
     }
 
     // Attach event listeners to story cards
