@@ -60,11 +60,27 @@ export class StoryTrackerStorage {
         // Extract the main story URL from the chapter URL
         const extractedMainUrl = this.extractMainStoryUrl(chapterUrl);
         
-        // Find story where the extracted main URL starts with the story's mainStoryUrl
-        // This allows flexible matching where chapter URLs can be longer than stored main URLs
+        // Find story where the chapter URL actually belongs to the story
+        // Must be exact match or the chapter URL should start with the story's main URL
         const story = stories.find(s => {
-            return extractedMainUrl.startsWith(s.mainStoryUrl) || 
-                   s.mainStoryUrl.startsWith(extractedMainUrl);
+            // Normalize URLs by removing trailing slashes for comparison
+            const normalizedExtracted = extractedMainUrl.replace(/\/$/, "");
+            const normalizedStoryUrl = s.mainStoryUrl.replace(/\/$/, "");
+            const normalizedChapterUrl = chapterUrl.replace(/\/$/, "");
+            
+            // Exact match on normalized extracted main URL
+            if (normalizedExtracted === normalizedStoryUrl) {
+                return true;
+            }
+            
+            // Chapter URL should start with the story's main URL followed by / or ?
+            // This prevents books/1 from matching books/2 chapters
+            if (normalizedChapterUrl.startsWith(normalizedStoryUrl)) {
+                const afterMainUrl = normalizedChapterUrl.substring(normalizedStoryUrl.length);
+                return afterMainUrl.startsWith("/") || afterMainUrl.startsWith("?") || afterMainUrl === "";
+            }
+            
+            return false;
         });
         
         if (story) {
