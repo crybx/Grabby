@@ -107,6 +107,31 @@ async function peachTeaClickAllOnOnePageButton() {
     return false;
 }
 
+// Function to check for premium/locked content and abort if found
+function checkForPremiumContent(selectors = ["h3"]) {
+    const premiumIndicators = [
+        "Premium Content",
+        "Locked Chapter",
+        "Purchase Required",
+        "Subscription Required",
+        "VIP Content",
+        "Paid Content"
+    ];
+    
+    for (const selector of selectors) {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+            const text = element.textContent.trim();
+            if (premiumIndicators.some(indicator => text.includes(indicator))) {
+                console.log(`Premium content detected: "${text}" - aborting grab`);
+                return { abort: true, reason: `Premium content detected: "${text}"` };
+            }
+        }
+    }
+    
+    return { abort: false };
+}
+
 // Export functions to window for global access
 window.PreGrabActions = {
     scrollToBottom,
@@ -116,5 +141,6 @@ window.PreGrabActions = {
     expandContent,
     disableAnimations,
     loadAllImages,
-    peachTeaClickAllOnOnePageButton
+    peachTeaClickAllOnOnePageButton,
+    checkForPremiumContent
 };

@@ -23,7 +23,7 @@ const WEBSITE_CONFIGS = {
         "fanfiction.ws": { grabber: grabStandard(".storytext") },
         "fenrirealm.com": { grabber: grabFenrir },
         "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
-        "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true },
+        "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true, preGrab: PreGrabActions.checkForPremiumContent },
         "jjwxc.net": { grabber: grabJjwxc },
         "joara.com": { grabber: grabJoara },
         "karistudio.com": { grabber: grabKaristudio },
@@ -136,7 +136,27 @@ async function grabFromWebsite() {
                 // Run pre-grab function if it exists
                 if (config.preGrab && typeof config.preGrab === "function") {
                     try {
-                        await config.preGrab();
+                        const preGrabResult = await config.preGrab();
+                        
+                        // Check if preGrab returned an abort signal
+                        if (preGrabResult && preGrabResult.abort) {
+                            console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
+                            
+                            // Send message to stop bulk grabbing if it's running
+                            chrome.runtime.sendMessage({
+                                target: "background",
+                                type: "stopBulkGrab"
+                            });
+                            
+                            // Show user-friendly error message
+                            chrome.runtime.sendMessage({
+                                target: "background",
+                                type: "showError",
+                                message: preGrabResult.reason || "Content grab was aborted by pre-grab check"
+                            });
+                            
+                            return null; // Abort the grab
+                        }
                     } catch (preGrabError) {
                         console.error("Error in pre-grab function:", preGrabError);
                     }
