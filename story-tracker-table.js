@@ -134,6 +134,11 @@ class StoryTrackerTable {
             this.showImportModal();
         });
 
+        // Export stories
+        document.getElementById("export-stories-btn").addEventListener("click", () => {
+            this.exportStories();
+        });
+
         document.getElementById("close-import-modal").addEventListener("click", () => {
             this.hideImportModal();
         });
@@ -648,6 +653,38 @@ class StoryTrackerTable {
             console.error("Error importing stories:", error);
             alert("Error importing stories. Please check the format and try again.");
         }
+    }
+
+    // Export stories as JSON
+    exportStories() {
+        if (this.stories.length === 0) {
+            alert("No stories to export.");
+            return;
+        }
+
+        const exportData = {
+            exportDate: new Date().toISOString(),
+            storiesCount: this.stories.length,
+            stories: this.stories
+        };
+
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const filename = `grabby-stories-backup-${currentDate}.json`;
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log(`Exported ${this.stories.length} stories to ${filename}`);
     }
 
     async refresh() {
