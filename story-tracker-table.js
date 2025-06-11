@@ -124,6 +124,29 @@ class StoryTrackerTable {
         document.getElementById("refresh-btn").addEventListener("click", () => {
             this.refresh();
         });
+
+        // Import modal controls
+        document.getElementById("import-stories-btn").addEventListener("click", () => {
+            this.showImportModal();
+        });
+
+        document.getElementById("close-import-modal").addEventListener("click", () => {
+            this.hideImportModal();
+        });
+
+        document.getElementById("cancel-import-btn").addEventListener("click", () => {
+            this.hideImportModal();
+        });
+
+        document.getElementById("import-stories-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleImportStories();
+        });
+
+        // Close import modal when clicking outside
+        document.getElementById("import-stories-modal").addEventListener("click", (e) => {
+            if (e.target.id === "import-stories-modal") this.hideImportModal();
+        });
     }
 
     applyFilters() {
@@ -507,6 +530,97 @@ class StoryTrackerTable {
         this.applyFilters();
         this.renderTable();
         this.hideEditModal();
+    }
+
+    // Import modal management
+    showImportModal() {
+        document.getElementById("import-stories-modal").style.display = "flex";
+        document.getElementById("import-links").focus();
+    }
+
+    hideImportModal() {
+        document.getElementById("import-stories-modal").style.display = "none";
+        document.getElementById("import-stories-form").reset();
+    }
+
+    // Parse HTML links and extract href and title
+    parseHtmlLinks(htmlString) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = htmlString;
+        const links = tempDiv.querySelectorAll("a[href]");
+        
+        return Array.from(links).map(link => ({
+            url: link.href,
+            title: link.textContent.trim() || link.href
+        })).filter(item => item.url && item.title);
+    }
+
+    async handleImportStories() {
+        const htmlInput = document.getElementById("import-links").value.trim();
+        
+        if (!htmlInput) {
+            alert("Please paste HTML links to import.");
+            return;
+        }
+
+        try {
+            const parsedLinks = this.parseHtmlLinks(htmlInput);
+            
+            if (parsedLinks.length === 0) {
+                alert("No valid links found. Please make sure you're pasting HTML anchor tags like:\n<a href=\"https://example.com/story\">Story Title</a>");
+                return;
+            }
+
+            const confirmMessage = `Found ${parsedLinks.length} links. Import these as new stories?`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            let importedCount = 0;
+            const existingUrls = new Set(this.stories.map(s => s.mainStoryUrl));
+
+            for (const link of parsedLinks) {
+                // Skip if story with this URL already exists
+                if (existingUrls.has(link.url)) {
+                    continue;
+                }
+
+                const story = {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                    title: link.title,
+                    mainStoryUrl: link.url,
+                    lastChapterUrl: "",
+                    lastChapterTitle: "",
+                    tags: [],
+                    dateLastGrabbed: null,
+                    dateAdded: new Date().toISOString()
+                };
+
+                this.stories.push(story);
+                existingUrls.add(link.url);
+                importedCount++;
+            }
+
+            if (importedCount > 0) {
+                await this.saveStories();
+                this.populateDomainFilter();
+                this.applyFilters();
+                this.renderTable();
+                this.hideImportModal();
+                
+                const skipped = parsedLinks.length - importedCount;
+                let message = `Successfully imported ${importedCount} new stories.`;
+                if (skipped > 0) {
+                    message += ` Skipped ${skipped} duplicates.`;
+                }
+                alert(message);
+            } else {
+                alert("No new stories to import. All links already exist in your tracker.");
+            }
+        } catch (error) {
+            console.error("Error importing stories:", error);
+            alert("Error importing stories. Please check the format and try again.");
+        }
     }
 
     async refresh() {
