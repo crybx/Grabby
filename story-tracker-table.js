@@ -73,6 +73,10 @@ class StoryTrackerTable {
             this.openLastChapters();
         });
 
+        document.getElementById("open-main-stories-btn").addEventListener("click", () => {
+            this.openMainStories();
+        });
+
         // Sort headers
         document.querySelectorAll(".sortable").forEach(header => {
             header.addEventListener("click", () => {
@@ -383,7 +387,9 @@ class StoryTrackerTable {
 
         // Enable/disable bulk action buttons
         const openChaptersBtn = document.getElementById("open-last-chapters-btn");
+        const openMainBtn = document.getElementById("open-main-stories-btn");
         openChaptersBtn.disabled = count === 0;
+        openMainBtn.disabled = count === 0;
     }
 
     async openLastChapters() {
@@ -403,6 +409,27 @@ class StoryTrackerTable {
         chaptersToOpen.forEach(story => {
             chrome.tabs.create({
                 url: story.lastChapterUrl,
+                active: false
+            });
+        });
+    }
+
+    async openMainStories() {
+        const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
+        
+        if (selectedStoriesData.length === 0) {
+            alert("No stories selected.");
+            return;
+        }
+
+        if (selectedStoriesData.length > 10) {
+            const confirmed = confirm(`This will open ${selectedStoriesData.length} tabs. Continue?`);
+            if (!confirmed) return;
+        }
+
+        selectedStoriesData.forEach(story => {
+            chrome.tabs.create({
+                url: story.mainStoryUrl,
                 active: false
             });
         });
