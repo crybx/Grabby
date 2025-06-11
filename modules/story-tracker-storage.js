@@ -79,6 +79,17 @@ export class StoryTrackerStorage {
         try {
             const url = new URL(chapterUrl);
             
+            // Special handling for hyacinthbloom.com
+            // Chapter: https://hyacinthbloom.com/story-name/chapter-name/
+            // Should become: https://hyacinthbloom.com/series/story-name/
+            if (url.hostname === 'hyacinthbloom.com') {
+                const pathParts = url.pathname.split('/').filter(part => part);
+                if (pathParts.length >= 2 && !pathParts[0].includes('series')) {
+                    // First part is the story name, convert to series URL
+                    return `${url.protocol}//${url.host}/series/${pathParts[0]}/`;
+                }
+            }
+            
             // Common patterns to remove chapter-specific parts
             const patterns = [
                 /\/chapter[-_]?\d+.*$/i,

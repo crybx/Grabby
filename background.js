@@ -37,7 +37,7 @@ async function handleMessages(message, sender, sendResponse) {
         break;
     case "showError":
         // You could implement a notification system here
-        console.error(message.message);
+        console.log("ERROR: " + message.message);
         break;
     case "grabContent":
         await handleGrabContent(message, sender);

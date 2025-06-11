@@ -1,4 +1,4 @@
-// Story Tracker Table - Enhanced version with filtering, sorting, and selection
+// Story Tracker Table - with filtering, sorting, and selection
 class StoryTrackerTable {
     constructor() {
         this.stories = [];

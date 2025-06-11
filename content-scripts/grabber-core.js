@@ -23,7 +23,11 @@ const WEBSITE_CONFIGS = {
         "fanfiction.ws": { grabber: grabStandard(".storytext") },
         "fenrirealm.com": { grabber: grabFenrir },
         "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
-        "hyacinthbloom.com": { grabber: grabHyacinth, useFirstHeadingTitle: true, preGrab: PreGrabActions.checkForPremiumContent },
+        "hyacinthbloom.com": {
+            grabber: grabHyacinth,
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForPremiumContent,
+            postGrab: PostGrabActions.pressRightArrow },
         "jjwxc.net": { grabber: grabJjwxc },
         "joara.com": { grabber: grabJoara },
         "karistudio.com": { grabber: grabKaristudio },
