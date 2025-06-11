@@ -328,6 +328,37 @@ h1 {
     font-style: italic;
 }
 
+/* Tags styling */
+.tags-col {
+    max-width: 150px;
+}
+
+.tag {
+    display: inline-block;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 2px 6px;
+    margin: 1px 2px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.no-tags {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+}
+
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    font-style: italic;
+}
+
 /* Modal Styles */
 .modal {
     position: fixed;

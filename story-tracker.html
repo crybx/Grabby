@@ -64,11 +64,11 @@
                             <th class="sortable" data-sort="lastChapter">
                                 Last Chapter <span class="sort-indicator"></span>
                             </th>
+                            <th class="sortable" data-sort="tags">
+                                Tags <span class="sort-indicator"></span>
+                            </th>
                             <th class="sortable" data-sort="dateLastGrabbed">
                                 Last Grabbed <span class="sort-indicator"></span>
-                            </th>
-                            <th class="sortable" data-sort="dateAdded">
-                                Date Added <span class="sort-indicator"></span>
                             </th>
                             <th class="actions-col">Actions</th>
                         </tr>
@@ -102,6 +102,11 @@
                         <label for="last-chapter-url">Last Chapter URL (Optional)</label>
                         <input type="url" id="last-chapter-url" placeholder="https://example.com/story/chapter-1">
                     </div>
+                    <div class="form-group">
+                        <label for="story-tags">Tags (Optional)</label>
+                        <input type="text" id="story-tags" placeholder="fantasy, mon, fav (comma-separated)">
+                        <small class="form-help">Enter tags separated by commas</small>
+                    </div>
                     <div class="form-actions">
                         <button type="button" id="cancel-btn" class="secondary-btn">Cancel</button>
                         <button type="submit" class="primary-btn">Add Story</button>
@@ -132,6 +137,11 @@
                     <div class="form-group">
                         <label for="edit-last-chapter-url">Last Chapter URL</label>
                         <input type="url" id="edit-last-chapter-url">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-story-tags">Tags</label>
+                        <input type="text" id="edit-story-tags" placeholder="fantasy, mon, fav (comma-separated)">
+                        <small class="form-help">Enter tags separated by commas</small>
                     </div>
                     <div class="form-actions">
                         <button type="button" id="cancel-edit-btn" class="secondary-btn">Cancel</button>

@@ -4,7 +4,7 @@ class StoryTrackerTable {
         this.stories = [];
         this.filteredStories = [];
         this.selectedStories = new Set();
-        this.sortColumn = "dateAdded";
+        this.sortColumn = "dateLastGrabbed";
         this.sortDirection = "desc";
         this.filterText = "";
         this.domainFilter = "";
@@ -132,7 +132,8 @@ class StoryTrackerTable {
             const matchesText = !this.filterText || 
                 story.title.toLowerCase().includes(this.filterText) ||
                 story.mainStoryUrl.toLowerCase().includes(this.filterText) ||
-                (story.lastChapterTitle && story.lastChapterTitle.toLowerCase().includes(this.filterText));
+                (story.lastChapterTitle && story.lastChapterTitle.toLowerCase().includes(this.filterText)) ||
+                (story.tags && story.tags.some(tag => tag.toLowerCase().includes(this.filterText)));
 
             // Domain filter
             const domain = this.extractDomain(story.mainStoryUrl);
@@ -162,6 +163,10 @@ class StoryTrackerTable {
                 bValue = b.lastChapterTitle || b.lastChapterUrl || "";
                 aValue = aValue.toLowerCase();
                 bValue = bValue.toLowerCase();
+                break;
+            case "tags":
+                aValue = (a.tags || []).join(", ").toLowerCase();
+                bValue = (b.tags || []).join(", ").toLowerCase();
                 break;
             case "dateLastGrabbed":
                 aValue = new Date(a.dateLastGrabbed || 0);
@@ -269,6 +274,10 @@ class StoryTrackerTable {
             ? this.formatDate(story.dateLastGrabbed)
             : "Never";
 
+        const tagsDisplay = story.tags && story.tags.length > 0 
+            ? story.tags.map(tag => `<span class="tag">${tag}</span>`).join("")
+            : "<span class=\"no-tags\">None</span>";
+
         row.innerHTML = `
             <td class="checkbox-col">
                 <input type="checkbox" class="story-checkbox" data-story-id="${story.id}" ${this.selectedStories.has(story.id) ? "checked" : ""}>
@@ -278,8 +287,8 @@ class StoryTrackerTable {
             </td>
             <td class="domain-col">${domain}</td>
             <td class="chapter-col">${lastChapterDisplay}</td>
+            <td class="tags-col">${tagsDisplay}</td>
             <td class="date-col">${lastGrabbedText}</td>
-            <td class="date-col">${this.formatDate(story.dateAdded)}</td>
             <td class="actions-col">
                 <button class="edit-btn" data-story-id="${story.id}" title="Edit story">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -418,6 +427,7 @@ class StoryTrackerTable {
         document.getElementById("edit-story-title").value = story.title;
         document.getElementById("edit-main-story-url").value = story.mainStoryUrl;
         document.getElementById("edit-last-chapter-url").value = story.lastChapterUrl || "";
+        document.getElementById("edit-story-tags").value = (story.tags || []).join(", ");
         document.getElementById("edit-story-modal").style.display = "flex";
     }
 
@@ -430,11 +440,15 @@ class StoryTrackerTable {
         const title = document.getElementById("story-title").value.trim();
         const mainUrl = document.getElementById("main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
+        const tagsInput = document.getElementById("story-tags").value.trim();
 
         if (!title || !mainUrl) {
             alert("Please fill in all required fields.");
             return;
         }
+
+        // Parse tags from comma-separated input
+        const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
 
         const story = {
             id: Date.now().toString(36) + Math.random().toString(36).substr(2),
@@ -442,6 +456,7 @@ class StoryTrackerTable {
             mainStoryUrl: mainUrl,
             lastChapterUrl: lastChapterUrl || "",
             lastChapterTitle: "",
+            tags,
             dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
             dateAdded: new Date().toISOString()
         };
@@ -459,15 +474,20 @@ class StoryTrackerTable {
         const title = document.getElementById("edit-story-title").value.trim();
         const mainUrl = document.getElementById("edit-main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("edit-last-chapter-url").value.trim();
+        const tagsInput = document.getElementById("edit-story-tags").value.trim();
 
         const storyIndex = this.stories.findIndex(s => s.id === id);
         if (storyIndex === -1) return;
+
+        // Parse tags from comma-separated input
+        const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
 
         this.stories[storyIndex] = {
             ...this.stories[storyIndex],
             title,
             mainStoryUrl: mainUrl,
-            lastChapterUrl
+            lastChapterUrl,
+            tags
         };
 
         await this.saveStories();
