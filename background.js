@@ -103,13 +103,3 @@ chrome.alarms.onAlarm.addListener(bulkGrabManager.handleAlarm.bind(bulkGrabManag
 // Clean up bulk grab state when tabs are closed
 chrome.tabs.onRemoved.addListener(bulkGrabManager.cleanupTab.bind(bulkGrabManager));
 
-// Service worker lifecycle events
-chrome.runtime.onStartup.addListener(async () => {
-    console.log("Service worker startup - session storage will be clean");
-    // Session storage automatically cleans up, no need to resume anything
-});
-
-chrome.runtime.onInstalled.addListener(async () => {
-    console.log("Service worker installed - session storage will be clean");
-    // Session storage automatically cleans up, no need to resume anything
-});

@@ -8,6 +8,7 @@ class StoryTrackerTable {
         this.sortDirection = "desc";
         this.filterText = "";
         this.domainFilter = "";
+        this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
 
         this.init();
     }
@@ -239,6 +240,9 @@ class StoryTrackerTable {
         });
 
         this.applySorting();
+        
+        // Reset last clicked index when filters change
+        this.lastClickedStoryIndex = -1;
     }
 
     applySorting() {
@@ -289,6 +293,9 @@ class StoryTrackerTable {
         this.applyFilters();
         this.renderTable();
         this.updateSortIndicators();
+        
+        // Reset last clicked index when sorting changes
+        this.lastClickedStoryIndex = -1;
     }
 
     updateSortIndicators() {
@@ -392,8 +399,8 @@ class StoryTrackerTable {
 
         // Add event listeners for row
         const checkbox = row.querySelector(".story-checkbox");
-        checkbox.addEventListener("change", (e) => {
-            this.handleStorySelection(story.id, e.target.checked);
+        checkbox.addEventListener("click", (e) => {
+            this.handleStorySelection(story.id, e.target.checked, e);
         });
 
         const editBtn = row.querySelector(".edit-btn");
@@ -404,12 +411,46 @@ class StoryTrackerTable {
         return row;
     }
 
-    handleStorySelection(storyId, isSelected) {
-        if (isSelected) {
-            this.selectedStories.add(storyId);
+    handleStorySelection(storyId, isSelected, event = null) {
+        const currentStoryIndex = this.filteredStories.findIndex(s => s.id === storyId);
+        
+        // Handle shift+click for range selection
+        if (event && event.shiftKey && this.lastClickedStoryIndex !== -1 && currentStoryIndex !== -1) {
+            // Determine the range
+            const startIndex = Math.min(this.lastClickedStoryIndex, currentStoryIndex);
+            const endIndex = Math.max(this.lastClickedStoryIndex, currentStoryIndex);
+            
+            // Select/deselect all stories in the range
+            for (let i = startIndex; i <= endIndex; i++) {
+                const story = this.filteredStories[i];
+                if (story) {
+                    if (isSelected) {
+                        this.selectedStories.add(story.id);
+                    } else {
+                        this.selectedStories.delete(story.id);
+                    }
+                    
+                    // Update the checkbox in the DOM immediately
+                    const checkbox = document.querySelector(`input[data-story-id="${story.id}"]`);
+                    if (checkbox) {
+                        checkbox.checked = isSelected;
+                    }
+                }
+            }
+            
+            // Don't update lastClickedStoryIndex for shift+click - keep the original anchor point
         } else {
-            this.selectedStories.delete(storyId);
+            // Normal single selection
+            if (isSelected) {
+                this.selectedStories.add(storyId);
+            } else {
+                this.selectedStories.delete(storyId);
+            }
+            
+            // Update last clicked index only for normal clicks
+            this.lastClickedStoryIndex = currentStoryIndex;
         }
+        
         this.updateSelectionUI();
     }
 
@@ -419,6 +460,9 @@ class StoryTrackerTable {
             checkbox.checked = isChecked;
             this.handleStorySelection(checkbox.dataset.storyId, isChecked);
         });
+        
+        // Reset last clicked index since this is a bulk operation
+        this.lastClickedStoryIndex = -1;
     }
 
     selectAllVisible() {
@@ -427,12 +471,18 @@ class StoryTrackerTable {
         });
         this.updateSelectionUI();
         this.renderTable();
+        
+        // Reset last clicked index since this is a bulk operation
+        this.lastClickedStoryIndex = -1;
     }
 
     clearSelection() {
         this.selectedStories.clear();
         this.updateSelectionUI();
         this.renderTable();
+        
+        // Reset last clicked index since this clears everything
+        this.lastClickedStoryIndex = -1;
     }
 
     updateSelectionUI() {
