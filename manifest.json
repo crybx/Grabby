@@ -28,7 +28,7 @@
       "matches": ["<all_urls>"],
       "match_origin_as_fallback": true,
       "css": ["styles/grabby.css"],
-      "js": ["grabby-button.js"]
+      "js": ["content-scripts/grabby-button.js"]
     },
     {
       "matches": ["*://*.youtube.com/*"],

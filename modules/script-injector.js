@@ -1,12 +1,34 @@
 // ScriptInjector - Handles script injection and content grabbing
 export class ScriptInjector {
-    constructor(downloadHandler) {
-        this.downloadHandler = downloadHandler;
+    constructor() {
+        // No dependencies needed - just handles script injection
+    }
+
+    // Execute the grabbing function using GrabbyCore
+    async executeGrabbingFunction(tabId) {
+        return chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: () => {
+                // Use the shared core functionality
+                return GrabbyCore.grabFromWebsite().then(result => {
+                    if (result && result.filename && result.content) {
+                        return GrabbyCore.handleContentDownload(result.filename, result.content);
+                    }
+                    return false;
+                });
+            }
+        });
     }
 
     // Function to inject scripts sequentially and then execute a callback function
     async injectGrabbingScriptsAndExecute(tabId) {
-        const scripts = ["utils.js", "pre-grab-actions.js", "post-grab-actions.js", "grabbers.js", "grabber-core.js"];
+        const scripts = [
+            "content-scripts/utils.js",
+            "content-scripts/pre-grab-actions.js",
+            "content-scripts/post-grab-actions.js",
+            "content-scripts/grabbers.js",
+            "content-scripts/grabber-core.js"
+        ];
 
         // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
         const coreCheckResult = await chrome.scripting.executeScript({
@@ -21,40 +43,18 @@ export class ScriptInjector {
         // If GrabbyCore already exists, just run the grabbing function
         if (grabbyExists) {
             console.log("GrabbyCore already exists, skipping script injection");
-            return chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                func: () => {
-                    // Use the shared core functionality
-                    return GrabbyCore.grabFromWebsite().then(result => {
-                        if (result && result.filename && result.content) {
-                            return GrabbyCore.handleContentDownload(result.filename, result.content);
-                        }
-                        return false;
-                    });
-                }
-            });
+            return await this.executeGrabbingFunction(tabId);
         }
 
         // Helper function to inject scripts sequentially
         const injectScriptsSequentially = async (index) => {
             if (index >= scripts.length) {
                 // All scripts injected, now execute the main function
-                return chrome.scripting.executeScript({
-                    target: { tabId: tabId },
-                    func: () => {
-                        // Use the shared core functionality
-                        return GrabbyCore.grabFromWebsite().then(result => {
-                            if (result && result.filename && result.content) {
-                                return GrabbyCore.handleContentDownload(result.filename, result.content);
-                            }
-                            return false;
-                        });
-                    }
-                });
+                return await this.executeGrabbingFunction(tabId);
             }
 
             // Check if this script needs to be injected
-            const scriptName = scripts[index].replace(".js", "");
+            const scriptName = scripts[index].replace("content-scripts/", "").replace(".js", "");
             const variablesToCheck = {
                 "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
                 "pre-grab-actions": ["PreGrabActions"], // Object from pre-grab-actions.js
@@ -100,6 +100,7 @@ export class ScriptInjector {
         return injectScriptsSequentially(0);
     }
 
+
     async getTabId(message, sender) {
         let tabId = message?.tabId;
 
@@ -120,24 +121,5 @@ export class ScriptInjector {
         }
 
         return tabId;
-    }
-
-    async grabContent(message, sender) {
-        let tabId = await this.getTabId(message, sender);
-        if (tabId) {
-            try {
-                // Get tab info to check if it's a file URL
-                const tab = await chrome.tabs.get(tabId);
-                
-                // Inject scripts and execute grabbing function
-                await this.injectGrabbingScriptsAndExecute(tabId);
-            } catch (error) {
-                console.error("Error during script injection or execution:", error);
-                // If it's a file URL and scripting fails, we might need a different approach
-                if (error.message && error.message.includes("Cannot access")) {
-                    console.error("Cannot access file:// URL. Make sure 'Allow access to file URLs' is enabled for this extension.");
-                }
-            }
-        }
     }
 }

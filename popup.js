@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const statusDisplay = document.getElementById("bulk-status");
     const statusText = document.getElementById("status-text");
     const progressFill = document.getElementById("progress-fill");
+    const openStoryTrackerBtn = document.getElementById("open-story-tracker");
     
     // Add click handler to the clipboard button
     if (grabbyButton) {
@@ -97,6 +98,16 @@ document.addEventListener("DOMContentLoaded", function() {
             pageCountInput.value = "5";
             delayInput.value = "3";
             updateStatus("Ready", 0);
+        });
+    }
+    
+    // Add click handler for story tracker button
+    if (openStoryTrackerBtn) {
+        openStoryTrackerBtn.addEventListener("click", () => {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL("story-tracker.html")
+            });
+            window.close();
         });
     }
     

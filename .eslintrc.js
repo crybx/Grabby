@@ -49,6 +49,5 @@ module.exports = {
         "unwrapTag": "readonly",
         "cleanHTML": "readonly",
         "cleanText": "readonly",
-        "getUniqueId": "readonly"
     }
 };

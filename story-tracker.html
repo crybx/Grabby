@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grabby - Story Tracker</title>
+    <link rel="stylesheet" href="styles/story-tracker.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <img src="images/clipboard128.png" alt="Grabby" class="logo">
+                    <h1>Story Tracker</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="add-story-btn" class="primary-btn">+ Add Story</button>
+                    <button id="refresh-btn" class="secondary-btn">Refresh</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="no-stories" class="empty-state" style="display: none;">
+                <div class="empty-icon">📚</div>
+                <h2>No Stories Tracked Yet</h2>
+                <p>Click "Add Story" to start tracking your reading progress.</p>
+                <button id="add-first-story-btn" class="primary-btn">Add Your First Story</button>
+            </div>
+
+            <div id="stories-container" class="stories-grid">
+                <!-- Stories will be populated here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Story Modal -->
+    <div id="add-story-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Story</h2>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-story-form">
+                    <div class="form-group">
+                        <label for="story-title">Story Title</label>
+                        <input type="text" id="story-title" placeholder="Enter story title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="main-story-url">Main Story URL</label>
+                        <input type="url" id="main-story-url" placeholder="https://example.com/story" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-chapter-url">Last Chapter URL (Optional)</label>
+                        <input type="url" id="last-chapter-url" placeholder="https://example.com/story/chapter-1">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-btn" class="secondary-btn">Cancel</button>
+                        <button type="submit" class="primary-btn">Add Story</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Story Modal -->
+    <div id="edit-story-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Story</h2>
+                <button id="close-edit-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-story-form">
+                    <input type="hidden" id="edit-story-id">
+                    <div class="form-group">
+                        <label for="edit-story-title">Story Title</label>
+                        <input type="text" id="edit-story-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-main-story-url">Main Story URL</label>
+                        <input type="url" id="edit-main-story-url" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-last-chapter-url">Last Chapter URL</label>
+                        <input type="url" id="edit-last-chapter-url">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-edit-btn" class="secondary-btn">Cancel</button>
+                        <button type="button" id="delete-story-btn" class="danger-btn">Delete</button>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="story-tracker.js"></script>
+</body>
+</html>

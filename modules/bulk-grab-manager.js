@@ -1,7 +1,7 @@
 // BulkGrabManager - Handles all bulk grabbing operations
 export class BulkGrabManager {
-    constructor(scriptInjector) {
-        this.scriptInjector = scriptInjector;
+    constructor(grabContentCallback) {
+        this.grabContentCallback = grabContentCallback;
     }
 
     // Helper functions for tab-specific storage and alarms
@@ -240,7 +240,7 @@ export class BulkGrabManager {
         
         try {
             // Perform the grab
-            await this.scriptInjector.grabContent(null, { tab: { id: state.tabId } });
+            await this.grabContentCallback(null, { tab: { id: state.tabId } });
             
             // Schedule next grab if not the last page
             if (state.currentPage < state.totalPages) {
