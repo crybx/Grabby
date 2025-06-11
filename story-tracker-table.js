@@ -172,10 +172,6 @@ class StoryTrackerTable {
                 aValue = new Date(a.dateLastGrabbed || 0);
                 bValue = new Date(b.dateLastGrabbed || 0);
                 break;
-            case "dateAdded":
-                aValue = new Date(a.dateAdded);
-                bValue = new Date(b.dateAdded);
-                break;
             default:
                 return 0;
             }
