@@ -102,7 +102,7 @@ export class StoryTrackerStorage {
             story.lastChapterUrl = chapterUrl;
             story.dateLastGrabbed = new Date().toISOString();
             if (chapterTitle) {
-                story.lastChapterTitle = chapterTitle;
+                story.lastChapterTitle = this.cleanTitle(chapterTitle, story.title);
             }
             
             // Save just this story
@@ -112,6 +112,39 @@ export class StoryTrackerStorage {
         }
         
         return null;
+    }
+
+    // Clean chapter title by removing story title and domain suffix
+    cleanTitle(chapterTitle, storyTitle = null) {
+        if (!chapterTitle) return chapterTitle;
+        
+        let cleanedTitle = chapterTitle;
+        
+        // Remove story title from beginning if it exists
+        if (storyTitle) {
+            // Try exact match first
+            if (cleanedTitle.toLowerCase().startsWith(storyTitle.toLowerCase())) {
+                cleanedTitle = cleanedTitle.substring(storyTitle.length);
+            }
+            
+            // Try removing common separators after story title
+            const separators = [' - ', ': ', ' – ', ' | ', ' — '];
+            for (const sep of separators) {
+                const prefix = storyTitle + sep;
+                if (cleanedTitle.toLowerCase().startsWith(prefix.toLowerCase())) {
+                    cleanedTitle = cleanedTitle.substring(prefix.length);
+                    break;
+                }
+            }
+        }
+        
+        // Remove domain suffix (e.g., "_transweaver.com", "_hyacinthbloom.com")
+        cleanedTitle = cleanedTitle.replace(/_[a-z0-9.-]+\.[a-z]{2,}$/i, '');
+        
+        // Remove leading/trailing whitespace and common separators
+        cleanedTitle = cleanedTitle.replace(/^[\s\-:–|—]+|[\s\-:–|—]+$/g, '').trim();
+        
+        return cleanedTitle || chapterTitle; // Return original if cleaning resulted in empty string
     }
 
     // Extract main story URL from chapter URL
