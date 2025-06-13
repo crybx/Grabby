@@ -85,7 +85,6 @@ export class ScriptInjector {
             }
 
             // Inject the current script
-            console.log(`Injecting ${scripts[index]}`);
             return chrome.scripting.executeScript({
                 target: { tabId: tabId },
                 files: [scripts[index]]

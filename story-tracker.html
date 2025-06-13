@@ -61,19 +61,19 @@
                             <th class="checkbox-col">
                                 <input type="checkbox" id="select-all-checkbox">
                             </th>
-                            <th class="sortable" data-sort="title">
+                            <th class="sortable title-col" data-sort="title">
                                 Title <span class="sort-indicator"></span>
                             </th>
-                            <th class="sortable" data-sort="domain">
+                            <th class="sortable domain-col" data-sort="domain">
                                 Domain <span class="sort-indicator"></span>
                             </th>
-                            <th class="sortable" data-sort="lastChapter">
+                            <th class="sortable chapter-col" data-sort="lastChapter">
                                 Last Chapter <span class="sort-indicator"></span>
                             </th>
-                            <th class="sortable" data-sort="tags">
+                            <th class="sortable tags-col" data-sort="tags">
                                 Tags <span class="sort-indicator"></span>
                             </th>
-                            <th class="sortable" data-sort="dateLastGrabbed">
+                            <th class="sortable date-col" data-sort="dateLastGrabbed">
                                 Last Grabbed <span class="sort-indicator"></span>
                             </th>
                             <th class="actions-col"></th>
@@ -143,6 +143,16 @@
                     <div class="form-group">
                         <label for="edit-last-chapter-url">Last Chapter URL</label>
                         <input type="url" id="edit-last-chapter-url">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-last-chapter-title">Last Chapter Title</label>
+                        <input type="text" id="edit-last-chapter-title" placeholder="Chapter 15: The Final Battle">
+                        <small class="form-help">Optional: Edit the chapter title for easier identification</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-secondary-url-matches">Secondary URL Matches</label>
+                        <input type="text" id="edit-secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
+                        <small class="form-help">Optional: Comma-separated URL prefixes for matching chapters when the main URL pattern doesn't work</small>
                     </div>
                     <div class="form-group">
                         <label for="edit-story-tags">Tags</label>

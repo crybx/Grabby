@@ -566,15 +566,19 @@ class StoryTrackerTable {
     formatDate(isoString) {
         const date = new Date(isoString);
         const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Compare calendar dates, not 24-hour periods
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
 
         // For recent dates, show relative time with actual time
-        if (diffDays === 1) {
+        if (dateDay.getTime() === today.getTime()) {
             const timeString = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
             return `Today at ${timeString}`;
         }
-        if (diffDays === 2) {
+        if (dateDay.getTime() === yesterday.getTime()) {
             const timeString = date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true });
             return `Yesterday at ${timeString}`;
         }
@@ -600,6 +604,8 @@ class StoryTrackerTable {
         document.getElementById("edit-story-title").value = story.title;
         document.getElementById("edit-main-story-url").value = story.mainStoryUrl;
         document.getElementById("edit-last-chapter-url").value = story.lastChapterUrl || "";
+        document.getElementById("edit-last-chapter-title").value = story.lastChapterTitle || "";
+        document.getElementById("edit-secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("edit-story-tags").value = (story.tags || []).join(", ");
         document.getElementById("edit-story-modal").style.display = "flex";
     }
@@ -629,6 +635,7 @@ class StoryTrackerTable {
             mainStoryUrl: mainUrl,
             lastChapterUrl: lastChapterUrl || "",
             lastChapterTitle: "",
+            secondaryUrlMatches: [],
             tags,
             dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
             dateAdded: new Date().toISOString()
@@ -647,6 +654,8 @@ class StoryTrackerTable {
         const title = document.getElementById("edit-story-title").value.trim();
         const mainUrl = document.getElementById("edit-main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("edit-last-chapter-url").value.trim();
+        const lastChapterTitle = document.getElementById("edit-last-chapter-title").value.trim();
+        const secondaryUrlMatchesInput = document.getElementById("edit-secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("edit-story-tags").value.trim();
 
         const storyIndex = this.stories.findIndex(s => s.id === id);
@@ -654,12 +663,18 @@ class StoryTrackerTable {
 
         // Parse tags from comma-separated input
         const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
+        
+        // Parse secondary URL matches from comma-separated input
+        const secondaryUrlMatches = secondaryUrlMatchesInput ? 
+            secondaryUrlMatchesInput.split(",").map(url => url.trim()).filter(url => url) : [];
 
         this.stories[storyIndex] = {
             ...this.stories[storyIndex],
             title,
             mainStoryUrl: mainUrl,
             lastChapterUrl,
+            lastChapterTitle,
+            secondaryUrlMatches,
             tags
         };
 
@@ -745,6 +760,7 @@ class StoryTrackerTable {
                     mainStoryUrl: link.url,
                     lastChapterUrl: "",
                     lastChapterTitle: "",
+                    secondaryUrlMatches: [],
                     tags: [],
                     dateLastGrabbed: null,
                     dateAdded: new Date().toISOString()
@@ -971,12 +987,6 @@ class StoryTrackerTable {
             this.applyFilters();
             this.renderTable();
             this.hideManageTagsModal();
-            
-            let message = `Updated tags for ${updatedCount} stories.`;
-            if (updatedCount < selectedStoriesData.length) {
-                message += ` ${selectedStoriesData.length - updatedCount} stories had no changes.`;
-            }
-            alert(message);
         } else {
             alert("No stories were updated. All selected stories already have the specified tag state.");
         }

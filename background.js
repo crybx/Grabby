@@ -7,7 +7,6 @@ import { StoryTrackerStorage } from "./modules/story-tracker-storage.js";
 // Initialize modules
 const downloadHandler = new DownloadHandler();
 const scriptInjector = new ScriptInjector();
-const storyTracker = new StoryTrackerStorage();
 
 // Handle grab content
 async function handleGrabContent(message, sender) {
@@ -23,6 +22,7 @@ async function handleGrabContent(message, sender) {
 }
 
 const bulkGrabManager = new BulkGrabManager(handleGrabContent);
+const storyTracker = new StoryTrackerStorage(bulkGrabManager);
 
 // Handle auto grab for individual stories
 async function handleAutoGrab(message) {
@@ -155,9 +155,11 @@ async function handleMessages(message, sender, sendResponse) {
     case "grabContent":
         await handleGrabContent(message, sender);
         break;
-    case "updateStoryTracker":
-        await storyTracker.updateLastChapter(message.url, message.title);
+    case "updateStoryTracker": {
+        const tabId = await scriptInjector.getTabId(message, sender);
+        await storyTracker.updateLastChapter(message.url, message.title, tabId);
         break;
+    }
     case "openBackgroundTab":
         // Open URL in background tab (for Ctrl+click functionality)
         try {

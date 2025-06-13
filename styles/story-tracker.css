@@ -230,48 +230,38 @@ h1 {
     color: #666;
 }
 
-.checkbox-col {
-    width: 40px;
-    text-align: center;
-}
 
-.title-col {
-    min-width: 200px;
-    max-width: 300px;
-}
 
-.checkbox-col {
+.stories-table .checkbox-col {
     width: 50px;
     text-align: center;
 }
 
-.title-col {
-    width: 25%;
-    min-width: 200px;
+.stories-table .title-col {
+    width: 30%;
 }
 
-.domain-col {
-    width: 12%;
-    min-width: 120px;
-}
-
-.chapter-col {
-    width: 20%;
-    min-width: 150px;
-}
-
-.tags-col {
-    width: 18%;
-    min-width: 120px;
-}
-
-.date-col {
+.stories-table .domain-col {
     width: 15%;
-    min-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.actions-col {
+.stories-table .chapter-col {
+    width: 20%;
+}
+
+.stories-table .tags-col {
+    width: 15%;
+}
+
+.stories-table .date-col {
+    width: 15%;
+    white-space: nowrap;
+}
+
+.stories-table .actions-col {
     width: 60px;
     text-align: center;
 }
@@ -281,9 +271,8 @@ h1 {
     text-decoration: none;
     font-weight: 500;
     display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-wrap: break-word;
+    line-height: 1.4;
 }
 
 .story-title-link:hover {

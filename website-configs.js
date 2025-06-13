@@ -79,7 +79,10 @@ const WEBSITE_CONFIGS = {
                 "igniforge.com",
                 "novelib.com", "springofromance.com", "razentl.com"],
             grabber: grabFictioneer,
-            useFirstHeadingTitle: true
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForPremiumContent,
+            postGrab: PostGrabActions.pressRightArrow,
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
             // Example: You can add preGrab and postGrab functions here too
             // preGrab: PreGrabActions.scrollToBottom,
             // postGrab: PostGrabActions.clickElementWithText("Next Chapter")

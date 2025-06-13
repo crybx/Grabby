@@ -1,7 +1,8 @@
 // StoryTrackerStorage - Handles story tracking data storage and updates
 export class StoryTrackerStorage {
-    constructor() {
+    constructor(bulkGrabManager = null) {
         this.STORY_PREFIX = "story_";
+        this.bulkGrabManager = bulkGrabManager;
     }
 
     // Get story key for individual storage
@@ -54,7 +55,7 @@ export class StoryTrackerStorage {
     }
 
     // Update last grabbed chapter for a story
-    async updateLastChapter(chapterUrl, chapterTitle = null) {
+    async updateLastChapter(chapterUrl, chapterTitle = null, tabId = null) {
         const stories = await this.getAllStories();
         
         // Extract the main story URL from the chapter URL
@@ -77,7 +78,18 @@ export class StoryTrackerStorage {
             // This prevents books/1 from matching books/2 chapters
             if (normalizedChapterUrl.startsWith(normalizedStoryUrl)) {
                 const afterMainUrl = normalizedChapterUrl.substring(normalizedStoryUrl.length);
-                return afterMainUrl.startsWith("/") || afterMainUrl.startsWith("?") || afterMainUrl === "";
+                if (afterMainUrl.startsWith("/") || afterMainUrl.startsWith("?") || afterMainUrl === "") {
+                    return true;
+                }
+            }
+            
+            // Check secondary URL matches if they exist
+            if (s.secondaryUrlMatches && Array.isArray(s.secondaryUrlMatches)) {
+                for (const urlPrefix of s.secondaryUrlMatches) {
+                    if (urlPrefix && normalizedChapterUrl.startsWith(urlPrefix.replace(/\/$/, ""))) {
+                        return true;
+                    }
+                }
             }
             
             return false;
@@ -88,13 +100,13 @@ export class StoryTrackerStorage {
             if (story.lastChapterUrl === chapterUrl) {
                 console.log(`Duplicate chapter detected for "${story.title}": ${chapterUrl}`);
                 
-                // Send message to stop bulk grabbing
-                chrome.runtime.sendMessage({
-                    target: "background",
-                    type: "stopBulkGrab"
-                });
-                
-                console.log("Sent stopBulkGrab message due to duplicate chapter");
+                // Stop bulk grabbing directly
+                if (this.bulkGrabManager && tabId) {
+                    await this.bulkGrabManager.stopBulkGrab(tabId);
+                    console.log("Stopped bulk grab due to duplicate chapter");
+                } else {
+                    console.warn("Cannot stop bulk grab - missing bulkGrabManager or tabId");
+                }
                 return story; // Don't update anything, just return
             }
             
@@ -120,29 +132,27 @@ export class StoryTrackerStorage {
         
         let cleanedTitle = chapterTitle;
         
-        // Remove story title from beginning if it exists
+        // Remove story title from anywhere in the string if it exists
         if (storyTitle) {
-            // Try exact match first
-            if (cleanedTitle.toLowerCase().startsWith(storyTitle.toLowerCase())) {
-                cleanedTitle = cleanedTitle.substring(storyTitle.length);
-            }
-            
-            // Try removing common separators after story title
-            const separators = [' - ', ': ', ' – ', ' | ', ' — '];
-            for (const sep of separators) {
-                const prefix = storyTitle + sep;
-                if (cleanedTitle.toLowerCase().startsWith(prefix.toLowerCase())) {
-                    cleanedTitle = cleanedTitle.substring(prefix.length);
-                    break;
-                }
-            }
+            // Create a regex to match the story title case-insensitively
+            const storyTitleRegex = new RegExp(storyTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            cleanedTitle = cleanedTitle.replace(storyTitleRegex, '');
         }
         
         // Remove domain suffix (e.g., "_transweaver.com", "_hyacinthbloom.com")
         cleanedTitle = cleanedTitle.replace(/_[a-z0-9.-]+\.[a-z]{2,}$/i, '');
         
-        // Remove leading/trailing whitespace and common separators
-        cleanedTitle = cleanedTitle.replace(/^[\s\-:–|—]+|[\s\-:–|—]+$/g, '').trim();
+        // Replace all separators with whitespace
+        cleanedTitle = cleanedTitle.replace(/[-:–|—_!]+/g, ' ');
+        
+        // Remove the words "chapter", "episode", or "Translation Weaver" (case-insensitive)
+        cleanedTitle = cleanedTitle.replace(/\b(chapter|episode|translation\s+weaver)\b/gi, '');
+        
+        // Collapse multiple whitespace to single space
+        cleanedTitle = cleanedTitle.replace(/\s+/g, ' ');
+        
+        // Remove leading/trailing whitespace
+        cleanedTitle = cleanedTitle.trim();
         
         return cleanedTitle || chapterTitle; // Return original if cleaning resulted in empty string
     }
