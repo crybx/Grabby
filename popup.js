@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
         stopBulkBtn.addEventListener("click", () => {
             chrome.runtime.sendMessage({
                 target: "background",
-                type: "stopBulkGrab"
+                type: "stopGrabbing"
             });
             
             updateUIForBulkGrabbing(false);

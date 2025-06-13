@@ -263,6 +263,10 @@ class StoryTrackerTable {
                 aValue = new Date(a.dateLastGrabbed || 0);
                 bValue = new Date(b.dateLastGrabbed || 0);
                 break;
+            case "dateLastChecked":
+                aValue = new Date(a.dateLastChecked || 0);
+                bValue = new Date(b.dateLastChecked || 0);
+                break;
             default:
                 return 0;
             }
@@ -364,6 +368,12 @@ class StoryTrackerTable {
             ? this.formatDate(story.dateLastGrabbed)
             : "Never";
 
+        const lastCheckedText = story.dateLastChecked 
+            ? this.formatDate(story.dateLastChecked)
+            : "Never";
+
+        const lastCheckStatus = story.lastCheckStatus || "Unknown";
+
         const tagsDisplay = story.tags && story.tags.length > 0 
             ? story.tags.map(tag => `<span class="tag">${tag}</span>`).join("")
             : "<span class=\"no-tags\">None</span>";
@@ -379,6 +389,7 @@ class StoryTrackerTable {
             <td class="chapter-col">${lastChapterDisplay}</td>
             <td class="tags-col">${tagsDisplay}</td>
             <td class="date-col">${lastGrabbedText}</td>
+            <td class="date-col" title="${lastCheckStatus}">${lastCheckedText}</td>
             <td class="actions-col">
                 <button class="edit-btn" data-story-id="${story.id}" title="Edit story">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -817,7 +828,7 @@ class StoryTrackerTable {
         const blob = new Blob([jsonString], { type: "application/json" });
         const url = URL.createObjectURL(blob);
 
-        const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
         const filename = `grabby-stories-backup-${currentDate}.json`;
 
         const a = document.createElement("a");

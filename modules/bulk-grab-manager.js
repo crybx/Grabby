@@ -189,7 +189,7 @@ export class BulkGrabManager {
     }
 
     // Stop bulk grab process for current tab
-    async stopBulkGrab(tabId) {
+    async stopGrabbing(tabId) {
         if (!tabId) {
             console.error("No tab ID available for stopping bulk grab");
             return;

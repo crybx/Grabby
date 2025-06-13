@@ -134,7 +134,7 @@ function findMatchingConfig(url) {
 }
 
 // Export for use in other files
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
     window.WEBSITE_CONFIGS = WEBSITE_CONFIGS;
     window.findMatchingConfig = findMatchingConfig;
 }

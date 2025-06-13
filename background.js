@@ -39,7 +39,7 @@ async function handleAutoGrab(message) {
         
         // Wait for tab to load, then start the auto-grab process
         chrome.tabs.onUpdated.addListener(function autoGrabListener(tabId, changeInfo) {
-            if (tabId === tab.id && changeInfo.status === 'complete') {
+            if (tabId === tab.id && changeInfo.status === "complete") {
                 // Remove this listener
                 chrome.tabs.onUpdated.removeListener(autoGrabListener);
                 
@@ -99,8 +99,8 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     const configResult = await chrome.scripting.executeScript({
                         target: { tabId: tabId },
                         func: function() {
-                            if (typeof findMatchingConfig === 'undefined') {
-                                console.error('findMatchingConfig is not available');
+                            if (typeof findMatchingConfig === "undefined") {
+                                console.error("findMatchingConfig is not available");
                                 return null;
                             }
                             const config = findMatchingConfig(window.location.href);
@@ -160,6 +160,11 @@ async function handleMessages(message, sender, sendResponse) {
         await storyTracker.updateLastChapter(message.url, message.title, tabId);
         break;
     }
+    case "updateStoryTrackerStatus": {
+        const tabId = await scriptInjector.getTabId(message, sender);
+        await storyTracker.updateLastCheckStatus(message.url, message.status, tabId);
+        break;
+    }
     case "openBackgroundTab":
         // Open URL in background tab (for Ctrl+click functionality)
         try {
@@ -177,9 +182,9 @@ async function handleMessages(message, sender, sendResponse) {
         await bulkGrabManager.startBulkGrab(message.pageCount, message.delaySeconds, startTabId);
         break;
     }
-    case "stopBulkGrab": {
+    case "stopGrabbing": {
         const stopTabId = await scriptInjector.getTabId(message, sender);
-        await bulkGrabManager.stopBulkGrab(stopTabId);
+        await bulkGrabManager.stopGrabbing(stopTabId);
         break;
     }
     case "getBulkGrabStatus":

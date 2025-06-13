@@ -54,8 +54,8 @@ export class StoryTrackerStorage {
         }
     }
 
-    // Update last grabbed chapter for a story
-    async updateLastChapter(chapterUrl, chapterTitle = null, tabId = null) {
+    // Find story that matches a chapter URL
+    async findStoryByChapterUrl(chapterUrl) {
         const stories = await this.getAllStories();
         
         // Extract the main story URL from the chapter URL
@@ -63,7 +63,7 @@ export class StoryTrackerStorage {
         
         // Find story where the chapter URL actually belongs to the story
         // Must be exact match or the chapter URL should start with the story's main URL
-        const story = stories.find(s => {
+        return stories.find(s => {
             // Normalize URLs by removing trailing slashes for comparison
             const normalizedExtracted = extractedMainUrl.replace(/\/$/, "");
             const normalizedStoryUrl = s.mainStoryUrl.replace(/\/$/, "");
@@ -94,6 +94,29 @@ export class StoryTrackerStorage {
             
             return false;
         });
+    }
+
+    // Update last check status for a story (used for aborts or other check results)
+    async updateLastCheckStatus(chapterUrl, status, tabId = null) {
+        const story = await this.findStoryByChapterUrl(chapterUrl);
+        
+        if (story) {
+            // Update the story object with check status
+            story.dateLastChecked = new Date().toISOString();
+            story.lastCheckStatus = status;
+            
+            // Save just this story
+            await this.saveStory(story);
+            console.log(`Updated last check status for story: ${story.title} - Status: ${status}`);
+            return story;
+        }
+        
+        return null;
+    }
+
+    // Update last grabbed chapter for a story
+    async updateLastChapter(chapterUrl, chapterTitle = null, tabId = null) {
+        const story = await this.findStoryByChapterUrl(chapterUrl);
         
         if (story) {
             // Check if this is the same chapter as before (potential loop detection)
@@ -102,7 +125,7 @@ export class StoryTrackerStorage {
                 
                 // Stop bulk grabbing directly
                 if (this.bulkGrabManager && tabId) {
-                    await this.bulkGrabManager.stopBulkGrab(tabId);
+                    await this.bulkGrabManager.stopGrabbing(tabId);
                     console.log("Stopped bulk grab due to duplicate chapter");
                 } else {
                     console.warn("Cannot stop bulk grab - missing bulkGrabManager or tabId");
@@ -112,7 +135,10 @@ export class StoryTrackerStorage {
             
             // Update the story object
             story.lastChapterUrl = chapterUrl;
-            story.dateLastGrabbed = new Date().toISOString();
+            const now = new Date().toISOString();
+            story.dateLastGrabbed = now;
+            story.dateLastChecked = now; // Set both dates equal when successfully grabbed
+            story.lastCheckStatus = "Grabbed"; // Set status when successfully grabbed
             if (chapterTitle) {
                 story.lastChapterTitle = this.cleanTitle(chapterTitle, story.title);
             }

@@ -6,6 +6,30 @@ function getTitleFromFirstHeading(content) {
     return doc.querySelector("h1").textContent;
 }
 
+// Helper function to handle grab interruptions (aborts, errors, end of story, etc.)
+function handleGrabInterruption(message) {
+    // Update story tracker with status
+    chrome.runtime.sendMessage({
+        target: "background",
+        type: "updateStoryTrackerStatus",
+        url: window.location.href,
+        status: message
+    });
+    
+    // Send message to stop bulk grabbing if it's running
+    chrome.runtime.sendMessage({
+        target: "background",
+        type: "stopGrabbing"
+    });
+    
+    // Show user-friendly message
+    chrome.runtime.sendMessage({
+        target: "background",
+        type: "showError",
+        message: message
+    });
+}
+
 function extractTitle(content, useFirstHeadingTitle) {
     if (useFirstHeadingTitle) {
         return getTitleFromFirstHeading(content);
@@ -41,18 +65,7 @@ async function grabFromWebsite() {
                         if (preGrabResult && preGrabResult.abort) {
                             console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
                             
-                            // Send message to stop bulk grabbing if it's running
-                            chrome.runtime.sendMessage({
-                                target: "background",
-                                type: "stopBulkGrab"
-                            });
-                            
-                            // Show user-friendly error message
-                            chrome.runtime.sendMessage({
-                                target: "background",
-                                type: "showError",
-                                message: preGrabResult.reason || "Content grab was aborted by pre-grab check"
-                            });
+                            handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
                             
                             return null; // Abort the grab
                         }
@@ -94,18 +107,7 @@ async function grabFromWebsite() {
                     if (postGrabResult && postGrabResult.abort) {
                         console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
                         
-                        // Send message to stop bulk grabbing if it's running
-                        chrome.runtime.sendMessage({
-                            target: "background",
-                            type: "stopBulkGrab"
-                        });
-
-                        // Show user-friendly message
-                        chrome.runtime.sendMessage({
-                            target: "background",
-                            type: "showError",
-                            message: postGrabResult.reason || "Bulk grab stopped by post-grab check"
-                        });
+                        handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
                         
                         // Note: We don't return null here since the grab itself was successful
                         // We just want to stop future grabs in a bulk operation
@@ -120,12 +122,9 @@ async function grabFromWebsite() {
 
     } catch (error) {
         console.error("Error grabbing content:", error);
-        // Consider showing a user-friendly error notification
-        chrome.runtime.sendMessage({
-            target: "background",
-            type: "showError",
-            message: `Failed to grab content: ${error.message}`
-        });
+        
+        handleGrabInterruption(`Error: ${error.message}`);
+        
         return null;
     }
 }
