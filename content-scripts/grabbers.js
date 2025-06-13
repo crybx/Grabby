@@ -264,15 +264,18 @@ function grabJjwxc() {
 }
 
 function grabStorySeedling() {
-    //content is in <div x-html="content">
-    const content = document.querySelector("div[x-html=\"content\"]");
+    // Capture all data from DOM first to avoid triggering site's navigation
+    const originalContent = document.querySelector("div[x-html=\"content\"]");
     let title = document.querySelector("title").textContent.trim();
+    let storyTitle = document.querySelector(".font-medium.max-w-2xl")?.textContent?.trim();
+    
+    // Clone the content to avoid triggering site's DOM change detection
+    const content = originalContent.cloneNode(true);
     const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     const alphab = "⽂⽃⽄⽅⽆⽇⽈⽉⽊⽋⽌⽍⽎⽏⽐⽑⽒⽓⽔⽕⽖⽗⽘⽙⽚⽛⽜⽝⽞⽟⽠⽡⽢⽣⽤⽥⽦⽧⽨⽩⽪⽫⽬⽭⽮⽯⽰⽱⽲⽳⽴⽵";
     const warn = " This content is owned by Story Seedling. If you are reading this on a site other than storyseedling.com, please report it to us.";
 
-    // get textContent of div with classes font-medium and max-w-2x1
-    let storyTitle = document.querySelector(".font-medium.max-w-2xl")?.textContent?.trim();
+    // Build final title from captured data
     if (storyTitle) {
         title = `${storyTitle} ${title}`;
     }

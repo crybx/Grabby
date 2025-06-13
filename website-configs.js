@@ -57,7 +57,12 @@ const WEBSITE_CONFIGS = {
         "page.kakao.com": { grabber: grabKakaoPage, useFirstHeadingTitle: true },
         "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
         "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },
-        "starlightstream.net": { grabber: grabStarlightStream },
+        "starlightstream.net": {
+            grabber: grabStarlightStream,
+            preGrab: PreGrabActions.checkForPageNotFound,
+            postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true }),
+            autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 20 }
+        },
         "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
         "syosetu.com": { grabber: grabSyosetu },
         "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },

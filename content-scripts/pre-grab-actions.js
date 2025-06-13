@@ -133,6 +133,32 @@ function checkForPremiumContent(selectors = ["h2, h3"]) {
     return { abort: false };
 }
 
+// Function to check for page not found errors and abort if found
+function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
+    const notFoundIndicators = [
+        "We Couldn't Find This Page",
+        "We Couldn’t Find This Page",
+        "Page Not Found",
+        "404 Error",
+        "404 Not Found",
+        "This page does not exist",
+        "The page you requested could not be found"
+    ];
+    
+    for (const selector of selectors) {
+        const elements = document.querySelectorAll(selector);
+        for (const element of elements) {
+            const text = element.textContent.trim();
+            if (notFoundIndicators.some(indicator => text.includes(indicator))) {
+                console.log(`Page not found error detected: "${text}" - aborting grab`);
+                return { abort: true, reason: `Page not found: "${text}"` };
+            }
+        }
+    }
+    
+    return { abort: false };
+}
+
 // Export functions to window for global access
 window.PreGrabActions = {
     scrollToBottom,
@@ -143,5 +169,6 @@ window.PreGrabActions = {
     disableAnimations,
     loadAllImages,
     peachTeaClickAllOnOnePageButton,
-    checkForPremiumContent
+    checkForPremiumContent,
+    checkForPageNotFound
 };

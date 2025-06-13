@@ -70,8 +70,14 @@ function clickLinkContaining(text, options = {}) {
                 continue;
             }
             
-            console.log(`Found valid element with text "${text}", clicking:`, element);
-            element.click();
+            console.log(`Found valid element with text "${text}", navigating to:`, element.href);
+            // Use window.location.href to ensure navigation happens in same tab
+            if (element.href) {
+                window.location.href = element.href;
+            } else {
+                // Fallback to click if no href (for non-link elements)
+                element.click();
+            }
             return true;
         }
     }
