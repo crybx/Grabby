@@ -137,7 +137,7 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
             const text = element.textContent.trim();
             if (premiumIndicators.some(indicator => text.includes(indicator))) {
                 console.log(`Premium content detected: "${text}" - aborting grab`);
-                return { abort: true, reason: `Premium content detected: "${text}"` };
+                return { abort: true, reason: `Premium content detected: ${text}`, invalidateGrab: true };
             }
         }
     }

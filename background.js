@@ -27,10 +27,27 @@ async function handleAutoGrab(message) {
     try {
         console.log(`Starting auto-grab for story: ${message.storyTitle}`);
         
-        // Open the last chapter URL in a new background tab
+        // Get auto-grab config to check if tab should be active
+        // Simple domain matching to check activeTab setting without loading all grabber functions
+        let shouldBeActive = false;
+        try {
+            const url = message.lastChapterUrl;
+            
+            // Check for storyseedling.com which has activeTab: true
+            if (url.includes("storyseedling.com")) {
+                shouldBeActive = true;
+                console.log("Found storyseedling.com: activeTab = true");
+            }
+            // Add other sites with activeTab: true here as needed
+            
+        } catch (error) {
+            console.warn("Could not determine activeTab setting, defaulting to false:", error);
+        }
+        
+        // Open the last chapter URL in a new tab (active or background based on config)
         const tab = await chrome.tabs.create({
             url: message.lastChapterUrl,
-            active: false
+            active: shouldBeActive
         });
         
         console.log(`Opened tab ${tab.id} for ${message.storyTitle}`);
@@ -66,20 +83,32 @@ async function performAutoGrabSequence(tabId, storyInfo) {
         await scriptInjector.injectScriptsSequentially(tabId);
         
         // Run postGrab action to navigate to next chapter
-        await chrome.scripting.executeScript({
+        const postGrabResult = await chrome.scripting.executeScript({
             target: { tabId: tabId },
-            func: function() {
+            func: async function() {
                 const config = findMatchingConfig(window.location.href);
                 if (config && config.postGrab && typeof config.postGrab === "function") {
                     try {
-                        config.postGrab();
+                        const result = await config.postGrab();
                         console.log("PostGrab action executed for auto-grab");
+                        return { success: true, result: result };
                     } catch (error) {
                         console.error("Error in postGrab action:", error);
+                        return { success: false, error: error.message };
                     }
+                } else {
+                    console.log("No postGrab function found for this site");
+                    return { success: false, error: "No postGrab function" };
                 }
             }
         });
+        
+        const postGrabStatus = postGrabResult[0]?.result;
+        if (postGrabStatus?.success) {
+            console.log(`PostGrab executed successfully for ${storyInfo.storyTitle}`);
+        } else {
+            console.log(`PostGrab failed for ${storyInfo.storyTitle}: ${postGrabStatus?.error || "Unknown error"}`);
+        }
         
         // Wait a bit for navigation to complete
         setTimeout(async () => {
@@ -141,7 +170,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);
             }
-        }, 3000); // Wait 3 seconds for navigation
+        }, 4000); // Wait 3 seconds for navigation
         
     } catch (error) {
         console.error(`Error in performAutoGrabSequence for ${storyInfo.storyTitle}:`, error);

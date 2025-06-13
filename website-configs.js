@@ -8,6 +8,7 @@
 //   - enabled: boolean to enable auto-grab for this site
 //   - defaultCount: default number of chapters to grab
 //   - defaultDelay: default delay between grabs in seconds
+//   - activeTab: boolean to open tabs as active/focused (defaults to false)
 //
 // Example usage:
 // "example.com": { 
@@ -15,7 +16,7 @@
 //     useFirstHeadingTitle: true,
 //     preGrab: PreGrabActions.scrollToBottom,  // Pre-grab actions
 //     postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true }),  // Post-grab actions
-//     autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 5 }  // Auto-grab config
+//     autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 5, activeTab: true }  // Auto-grab config
 // }
 const WEBSITE_CONFIGS = {
     // Grabbers for single domains
@@ -67,8 +68,8 @@ const WEBSITE_CONFIGS = {
             grabber: grabStorySeedling,
             useFirstHeadingTitle: true,
             preGrab: PreGrabActions.checkForPremiumContent,
-            postGrab: PreGrabActions.checkForPremiumContent,
-            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 20 }
+            // no postGrab needed, site navigates to next chapter automatically on script injection
+            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "syosetu.com": { grabber: grabSyosetu },
         "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },

@@ -96,6 +96,13 @@ async function grabFromWebsite() {
                         
                         handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
                         
+                        // If invalidateGrab is true, return null to invalidate this grab
+                        // Otherwise, just stop future grabs but keep this one
+                        if (postGrabResult.invalidateGrab) {
+                            console.log("Post-grab requested invalidation - discarding current grab");
+                            return null;
+                        }
+                        
                         // Note: We don't return null here since the grab itself was successful
                         // We just want to stop future grabs in a bulk operation
                     }
