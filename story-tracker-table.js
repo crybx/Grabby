@@ -120,31 +120,18 @@ class StoryTrackerTable {
             this.showAddModal();
         });
 
-        document.getElementById("close-modal").addEventListener("click", () => {
-            this.hideAddModal();
+        document.getElementById("close-story-modal").addEventListener("click", () => {
+            this.hideStoryModal();
         });
 
-        document.getElementById("close-edit-modal").addEventListener("click", () => {
-            this.hideEditModal();
+        document.getElementById("cancel-story-btn").addEventListener("click", () => {
+            this.hideStoryModal();
         });
 
-        document.getElementById("cancel-btn").addEventListener("click", () => {
-            this.hideAddModal();
-        });
-
-        document.getElementById("cancel-edit-btn").addEventListener("click", () => {
-            this.hideEditModal();
-        });
-
-        // Form submissions
-        document.getElementById("add-story-form").addEventListener("submit", (e) => {
+        // Form submission
+        document.getElementById("story-form").addEventListener("submit", (e) => {
             e.preventDefault();
-            this.handleAddStory();
-        });
-
-        document.getElementById("edit-story-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            this.handleEditStory();
+            this.handleStoryFormSubmit();
         });
 
         document.getElementById("delete-story-btn").addEventListener("click", () => {
@@ -591,34 +578,49 @@ class StoryTrackerTable {
 
     // Modal and form handling methods
     showAddModal() {
-        document.getElementById("add-story-modal").style.display = "flex";
-    }
-
-    hideAddModal() {
-        document.getElementById("add-story-modal").style.display = "none";
-        document.getElementById("add-story-form").reset();
+        this.isEditMode = false;
+        document.getElementById("story-modal-title").textContent = "Add New Story";
+        document.getElementById("submit-story-btn").textContent = "Add Story";
+        document.getElementById("delete-story-btn").style.display = "none";
+        document.getElementById("story-form").reset();
+        document.getElementById("story-modal").style.display = "flex";
     }
 
     showEditModal(story) {
-        document.getElementById("edit-story-id").value = story.id;
-        document.getElementById("edit-story-title").value = story.title;
-        document.getElementById("edit-main-story-url").value = story.mainStoryUrl;
-        document.getElementById("edit-last-chapter-url").value = story.lastChapterUrl || "";
-        document.getElementById("edit-last-chapter-title").value = story.lastChapterTitle || "";
-        document.getElementById("edit-secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
-        document.getElementById("edit-story-tags").value = (story.tags || []).join(", ");
-        document.getElementById("edit-story-modal").style.display = "flex";
+        this.isEditMode = true;
+        document.getElementById("story-modal-title").textContent = "Edit Story";
+        document.getElementById("submit-story-btn").textContent = "Save Changes";
+        document.getElementById("delete-story-btn").style.display = "inline-block";
+        
+        document.getElementById("story-id").value = story.id;
+        document.getElementById("story-title").value = story.title;
+        document.getElementById("main-story-url").value = story.mainStoryUrl;
+        document.getElementById("last-chapter-url").value = story.lastChapterUrl || "";
+        document.getElementById("last-chapter-title").value = story.lastChapterTitle || "";
+        document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
+        document.getElementById("story-tags").value = (story.tags || []).join(", ");
+        document.getElementById("story-modal").style.display = "flex";
     }
 
-    hideEditModal() {
-        document.getElementById("edit-story-modal").style.display = "none";
-        document.getElementById("edit-story-form").reset();
+    hideStoryModal() {
+        document.getElementById("story-modal").style.display = "none";
+        document.getElementById("story-form").reset();
+    }
+
+    async handleStoryFormSubmit() {
+        if (this.isEditMode) {
+            await this.handleEditStory();
+        } else {
+            await this.handleAddStory();
+        }
     }
 
     async handleAddStory() {
         const title = document.getElementById("story-title").value.trim();
         const mainUrl = document.getElementById("main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
+        const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
+        const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("story-tags").value.trim();
 
         if (!title || !mainUrl) {
@@ -626,16 +628,18 @@ class StoryTrackerTable {
             return;
         }
 
-        // Parse tags from comma-separated input
+        // Parse tags and secondary URL matches from comma-separated input
         const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag) : [];
+        const secondaryUrlMatches = secondaryUrlMatchesInput ? 
+            secondaryUrlMatchesInput.split(",").map(url => url.trim()).filter(url => url) : [];
 
         const story = {
             id: Date.now().toString(36) + Math.random().toString(36).substr(2),
             title,
             mainStoryUrl: mainUrl,
             lastChapterUrl: lastChapterUrl || "",
-            lastChapterTitle: "",
-            secondaryUrlMatches: [],
+            lastChapterTitle: lastChapterTitle || "",
+            secondaryUrlMatches,
             tags,
             dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
             dateAdded: new Date().toISOString()
@@ -646,17 +650,17 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.hideAddModal();
+        this.hideStoryModal();
     }
 
     async handleEditStory() {
-        const id = document.getElementById("edit-story-id").value;
-        const title = document.getElementById("edit-story-title").value.trim();
-        const mainUrl = document.getElementById("edit-main-story-url").value.trim();
-        const lastChapterUrl = document.getElementById("edit-last-chapter-url").value.trim();
-        const lastChapterTitle = document.getElementById("edit-last-chapter-title").value.trim();
-        const secondaryUrlMatchesInput = document.getElementById("edit-secondary-url-matches").value.trim();
-        const tagsInput = document.getElementById("edit-story-tags").value.trim();
+        const id = document.getElementById("story-id").value;
+        const title = document.getElementById("story-title").value.trim();
+        const mainUrl = document.getElementById("main-story-url").value.trim();
+        const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
+        const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
+        const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
+        const tagsInput = document.getElementById("story-tags").value.trim();
 
         const storyIndex = this.stories.findIndex(s => s.id === id);
         if (storyIndex === -1) return;
@@ -682,11 +686,11 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.hideEditModal();
+        this.hideStoryModal();
     }
 
     async handleDeleteStory() {
-        const id = document.getElementById("edit-story-id").value;
+        const id = document.getElementById("story-id").value;
         const confirmed = confirm("Are you sure you want to delete this story?");
         
         if (!confirmed) return;
@@ -698,7 +702,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.hideEditModal();
+        this.hideStoryModal();
     }
 
     // Import modal management

@@ -87,15 +87,16 @@
         </main>
     </div>
 
-    <!-- Add Story Modal -->
-    <div id="add-story-modal" class="modal" style="display: none;">
+    <!-- Story Modal (used for both Add and Edit) -->
+    <div id="story-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Add New Story</h2>
-                <button id="close-modal" class="close-btn">&times;</button>
+                <h2 id="story-modal-title">Add New Story</h2>
+                <button id="close-story-modal" class="close-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="add-story-form">
+                <form id="story-form">
+                    <input type="hidden" id="story-id">
                     <div class="form-group">
                         <label for="story-title">Story Title</label>
                         <input type="text" id="story-title" placeholder="Enter story title" required>
@@ -105,64 +106,29 @@
                         <input type="url" id="main-story-url" placeholder="https://example.com/story" required>
                     </div>
                     <div class="form-group">
-                        <label for="last-chapter-url">Last Chapter URL (Optional)</label>
+                        <label for="last-chapter-url">Last Chapter URL</label>
                         <input type="url" id="last-chapter-url" placeholder="https://example.com/story/chapter-1">
+                        <small class="form-help">Optional: URL of the most recent chapter</small>
                     </div>
                     <div class="form-group">
-                        <label for="story-tags">Tags (Optional)</label>
+                        <label for="last-chapter-title">Last Chapter Title</label>
+                        <input type="text" id="last-chapter-title" placeholder="Chapter 15: The Final Battle">
+                        <small class="form-help">Optional: Edit the chapter title for easier identification</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="secondary-url-matches">Secondary URL Matches</label>
+                        <input type="text" id="secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
+                        <small class="form-help">Optional: Comma-separated URL prefixes for matching chapters when the main URL pattern doesn't work</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="story-tags">Tags</label>
                         <input type="text" id="story-tags" placeholder="fantasy, mon, fav (comma-separated)">
                         <small class="form-help">Enter tags separated by commas</small>
                     </div>
                     <div class="form-actions">
-                        <button type="button" id="cancel-btn" class="secondary-btn">Cancel</button>
-                        <button type="submit" class="primary-btn">Add Story</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Story Modal -->
-    <div id="edit-story-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Edit Story</h2>
-                <button id="close-edit-modal" class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="edit-story-form">
-                    <input type="hidden" id="edit-story-id">
-                    <div class="form-group">
-                        <label for="edit-story-title">Story Title</label>
-                        <input type="text" id="edit-story-title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-main-story-url">Main Story URL</label>
-                        <input type="url" id="edit-main-story-url" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-last-chapter-url">Last Chapter URL</label>
-                        <input type="url" id="edit-last-chapter-url">
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-last-chapter-title">Last Chapter Title</label>
-                        <input type="text" id="edit-last-chapter-title" placeholder="Chapter 15: The Final Battle">
-                        <small class="form-help">Optional: Edit the chapter title for easier identification</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-secondary-url-matches">Secondary URL Matches</label>
-                        <input type="text" id="edit-secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
-                        <small class="form-help">Optional: Comma-separated URL prefixes for matching chapters when the main URL pattern doesn't work</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-story-tags">Tags</label>
-                        <input type="text" id="edit-story-tags" placeholder="fantasy, mon, fav (comma-separated)">
-                        <small class="form-help">Enter tags separated by commas</small>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="cancel-edit-btn" class="secondary-btn">Cancel</button>
-                        <button type="button" id="delete-story-btn" class="danger-btn">Delete</button>
-                        <button type="submit" class="primary-btn">Save Changes</button>
+                        <button type="button" id="cancel-story-btn" class="secondary-btn">Cancel</button>
+                        <button type="button" id="delete-story-btn" class="danger-btn" style="display: none;">Delete</button>
+                        <button type="submit" id="submit-story-btn" class="primary-btn">Add Story</button>
                     </div>
                 </form>
             </div>
