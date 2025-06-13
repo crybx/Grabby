@@ -2,7 +2,6 @@
 import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
-import { StoryTrackerStorage } from "./modules/story-tracker-storage.js";
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
@@ -22,7 +21,6 @@ async function handleGrabContent(message, sender) {
 }
 
 const bulkGrabManager = new BulkGrabManager(handleGrabContent);
-const storyTracker = new StoryTrackerStorage(bulkGrabManager);
 
 // Handle auto grab for individual stories
 async function handleAutoGrab(message) {
@@ -124,6 +122,19 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     console.log(`Started bulk grab for ${storyInfo.storyTitle}: ${defaultCount} chapters, ${defaultDelay}s delay`);
                 } else {
                     console.log(`No URL change for ${storyInfo.storyTitle} - may be at end or stuck`);
+                    
+                    // Update story tracker with end-of-story status
+                    await scriptInjector.injectScriptsSequentially(tabId);
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        func: async (url, status) => {
+                            if (typeof StoryTracker !== "undefined") {
+                                await StoryTracker.updateLastCheckStatus(url, status);
+                            }
+                        },
+                        args: [initialUrl, "No next chapter found"]
+                    });
+                    
                     // Close the tab since no new content
                     chrome.tabs.remove(tabId);
                 }
@@ -157,12 +168,17 @@ async function handleMessages(message, sender, sendResponse) {
         break;
     case "updateStoryTracker": {
         const tabId = await scriptInjector.getTabId(message, sender);
-        await storyTracker.updateLastChapter(message.url, message.title, tabId);
-        break;
-    }
-    case "updateStoryTrackerStatus": {
-        const tabId = await scriptInjector.getTabId(message, sender);
-        await storyTracker.updateLastCheckStatus(message.url, message.status, tabId);
+        // Inject story tracker script and update via content script
+        await scriptInjector.injectScriptsSequentially(tabId);
+        await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: async (url, title) => {
+                if (typeof StoryTracker !== "undefined") {
+                    await StoryTracker.updateLastChapter(url, title);
+                }
+            },
+            args: [message.url, message.title]
+        });
         break;
     }
     case "openBackgroundTab":
@@ -184,7 +200,26 @@ async function handleMessages(message, sender, sendResponse) {
     }
     case "stopGrabbing": {
         const stopTabId = await scriptInjector.getTabId(message, sender);
+        
+        // Update story tracker with status and show message if provided
+        if (message.status && message.url) {
+            // Inject story tracker script and update via content script
+            await scriptInjector.injectScriptsSequentially(stopTabId);
+            await chrome.scripting.executeScript({
+                target: { tabId: stopTabId },
+                func: async (url, status) => {
+                    if (typeof StoryTracker !== "undefined") {
+                        await StoryTracker.updateLastCheckStatus(url, status);
+                    }
+                },
+                args: [message.url, message.status]
+            });
+            console.log("ERROR: " + message.status);
+        }
+        
+        // Stop the grabbing process
         await bulkGrabManager.stopGrabbing(stopTabId);
+        
         break;
     }
     case "getBulkGrabStatus":

@@ -22,13 +22,7 @@ class StoryTrackerTable {
 
     async loadStories() {
         try {
-            // Get all storage data and filter for story entries
-            const allData = await chrome.storage.local.get();
-            const stories = Object.entries(allData)
-                .filter(([key]) => key.startsWith("story_"))
-                .map(([, story]) => story);
-            
-            this.stories = stories;
+            this.stories = await StoryTracker.getAllStories();
             this.applyFilters();
         } catch (error) {
             console.error("Error loading stories:", error);
@@ -37,25 +31,11 @@ class StoryTrackerTable {
     }
 
     async saveStory(story) {
-        try {
-            const key = `story_${story.id}`;
-            await chrome.storage.local.set({ [key]: story });
-            return true;
-        } catch (error) {
-            console.error("Error saving story:", error);
-            return false;
-        }
+        return await StoryTracker.saveStory(story);
     }
 
     async deleteStoryFromStorage(storyId) {
-        try {
-            const key = `story_${storyId}`;
-            await chrome.storage.local.remove(key);
-            return true;
-        } catch (error) {
-            console.error("Error deleting story:", error);
-            return false;
-        }
+        return await StoryTracker.deleteStory(storyId);
     }
 
     setupEventListeners() {

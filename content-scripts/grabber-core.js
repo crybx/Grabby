@@ -8,25 +8,12 @@ function getTitleFromFirstHeading(content) {
 
 // Helper function to handle grab interruptions (aborts, errors, end of story, etc.)
 function handleGrabInterruption(message) {
-    // Update story tracker with status
+    // Send single message to handle all interruption actions
     chrome.runtime.sendMessage({
         target: "background",
-        type: "updateStoryTrackerStatus",
+        type: "stopGrabbing",
         url: window.location.href,
         status: message
-    });
-    
-    // Send message to stop bulk grabbing if it's running
-    chrome.runtime.sendMessage({
-        target: "background",
-        type: "stopGrabbing"
-    });
-    
-    // Show user-friendly message
-    chrome.runtime.sendMessage({
-        target: "background",
-        type: "showError",
-        message: message
     });
 }
 

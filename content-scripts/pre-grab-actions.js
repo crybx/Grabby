@@ -88,7 +88,13 @@ function loadAllImages() {
 }
 
 // Peach Tea Agency specific: Click "All on one page?" button if it exists
-async function peachTeaClickAllOnOnePageButton() {
+async function peachTeaClickAllOnOnePageButton(duplicateCheck = true) {
+    // Check for duplicates first unless disabled
+    if (duplicateCheck) {
+        const duplicateResult = await checkForDuplicateChapter();
+        if (duplicateResult.abort) return duplicateResult;
+    }
+
     // Look for buttons/links with "All on one page?" text
     const allElements = document.querySelectorAll("button, a, [role=\"button\"]");
     
@@ -107,7 +113,13 @@ async function peachTeaClickAllOnOnePageButton() {
 }
 
 // Function to check for premium/locked content and abort if found
-function checkForPremiumContent(selectors = ["h2, h3"]) {
+async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = true) {
+    // Check for duplicates first unless disabled
+    if (duplicateCheck) {
+        const duplicateResult = await checkForDuplicateChapter();
+        if (duplicateResult.abort) return duplicateResult;
+    }
+    
     const premiumIndicators = [
         "Premium Content",
         "Locked Chapter",
@@ -134,7 +146,13 @@ function checkForPremiumContent(selectors = ["h2, h3"]) {
 }
 
 // Function to check for page not found errors and abort if found
-function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
+async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"], duplicateCheck = true) {
+    // Check for duplicates first unless disabled
+    if (duplicateCheck) {
+        const duplicateResult = await checkForDuplicateChapter();
+        if (duplicateResult.abort) return duplicateResult;
+    }
+    
     const notFoundIndicators = [
         "We Couldn't Find This Page",
         "We Couldn’t Find This Page",
@@ -159,6 +177,27 @@ function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", "
     return { abort: false };
 }
 
+// Function to check if current URL is a duplicate chapter and abort if found
+async function checkForDuplicateChapter(duplicateCheck = true) {
+    if (!duplicateCheck) {
+        return { abort: false };
+    }
+    
+    if (typeof StoryTracker !== "undefined") {
+        try {
+            const isDuplicate = await StoryTracker.isDuplicateChapter(window.location.href);
+            if (isDuplicate) {
+                console.log("Duplicate chapter detected before grabbing - aborting grab");
+                return { abort: true, reason: "Duplicate chapter - already grabbed this URL" };
+            }
+        } catch (error) {
+            console.error("Error checking for duplicate chapter:", error);
+        }
+    }
+    
+    return { abort: false };
+}
+
 // Export functions to window for global access
 window.PreGrabActions = {
     scrollToBottom,
@@ -170,5 +209,6 @@ window.PreGrabActions = {
     loadAllImages,
     peachTeaClickAllOnOnePageButton,
     checkForPremiumContent,
-    checkForPageNotFound
+    checkForPageNotFound,
+    checkForDuplicateChapter
 };

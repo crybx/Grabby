@@ -73,10 +73,15 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Add click handler for stop bulk grab
     if (stopBulkBtn) {
-        stopBulkBtn.addEventListener("click", () => {
+        stopBulkBtn.addEventListener("click", async () => {
+            // Get current tab to include URL in stop message
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            
             chrome.runtime.sendMessage({
                 target: "background",
-                type: "stopGrabbing"
+                type: "stopGrabbing",
+                url: tab?.url,
+                status: "Manually stopped by user"
             });
             
             updateUIForBulkGrabbing(false);
