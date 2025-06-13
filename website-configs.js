@@ -63,7 +63,13 @@ const WEBSITE_CONFIGS = {
             postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true }),
             autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },
-        "storyseedling.com": { grabber: grabStorySeedling, useFirstHeadingTitle: true },
+        "storyseedling.com": {
+            grabber: grabStorySeedling,
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForPremiumContent,
+            postGrab: PreGrabActions.checkForPremiumContent,
+            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 20 }
+        },
         "syosetu.com": { grabber: grabSyosetu },
         "tapas.io": { grabber: grabTapas, useFirstHeadingTitle: true },
         "transweaver.com": {

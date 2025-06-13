@@ -88,7 +88,28 @@ async function grabFromWebsite() {
             const config = findMatchingConfig(url);
             if (config && config.postGrab && typeof config.postGrab === "function") {
                 try {
-                    config.postGrab();
+                    const postGrabResult = await config.postGrab();
+                    
+                    // Check if postGrab returned an abort signal
+                    if (postGrabResult && postGrabResult.abort) {
+                        console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
+                        
+                        // Send message to stop bulk grabbing if it's running
+                        chrome.runtime.sendMessage({
+                            target: "background",
+                            type: "stopBulkGrab"
+                        });
+
+                        // Show user-friendly message
+                        chrome.runtime.sendMessage({
+                            target: "background",
+                            type: "showError",
+                            message: postGrabResult.reason || "Bulk grab stopped by post-grab check"
+                        });
+                        
+                        // Note: We don't return null here since the grab itself was successful
+                        // We just want to stop future grabs in a bulk operation
+                    }
                 } catch (postGrabError) {
                     console.error("Error in post-grab function:", postGrabError);
                 }

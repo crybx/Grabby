@@ -146,7 +146,7 @@ export class StoryTrackerStorage {
         cleanedTitle = cleanedTitle.replace(/[-:–|—_!]+/g, ' ');
         
         // Remove the words "chapter", "episode", or "Translation Weaver" (case-insensitive)
-        cleanedTitle = cleanedTitle.replace(/\b(chapter|episode|translation\s+weaver)\b/gi, '');
+        cleanedTitle = cleanedTitle.replace(/\b(chapter|episode|translation\s+weaver|story\s+seedling)\b/gi, '');
         
         // Collapse multiple whitespace to single space
         cleanedTitle = cleanedTitle.replace(/\s+/g, ' ');
