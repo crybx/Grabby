@@ -4,6 +4,7 @@
 // - useFirstHeadingTitle: boolean to use first <h1> as title (optional)
 // - preGrab: function to run before grabbing content (optional)
 // - postGrab: function to run after grabbing content (optional)
+// - runActionsOnDirectGrab: boolean to run pre/post actions on direct grabs (optional, defaults to true)
 // - autoGrab: configuration for automatic new chapter grabbing (optional)
 //   - enabled: boolean to enable auto-grab for this site
 //   - defaultCount: default number of chapters to grab
@@ -14,6 +15,7 @@
 // "example.com": { 
 //     grabber: grabExample,
 //     useFirstHeadingTitle: true,
+//     runActionsOnDirectGrab: false,  // Disable pre/post actions for direct grabs (shortcut/button)
 //     preGrab: PreGrabActions.scrollToBottom,  // Pre-grab actions
 //     postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true }),  // Post-grab actions
 //     autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 5, activeTab: true }  // Auto-grab config
@@ -62,6 +64,7 @@ const WEBSITE_CONFIGS = {
         "requiemtls.com": { grabber: grabRequiemtls },
         "ridibooks.com": {
             grabber: grabRidi,
+            runActionsOnDirectGrab: false,
             preGrab: PreGrabActions.ridiTranslate,
             postGrab: PostGrabActions.ridiNext,
             autoGrab: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
@@ -106,9 +109,6 @@ const WEBSITE_CONFIGS = {
             preGrab: PreGrabActions.checkForPremiumContent,
             postGrab: PostGrabActions.pressRightArrow,
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
-            // Example: You can add preGrab and postGrab functions here too
-            // preGrab: PreGrabActions.scrollToBottom,
-            // postGrab: PostGrabActions.clickElementWithText("Next Chapter")
         },
         madaraWpSites: {
             domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],

@@ -32,7 +32,7 @@ function handleLocalFile(url) {
     return { filename, content };
 }
 
-async function grabFromWebsite() {
+async function grabFromWebsite(isBulkGrab = false) {
     const url = window.location.href;
     let filename, content;
 
@@ -43,8 +43,12 @@ async function grabFromWebsite() {
             const config = findMatchingConfig(url);
 
             if (config) {
-                // Run pre-grab function if it exists
-                if (config.preGrab && typeof config.preGrab === "function") {
+                // Run pre-grab function if it exists and conditions are met
+                // Default to true if runActionsOnDirectGrab is not specified
+                const configAllowsDirectActions = config.runActionsOnDirectGrab !== false;
+                const shouldRunActions = isBulkGrab || configAllowsDirectActions;
+                
+                if (config.preGrab && typeof config.preGrab === "function" && shouldRunActions) {
                     try {
                         const preGrabResult = await config.preGrab();
                         
@@ -83,10 +87,14 @@ async function grabFromWebsite() {
             throw new Error("No content could be extracted from this page");
         }
 
-        // Run post-grab function if it exists
+        // Run post-grab function if it exists and conditions are met
         if (!url.includes("file://")) {
             const config = findMatchingConfig(url);
-            if (config && config.postGrab && typeof config.postGrab === "function") {
+            // Default to true if runActionsOnDirectGrab is not specified
+            const configAllowsDirectActions = config?.runActionsOnDirectGrab !== false;
+            const shouldRunActions = isBulkGrab || configAllowsDirectActions;
+            
+            if (config && config.postGrab && typeof config.postGrab === "function" && shouldRunActions) {
                 try {
                     const postGrabResult = await config.postGrab();
                     

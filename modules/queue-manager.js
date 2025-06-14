@@ -281,7 +281,20 @@ export class QueueManager {
             } else if (this.queue.length > 0) {
                 // Always try to restart queue processing when a story completes
                 console.log(`Story completed, restarting queue processing. Queue: ${this.queue.length}, Processing: ${this.processing.size}`);
-                this.scheduleNextQueueProcess();
+                
+                // Check if there's an activeTab story ready to process immediately
+                const hasActiveTabReady = this.queue.some(story => 
+                    story.needsActiveTab && this.activeTabDomainProcessing === null
+                );
+                
+                if (hasActiveTabReady) {
+                    // Process activeTab stories immediately without delay
+                    console.log("Processing activeTab story immediately");
+                    setTimeout(() => this.processNextInQueue(), 100); // Small delay just to let completion finish
+                } else {
+                    // Normal scheduling for background stories
+                    this.scheduleNextQueueProcess();
+                }
             }
         }
     }

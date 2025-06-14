@@ -5,18 +5,19 @@ export class ScriptInjector {
     }
 
     // Execute the grabbing function using GrabbyCore
-    async executeGrabbingFunction(tabId) {
+    async executeGrabbingFunction(tabId, isBulkGrab = false) {
         return chrome.scripting.executeScript({
             target: { tabId: tabId },
-            func: () => {
+            func: (isBulkGrab) => {
                 // Use the shared core functionality
-                return GrabbyCore.grabFromWebsite().then(result => {
+                return GrabbyCore.grabFromWebsite(isBulkGrab).then(result => {
                     if (result && result.filename && result.content) {
                         return GrabbyCore.handleContentDownload(result.filename, result.content);
                     }
                     return false;
                 });
-            }
+            },
+            args: [isBulkGrab]
         });
     }
 
@@ -109,12 +110,12 @@ export class ScriptInjector {
     }
 
     // Function to inject scripts sequentially and then execute a callback function
-    async injectGrabbingScriptsAndExecute(tabId) {
+    async injectGrabbingScriptsAndExecute(tabId, isBulkGrab = false) {
         // First inject all scripts
         await this.injectScriptsSequentially(tabId);
         
         // Then execute the grabbing function
-        return await this.executeGrabbingFunction(tabId);
+        return await this.executeGrabbingFunction(tabId, isBulkGrab);
     }
 
     async getTabId(message, sender) {

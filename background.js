@@ -8,15 +8,28 @@ import { QueueManager } from "./modules/queue-manager.js";
 const downloadHandler = new DownloadHandler();
 const scriptInjector = new ScriptInjector();
 
-// Handle grab content
+// Handle grab content (for direct grabs)
 async function handleGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
     if (tabId) {
         try {
-            // Perform the content grab
-            await scriptInjector.injectGrabbingScriptsAndExecute(tabId);
+            // Perform the content grab - pass false for direct grab
+            await scriptInjector.injectGrabbingScriptsAndExecute(tabId, false);
         } catch (error) {
             console.error("Error during grab content:", error);
+        }
+    }
+}
+
+// Handle grab content for bulk grabs
+async function handleBulkGrabContent(message, sender) {
+    const tabId = await scriptInjector.getTabId(message, sender);
+    if (tabId) {
+        try {
+            // Perform the content grab - pass true for bulk grab
+            await scriptInjector.injectGrabbingScriptsAndExecute(tabId, true);
+        } catch (error) {
+            console.error("Error during bulk grab content:", error);
         }
     }
 }
@@ -26,7 +39,7 @@ const handleBulkGrabComplete = (tabId, success, message, isError = false, chapte
     queueManager.handleBulkGrabComplete(tabId, success, message, isError, chaptersDownloaded, isManualStop);
 };
 
-const bulkGrabManager = new BulkGrabManager(handleGrabContent, handleBulkGrabComplete, scriptInjector);
+const bulkGrabManager = new BulkGrabManager(handleBulkGrabContent, handleBulkGrabComplete, scriptInjector);
 const queueManager = new QueueManager(handleAutoGrab);
 
 // Handle auto grab for individual stories
@@ -88,11 +101,11 @@ async function performAutoGrabSequence(tabId, storyInfo) {
         // Run postGrab action to navigate to next chapter
         await chrome.scripting.executeScript({
             target: { tabId: tabId },
-            func: function() {
+            func: async function() {
                 const config = findMatchingConfig(window.location.href);
                 if (config && config.postGrab && typeof config.postGrab === "function") {
                     try {
-                        config.postGrab();
+                        await config.postGrab();
                         console.log("PostGrab action executed for auto-grab");
                     } catch (error) {
                         console.error("Error in postGrab action:", error);
@@ -101,7 +114,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
             }
         });
         
-        // Wait a bit for navigation to complete
+        // Wait additional time for navigation to complete after postGrab finishes
         setTimeout(async () => {
             try {
                 const updatedTab = await chrome.tabs.get(tabId);
