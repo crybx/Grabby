@@ -148,6 +148,11 @@ header {
     background: #f8d7da;
 }
 
+.story-item.no-content {
+    border-left-color: #17a2b8;
+    background: #d1ecf1;
+}
+
 .story-item.cancelled {
     border-left-color: #6c757d;
     background: #e2e3e5;
@@ -420,7 +425,6 @@ h1 {
 
 .stories-table .date-col {
     width: 15%;
-    white-space: nowrap;
 }
 
 .stories-table .actions-col {

@@ -22,8 +22,8 @@ async function handleGrabContent(message, sender) {
 }
 
 // Create completion callback for bulk grab manager
-const handleBulkGrabComplete = (tabId, success, message) => {
-    queueManager.handleBulkGrabComplete(tabId, success, message);
+const handleBulkGrabComplete = (tabId, success, message, isError = false, chaptersDownloaded = 0, isManualStop = false) => {
+    queueManager.handleBulkGrabComplete(tabId, success, message, isError, chaptersDownloaded, isManualStop);
 };
 
 const bulkGrabManager = new BulkGrabManager(handleGrabContent, handleBulkGrabComplete, scriptInjector);
@@ -32,8 +32,6 @@ const queueManager = new QueueManager(handleAutoGrab);
 // Handle auto grab for individual stories
 async function handleAutoGrab(message) {
     try {
-        console.log(`Starting auto-grab for story: ${message.storyTitle}`);
-        
         // Get auto-grab config to check if tab should be active
         // Simple domain matching to check activeTab setting without loading all grabber functions
         let shouldBeActive = false;
@@ -117,8 +115,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                 const newUrl = updatedTab.url;
                 
                 if (newUrl !== initialUrl) {
-                    console.log(`URL changed for ${storyInfo.storyTitle}: ${initialUrl} -> ${newUrl}`);
-                    
                     // Ensure scripts are injected before trying to get config
                     await scriptInjector.injectScriptsSequentially(tabId);
                     
@@ -164,8 +160,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     // Note: Don't mark as completed here - wait for bulk grab to finish
                 } else {
-                    console.log(`No URL change for ${storyInfo.storyTitle} - may be at end or stuck`);
-                    
                     // Update story tracker with end-of-story status
                     await scriptInjector.injectScriptsSequentially(tabId);
                     await chrome.scripting.executeScript({
@@ -180,7 +174,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     // Notify queue manager directly since no bulk grab will run
                     if (storyInfo.storyId) {
-                        queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, true, "No next chapter found");
+                        queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, "No next chapter found");
                     }
                     
                     // Close the tab since no new content
@@ -224,16 +218,20 @@ async function handleMessages(message, sender, sendResponse) {
         break;
     case "updateStoryTracker": {
         const tabId = await scriptInjector.getTabId(message, sender);
+        
+        // Check if this tab is associated with a queue story
+        const storyId = queueManager.getStoryIdForTab(tabId);
+        
         // Inject story tracker script and update via content script
         await scriptInjector.injectScriptsSequentially(tabId);
         await chrome.scripting.executeScript({
             target: { tabId: tabId },
-            func: async (url, title) => {
+            func: async (url, title, storyId) => {
                 if (typeof StoryTracker !== "undefined") {
-                    await StoryTracker.updateLastChapter(url, title);
+                    await StoryTracker.updateLastChapter(url, title, storyId);
                 }
             },
-            args: [message.url, message.title]
+            args: [message.url, message.title, storyId]
         });
         break;
     }
@@ -273,8 +271,9 @@ async function handleMessages(message, sender, sendResponse) {
             console.log("ERROR: " + message.status);
         }
         
-        // Stop the grabbing process
-        await bulkGrabManager.stopGrabbing(stopTabId);
+        // Stop the grabbing process with the reason
+        const reason = message.status || "Bulk grab stopped manually";
+        await bulkGrabManager.stopGrabbing(stopTabId, reason);
         
         break;
     }

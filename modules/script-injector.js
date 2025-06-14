@@ -47,11 +47,9 @@ export class ScriptInjector {
         });
 
         const availability = availabilityCheck[0].result;
-        console.log("Script availability:", availability);
 
         // If all essential scripts are available, we can skip injection
         if (availability.grabbyCore && availability.postGrabActions && availability.preGrabActions && availability.websiteConfigs) {
-            console.log("All essential scripts already exist, skipping script injection");
             return;
         }
 

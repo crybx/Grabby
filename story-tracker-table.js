@@ -1185,10 +1185,11 @@ class StoryTrackerTable {
         document.getElementById("queue-queued").textContent = status.stats.queued;
         document.getElementById("queue-completed").textContent = status.stats.completed;
         document.getElementById("queue-failed").textContent = status.stats.failed;
+        document.getElementById("queue-no-content").textContent = status.stats.noContent;
 
         // Update progress bar
         const progressPercent = status.stats.total > 0 ? 
-            Math.round(((status.stats.completed + status.stats.failed) / status.stats.total) * 100) : 0;
+            Math.round(((status.stats.completed + status.stats.failed + status.stats.noContent) / status.stats.total) * 100) : 0;
         const progressFill = document.getElementById("queue-progress-fill");
         progressFill.style.width = `${progressPercent}%`;
 
@@ -1223,6 +1224,9 @@ class StoryTrackerTable {
                 case "error":
                     storyElement.classList.add("error");
                     break;
+                case "no-content":
+                    storyElement.classList.add("no-content");
+                    break;
                 case "cancelled":
                     storyElement.classList.add("cancelled");
                     break;
@@ -1249,10 +1253,13 @@ class StoryTrackerTable {
             if (story.status) {
                 switch (story.status) {
                 case "success":
-                    statusElement.textContent = "Completed successfully";
+                    statusElement.textContent = story.message || "Completed successfully";
                     break;
                 case "error":
                     statusElement.textContent = story.message || "Error occurred";
+                    break;
+                case "no-content":
+                    statusElement.textContent = story.message || "No content available";
                     break;
                 case "cancelled":
                     statusElement.textContent = "Cancelled";

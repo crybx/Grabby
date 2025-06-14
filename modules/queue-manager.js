@@ -361,6 +361,7 @@ export class QueueManager {
                 completed: this.completed.size,
                 successful: Array.from(this.completed.values()).filter(s => s.status === 'success').length,
                 failed: Array.from(this.completed.values()).filter(s => s.status === 'error').length,
+                noContent: Array.from(this.completed.values()).filter(s => s.status === 'no-content').length,
                 cancelled: Array.from(this.completed.values()).filter(s => s.status === 'cancelled').length
             }
         };
@@ -385,21 +386,66 @@ export class QueueManager {
         });
     }
 
-    // Handle story completion from other parts of the system
+    // Handle story completion from other parts of the system (for cases where no bulk grab runs)
     handleStoryAutoGrabComplete(storyId, success, message = '') {
         if (this.processing.has(storyId)) {
-            const status = success ? 'success' : 'error';
-            this.markStoryCompleted(storyId, status, message);
+            // For auto-grab completions that don't go through bulk grab, 
+            // we know 0 chapters were downloaded, so determine status based on message
+            let status;
+            let displayMessage = message;
+            
+            if (message.toLowerCase().includes('error')) {
+                status = 'error';
+            } else {
+                // No bulk grab ran, so 0 chapters downloaded - this is a no-content case
+                status = 'no-content';
+                if (message.toLowerCase().includes('no next')) {
+                    displayMessage = 'No new chapters found';
+                } else if (message.toLowerCase().includes('premium')) {
+                    displayMessage = 'Premium content reached';
+                } else {
+                    displayMessage = 'No content available';
+                }
+            }
+            
+            this.markStoryCompleted(storyId, status, displayMessage);
         }
     }
 
     // Handle bulk grab completion (called by bulk grab manager)
-    handleBulkGrabComplete(tabId, success, message = '') {
+    handleBulkGrabComplete(tabId, success, message = '', isError = false, chaptersDownloaded = 0, isManualStop = false) {
         const storyId = this.tabToStoryMap.get(tabId);
         if (storyId) {
-            console.log(`Bulk grab completed for tab ${tabId}, story ${storyId}: ${success ? 'success' : 'failure'}`);
+            console.log(`Bulk grab completed for tab ${tabId}, story ${storyId}: ${chaptersDownloaded} chapters downloaded, message: ${message}`);
             this.tabToStoryMap.delete(tabId);
-            this.handleStoryAutoGrabComplete(storyId, success, message);
+            
+            // Determine the appropriate status based on what actually happened
+            let status;
+            let displayMessage = message;
+            
+            if (isError) {
+                status = 'error';
+            } else if (isManualStop) {
+                status = 'cancelled';
+            } else if (chaptersDownloaded > 0) {
+                // Downloaded chapters - this is success, regardless of how/why it stopped
+                status = 'success';
+                displayMessage = `Downloaded ${chaptersDownloaded} chapter${chaptersDownloaded === 1 ? '' : 's'} - ${message}`;
+            } else {
+                // No chapters downloaded - this is no-content
+                status = 'no-content';
+                displayMessage = message; // Show the actual reason (abort message, etc.)
+            }
+            
+            this.markStoryCompleted(storyId, status, displayMessage);
+            
+            // Auto-close tab for completed queue stories (both success and no-content)
+            if (status === 'success' || status === 'no-content') {
+                console.log(`Auto-closing tab ${tabId} for completed queue story (${status})`);
+                chrome.tabs.remove(tabId).catch(() => {
+                    // Ignore errors if tab is already closed
+                });
+            }
         }
     }
 
@@ -417,6 +463,11 @@ export class QueueManager {
             }
         }
         return null;
+    }
+
+    // Get story ID for a tab (direct lookup)
+    getStoryIdForTab(tabId) {
+        return this.tabToStoryMap.get(tabId) || null;
     }
 
     // Static methods for global alarm handling

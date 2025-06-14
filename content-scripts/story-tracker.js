@@ -38,6 +38,18 @@ async function saveStory(story) {
     }
 }
 
+// Get individual story by ID
+async function getStory(storyId) {
+    try {
+        const key = getStoryKey(storyId);
+        const result = await chrome.storage.local.get(key);
+        return result[key] || null;
+    } catch (error) {
+        console.error("Error getting story:", error);
+        return null;
+    }
+}
+
 // Delete individual story
 async function deleteStory(storyId) {
     try {
@@ -186,8 +198,21 @@ async function updateLastCheckStatus(chapterUrl, status) {
 }
 
 // Update last grabbed chapter for a story
-async function updateLastChapter(chapterUrl, chapterTitle = null) {
-    const story = await findStoryByChapterUrl(chapterUrl);
+async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null) {
+    console.log(`StoryTracker.updateLastChapter called: URL=${chapterUrl}, title=${chapterTitle}, storyId=${storyId}`);
+    
+    // If storyId is provided (from queue context), use it directly
+    let story;
+    if (storyId) {
+        console.log(`Using provided storyId: ${storyId} for chapter: ${chapterUrl}`);
+        story = await getStory(storyId);
+        console.log(`Found story by ID:`, story ? story.title : 'NOT FOUND');
+    } else {
+        // Fall back to URL matching for non-queue grabs
+        console.log(`Falling back to URL matching for chapter: ${chapterUrl}`);
+        story = await findStoryByChapterUrl(chapterUrl);
+        console.log(`Found story by URL:`, story ? story.title : 'NOT FOUND');
+    }
     
     if (story) {
         // Check if this is the same chapter as before (potential loop detection)
@@ -238,6 +263,7 @@ async function isDuplicateChapter(chapterUrl) {
 window.StoryTracker = {
     getStoryKey,
     getAllStories,
+    getStory,
     saveStory,
     deleteStory,
     extractMainStoryUrl,

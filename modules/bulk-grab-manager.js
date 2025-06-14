@@ -182,8 +182,7 @@ export class BulkGrabManager {
         };
         
         await this.saveBulkGrabState(tabId, state);
-        
-        console.log(`Starting bulk grab for tab ${tabId}: ${pageCount} pages with ${delaySeconds}s delay`);
+
         this.sendStatusToPopup("Starting bulk grab...", 0);
         
         // Start the first grab immediately
@@ -191,7 +190,7 @@ export class BulkGrabManager {
     }
 
     // Stop bulk grab process for current tab
-    async stopGrabbing(tabId) {
+    async stopGrabbing(tabId, reason = "Bulk grab stopped manually") {
         if (!tabId) {
             console.error("No tab ID available for stopping bulk grab");
             return;
@@ -202,7 +201,7 @@ export class BulkGrabManager {
             return;
         }
         
-        console.log(`Stopping bulk grab for tab ${tabId}`);
+        console.log(`Stopping bulk grab for tab ${tabId}: ${reason}`);
         
         // Update story tracker with stopped status
         try {
@@ -216,7 +215,7 @@ export class BulkGrabManager {
                         await StoryTracker.updateLastCheckStatus(window.location.href, status);
                     }
                 },
-                args: ["Bulk grab stopped manually"]
+                args: [reason]
             });
         } catch (error) {
             console.warn("Could not update story tracker status:", error);
@@ -225,9 +224,18 @@ export class BulkGrabManager {
         await this.clearBulkGrabState(tabId);
         await this.sendStoppedToPopup(tabId);
         
+        // Determine success based on chapters downloaded, not why it stopped
+        // currentPage tracks attempts, but downloads are currentPage - 1 (since last attempt was aborted)
+        const chaptersDownloaded = Math.max(0, (state.currentPage || 0) - 1);
+        const isError = reason.toLowerCase().includes("error");
+        const isManualStop = reason.toLowerCase().includes("manually");
+        const isAbort = reason.toLowerCase().includes("abort") || 
+                       reason.toLowerCase().includes("premium") ||
+                       reason.toLowerCase().includes("no next");
+        
         // Notify completion callback if available
         if (this.completionCallback) {
-            this.completionCallback(tabId, false, "Bulk grab stopped manually");
+            this.completionCallback(tabId, false, reason, isError, chaptersDownloaded, isManualStop);
         }
     }
 
@@ -274,23 +282,27 @@ export class BulkGrabManager {
             
             // Notify completion callback if available
             if (this.completionCallback) {
-                this.completionCallback(tabId, true, `Completed ${state.totalPages} pages in ${duration}s`);
+                // For completed runs, all pages were processed so downloads = currentPage
+                this.completionCallback(tabId, true, `Completed ${state.totalPages} pages in ${duration}s`, false, state.currentPage, false);
             }
             return;
         }
         
-        state.currentPage++;
-        const progress = Math.round((state.currentPage / state.totalPages) * 100);
+        const attemptNumber = state.currentPage + 1;
+        const progress = Math.round((attemptNumber / state.totalPages) * 100);
         
-        console.log(`Bulk grab tab ${tabId}: page ${state.currentPage} of ${state.totalPages}`);
-        this.sendStatusToPopup(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
-        
-        // Save updated state
-        await this.saveBulkGrabState(tabId, state);
+        console.log(`Bulk grab tab ${tabId}: page ${attemptNumber} of ${state.totalPages}`);
+        this.sendStatusToPopup(`Grabbing page ${attemptNumber} of ${state.totalPages}`, progress);
         
         try {
             // Perform the grab
             await this.grabContentCallback(null, { tab: { id: state.tabId } });
+            
+            // Increment currentPage after successful grab
+            state.currentPage++;
+            
+            // Save updated state
+            await this.saveBulkGrabState(tabId, state);
             
             // Schedule next grab if not the last page
             if (state.currentPage < state.totalPages) {
@@ -311,8 +323,12 @@ export class BulkGrabManager {
             }
             
         } catch (error) {
-            console.error(`Error during bulk grab page ${state.currentPage} for tab ${tabId}:`, error);
-            this.sendStatusToPopup(`Error on page ${state.currentPage}, continuing...`, progress);
+            console.error(`Error during bulk grab page ${attemptNumber} for tab ${tabId}:`, error);
+            this.sendStatusToPopup(`Error on page ${attemptNumber}, continuing...`, progress);
+            
+            // Increment currentPage but NOT downloadsCompleted for errors
+            state.currentPage++;
+            await this.saveBulkGrabState(tabId, state);
             
             // Continue to next page even after error
             if (state.currentPage < state.totalPages) {
