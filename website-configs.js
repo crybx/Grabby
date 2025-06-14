@@ -40,7 +40,13 @@ const WEBSITE_CONFIGS = {
         "joara.com": { grabber: grabJoara },
         "karistudio.com": { grabber: grabKaristudio },
         "lightnovelworld.co": { grabber: grabStandard("#chapter-container", ".chapter-title") },
-        "lilyonthevalley.com": { grabber: grabLilyonthevalley, useFirstHeadingTitle: true },
+        "lilyonthevalley.com": {
+            grabber: grabLilyonthevalley,
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForPremiumContent,
+            postGrab: PostGrabActions.pressRightArrow,
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
         "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
         "noveltranslation.net": { grabber: grabNovelTranslationNet },
         "patreon.com": { grabber: grabPatreon },
