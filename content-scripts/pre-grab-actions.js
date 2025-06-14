@@ -198,6 +198,12 @@ async function checkForDuplicateChapter(duplicateCheck = true) {
     return { abort: false };
 }
 
+async function ridiTranslate() {
+    scrollToBottom();
+    // wait 3 seconds for translation to complete
+    await new Promise(r => setTimeout(r, 3100));
+}
+
 // Export functions to window for global access
 window.PreGrabActions = {
     scrollToBottom,
@@ -210,5 +216,6 @@ window.PreGrabActions = {
     peachTeaClickAllOnOnePageButton,
     checkForPremiumContent,
     checkForPageNotFound,
-    checkForDuplicateChapter
+    checkForDuplicateChapter,
+    ridiTranslate
 };

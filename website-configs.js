@@ -60,7 +60,12 @@ const WEBSITE_CONFIGS = {
         "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
         "reaperscans.com": { grabber: grabStandard("#reader-container", null) },
         "requiemtls.com": { grabber: grabRequiemtls },
-        "ridibooks.com": { grabber: grabRidi },
+        "ridibooks.com": {
+            grabber: grabRidi,
+            preGrab: PreGrabActions.ridiTranslate,
+            postGrab: PostGrabActions.ridiNext,
+            autoGrab: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
+        },
         "page.kakao.com": { grabber: grabKakaoPage, useFirstHeadingTitle: true },
         "publang.com": { grabber: grabPublang, useFirstHeadingTitle: true },
         "secondlifetranslations.com": { grabber: grabSecondLifeTranslations },

@@ -279,6 +279,39 @@ function pressSpace() {
     console.log("Pressed Space key");
 }
 
+async function ridiNext() {
+    // await new Promise(r => setTimeout(r, 500));
+    pressRightArrow();
+    // wait to let popup load
+    await new Promise(r => setTimeout(r, 3100));
+    let checkoutButtons = document.querySelectorAll('.checkout_buttons button');
+
+    // if a checkoutButton has "Pay and watch right away" or "결제하고 바로 보기" - premium content, send abort
+    for (let button of checkoutButtons) {
+        const buttonText = button.textContent.trim();
+        if (buttonText.includes("View for free") || buttonText.includes("무료로 보기")) {
+            console.log("Free content button found, clicking");
+            button.click();
+            // wait for page to load
+            await new Promise(r => setTimeout(r, 3100));
+            return;
+        } else if (buttonText.includes("Pay and watch right away") || buttonText.includes("결제하고 바로 보기")) {
+            console.log("Paid content detected, aborting");
+            return { abort: true, reason: `Paid content detected: ${buttonText}` };
+        }
+    }
+
+    // Look for free content button
+    for (let button of checkoutButtons) {
+        const buttonText = button.textContent.trim();
+        if (buttonText.includes("View for free") || buttonText.includes("무료로 보기")) {
+            console.log("Free content button found, clicking");
+            button.click();
+            return;
+        }
+    }
+}
+
 // Export functions to window for global access
 window.PostGrabActions = {
     peachTeaClickNextChapterLink,
@@ -292,5 +325,6 @@ window.PostGrabActions = {
     pressRightArrow,
     pressLeftArrow,
     pressEnter,
-    pressSpace
+    pressSpace,
+    ridiNext
 };

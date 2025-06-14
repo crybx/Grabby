@@ -98,7 +98,8 @@ export class QueueManager {
     // Check if a story needs active tab based on URL
     checkIfNeedsActiveTab(url) {
         // Simple domain matching for sites that need active tabs
-        if (url.includes("storyseedling.com")) {
+        if (url.includes("storyseedling.com") ||
+            url.includes("ridibooks.com")) {
             return true;
         }
         // Add other sites that need active tabs here

@@ -37,14 +37,7 @@ async function handleAutoGrab(message) {
         let shouldBeActive = false;
         try {
             const url = message.lastChapterUrl;
-            
-            // Check for storyseedling.com which has activeTab: true
-            if (url.includes("storyseedling.com")) {
-                shouldBeActive = true;
-                console.log("Found storyseedling.com: activeTab = true");
-            }
-            // Add other sites with activeTab: true here as needed
-            
+            shouldBeActive = queueManager.checkIfNeedsActiveTab(url);
         } catch (error) {
             console.warn("Could not determine activeTab setting, defaulting to false:", error);
         }
