@@ -6,10 +6,11 @@ export class QueueManager {
         this.processing = new Map(); // Currently processing stories
         this.completed = new Map(); // Completed stories with results
         this.tabToStoryMap = new Map(); // Map tabId to storyId for bulk grab completion
+        this.processingByDomain = new Map(); // Track processing stories by domain
+        this.activeTabDomainProcessing = null; // Track which activeTab domain is currently processing
         this.isPaused = false;
         this.isActive = false;
         this.isCompleted = false; // Track if queue has completed
-        this.maxConcurrent = 2; // Max stories to process simultaneously
         this.queueDelayMinutes = 0.25; // Delay between starting queued stories (15 seconds)
         this.currentQueueId = null;
         
@@ -32,28 +33,53 @@ export class QueueManager {
         this.processing.clear();
         this.completed.clear();
         this.tabToStoryMap.clear();
+        this.processingByDomain.clear();
+        this.activeTabDomainProcessing = null;
 
         console.log(`Starting queue processing for ${stories.length} stories`);
 
-        // Categorize stories
-        const backgroundStories = [];
+        // Categorize stories by domain and activeTab requirement
+        const storiesByDomain = new Map();
         const activeTabStories = [];
+        const backgroundStories = [];
 
         for (const story of stories) {
+            const domain = this.extractDomain(story.lastChapterUrl);
             const needsActiveTab = this.checkIfNeedsActiveTab(story.lastChapterUrl);
+            const storyWithMetadata = { ...story, needsActiveTab, domain };
+            
             if (needsActiveTab) {
-                activeTabStories.push({ ...story, needsActiveTab: true });
+                activeTabStories.push(storyWithMetadata);
             } else {
-                backgroundStories.push({ ...story, needsActiveTab: false });
+                backgroundStories.push(storyWithMetadata);
             }
+            
+            if (!storiesByDomain.has(domain)) {
+                storiesByDomain.set(domain, []);
+            }
+            storiesByDomain.get(domain).push(storyWithMetadata);
         }
 
-        // Start immediate processing (background tab stories first, up to maxConcurrent)
-        const immediateStories = backgroundStories.slice(0, this.maxConcurrent);
-        const queuedStories = [
-            ...backgroundStories.slice(this.maxConcurrent),
-            ...activeTabStories // Active tab stories go to queue
-        ];
+        // Start immediate processing - one per domain for background, one activeTab story immediately
+        const immediateStories = [];
+        const queuedStories = [];
+        
+        // Process one background story per domain immediately
+        const processedDomains = new Set();
+        for (const story of backgroundStories) {
+            if (!processedDomains.has(story.domain)) {
+                immediateStories.push(story);
+                processedDomains.add(story.domain);
+            } else {
+                queuedStories.push(story);
+            }
+        }
+        
+        // Process one activeTab story immediately (if any)
+        if (activeTabStories.length > 0) {
+            immediateStories.push(activeTabStories[0]);
+            queuedStories.push(...activeTabStories.slice(1));
+        }
 
         // Add remaining stories to queue
         this.queue = queuedStories;
@@ -95,6 +121,18 @@ export class QueueManager {
         }
     }
 
+    // Extract domain from URL
+    extractDomain(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch {
+            // Fallback for malformed URLs
+            const match = url.match(/https?:\/\/([^/]+)/);
+            return match ? match[1] : 'unknown';
+        }
+    }
+
     // Check if a story needs active tab based on URL
     checkIfNeedsActiveTab(url) {
         // Simple domain matching for sites that need active tabs
@@ -108,6 +146,17 @@ export class QueueManager {
 
     // Start auto-grab for a single story
     async startStoryAutoGrab(story) {
+        // Track by domain
+        if (!this.processingByDomain.has(story.domain)) {
+            this.processingByDomain.set(story.domain, new Set());
+        }
+        this.processingByDomain.get(story.domain).add(story.id);
+        
+        // Track activeTab domain
+        if (story.needsActiveTab) {
+            this.activeTabDomainProcessing = story.domain;
+        }
+        
         this.processing.set(story.id, {
             ...story,
             status: 'starting',
@@ -115,7 +164,7 @@ export class QueueManager {
         });
 
         try {
-            console.log(`Starting auto-grab for story: ${story.title}`);
+            console.log(`Starting auto-grab for story: ${story.title} (domain: ${story.domain}, activeTab: ${story.needsActiveTab})`);
             
             // Use existing handleAutoGrab function
             await this.handleAutoGrab({
@@ -160,24 +209,37 @@ export class QueueManager {
             return;
         }
 
-        // Check if we have room for more concurrent processing
-        const currentProcessing = Array.from(this.processing.values())
-            .filter(story => story.status === 'processing' || story.status === 'starting').length;
-
-        if (currentProcessing >= this.maxConcurrent) {
-            // Reschedule for later
-            this.scheduleNextQueueProcess();
-            return;
+        // Find next processable story
+        let nextStoryIndex = -1;
+        let nextStory = null;
+        
+        for (let i = 0; i < this.queue.length; i++) {
+            const story = this.queue[i];
+            
+            // Check if this domain can process (max 1 per domain)
+            const domainProcessing = this.processingByDomain.get(story.domain);
+            if (domainProcessing && domainProcessing.size > 0) {
+                continue; // Domain already has a story processing
+            }
+            
+            // Check activeTab exclusivity
+            if (story.needsActiveTab && this.activeTabDomainProcessing !== null) {
+                continue; // Another activeTab domain is already processing
+            }
+            
+            // Found a processable story
+            nextStoryIndex = i;
+            nextStory = story;
+            break;
         }
-
-        // Get next story from queue
-        const nextStory = this.queue.shift();
-        if (!nextStory) {
-            return;
+        
+        if (nextStory) {
+            // Remove from queue
+            this.queue.splice(nextStoryIndex, 1);
+            
+            console.log(`Processing queued story: ${nextStory.title} (domain: ${nextStory.domain})`);
+            await this.startStoryAutoGrab(nextStory);
         }
-
-        console.log(`Processing queued story: ${nextStory.title}`);
-        await this.startStoryAutoGrab(nextStory);
 
         // Schedule next if more in queue
         if (this.queue.length > 0) {
@@ -189,6 +251,20 @@ export class QueueManager {
     markStoryCompleted(storyId, status, message = '') {
         const processingStory = this.processing.get(storyId);
         if (processingStory) {
+            // Remove from domain tracking
+            const domain = processingStory.domain;
+            if (this.processingByDomain.has(domain)) {
+                this.processingByDomain.get(domain).delete(storyId);
+                if (this.processingByDomain.get(domain).size === 0) {
+                    this.processingByDomain.delete(domain);
+                }
+            }
+            
+            // Clear activeTab domain tracking if this was an activeTab story
+            if (processingStory.needsActiveTab && this.activeTabDomainProcessing === domain) {
+                this.activeTabDomainProcessing = null;
+            }
+            
             this.completed.set(storyId, {
                 ...processingStory,
                 status,
@@ -203,14 +279,9 @@ export class QueueManager {
             if (this.processing.size === 0 && this.queue.length === 0) {
                 this.completeQueue();
             } else if (this.queue.length > 0) {
-                // If there are items in queue but no processing, restart queue processing
-                const currentProcessing = Array.from(this.processing.values())
-                    .filter(story => story.status === 'processing' || story.status === 'starting').length;
-                
-                if (currentProcessing < this.maxConcurrent) {
-                    console.log(`Story completed, restarting queue processing. Queue: ${this.queue.length}, Processing: ${currentProcessing}`);
-                    this.scheduleNextQueueProcess();
-                }
+                // Always try to restart queue processing when a story completes
+                console.log(`Story completed, restarting queue processing. Queue: ${this.queue.length}, Processing: ${this.processing.size}`);
+                this.scheduleNextQueueProcess();
             }
         }
     }
@@ -323,6 +394,8 @@ export class QueueManager {
         this.processing.clear();
         this.queue = [];
         this.tabToStoryMap.clear();
+        this.processingByDomain.clear();
+        this.activeTabDomainProcessing = null;
         this.isActive = false;
         this.isPaused = false;
         this.isCompleted = true; // Mark as completed when cancelled
