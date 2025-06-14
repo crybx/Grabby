@@ -28,8 +28,8 @@ header {
     padding: 20px 24px;
 }
 
-/* Batch Progress Styles */
-.batch-progress {
+/* Queue Progress Styles */
+.queue-progress {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -38,25 +38,25 @@ header {
     border-left: 4px solid #007bff;
 }
 
-.batch-progress-header {
+.queue-progress-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
 }
 
-.batch-progress-header h3 {
+.queue-progress-header h3 {
     color: #007bff;
     font-size: 1.2em;
     margin: 0;
 }
 
-.batch-controls {
+.queue-controls {
     display: flex;
     gap: 8px;
 }
 
-.batch-progress-stats {
+.queue-progress-stats {
     display: flex;
     gap: 24px;
     margin-bottom: 16px;
@@ -82,7 +82,7 @@ header {
     color: #333;
 }
 
-.batch-progress-bar {
+.queue-progress-bar {
     background-color: #e9ecef;
     border-radius: 4px;
     height: 8px;
@@ -90,7 +90,7 @@ header {
     overflow: hidden;
 }
 
-.batch-progress-fill {
+.queue-progress-fill {
     background: linear-gradient(90deg, #007bff, #0056b3);
     height: 100%;
     border-radius: 4px;
@@ -98,7 +98,7 @@ header {
     width: 0%;
 }
 
-.batch-stories-list {
+.queue-stories-list {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
@@ -164,26 +164,26 @@ header {
 }
 
 @media (max-width: 1200px) {
-    .batch-stories-list {
+    .queue-stories-list {
         grid-template-columns: 1fr 1fr;
     }
 }
 
 @media (max-width: 768px) {
-    .batch-stories-list {
+    .queue-stories-list {
         grid-template-columns: 1fr;
     }
     
-    .batch-progress-stats {
+    .queue-progress-stats {
         gap: 16px;
     }
     
-    .batch-controls {
+    .queue-controls {
         flex-direction: column;
         gap: 8px;
     }
     
-    .batch-progress-header {
+    .queue-progress-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;

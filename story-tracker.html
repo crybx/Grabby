@@ -47,42 +47,42 @@
                 </div>
             </div>
 
-            <!-- Batch Auto-Grab Progress -->
-            <div id="batch-progress" class="batch-progress" style="display: none;">
-                <div class="batch-progress-header">
-                    <h3>Batch Auto-Grab Progress</h3>
-                    <div class="batch-controls">
-                        <button id="pause-batch-btn" class="btn secondary-btn">Pause</button>
-                        <button id="resume-batch-btn" class="btn secondary-btn" style="display: none;">Resume</button>
-                        <button id="cancel-batch-btn" class="btn danger-btn">Cancel</button>
+            <!-- Queue Processing Progress -->
+            <div id="queue-progress" class="queue-progress" style="display: none;">
+                <div class="queue-progress-header">
+                    <h3>Queue Processing Progress</h3>
+                    <div class="queue-controls">
+                        <button id="pause-queue-btn" class="btn secondary-btn">Pause</button>
+                        <button id="resume-queue-btn" class="btn secondary-btn" style="display: none;">Resume</button>
+                        <button id="cancel-queue-btn" class="btn danger-btn">Cancel</button>
                     </div>
                 </div>
-                <div class="batch-progress-stats">
+                <div class="queue-progress-stats">
                     <div class="stat-item">
                         <span class="stat-label">Total:</span>
-                        <span id="batch-total">0</span>
+                        <span id="queue-total">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Processing:</span>
-                        <span id="batch-processing">0</span>
+                        <span id="queue-processing">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Queued:</span>
-                        <span id="batch-queued">0</span>
+                        <span id="queue-queued">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Completed:</span>
-                        <span id="batch-completed">0</span>
+                        <span id="queue-completed">0</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Failed:</span>
-                        <span id="batch-failed">0</span>
+                        <span id="queue-failed">0</span>
                     </div>
                 </div>
-                <div class="batch-progress-bar">
-                    <div id="batch-progress-fill" class="batch-progress-fill"></div>
+                <div class="queue-progress-bar">
+                    <div id="queue-progress-fill" class="queue-progress-fill"></div>
                 </div>
-                <div class="batch-stories-list">
+                <div class="queue-stories-list">
                     <div class="stories-section">
                         <h4>Currently Processing</h4>
                         <div id="processing-stories" class="story-list"></div>

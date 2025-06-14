@@ -46,23 +46,23 @@ class StoryTrackerTable {
             this.renderTable();
         });
 
-        // Batch control event listeners
-        document.getElementById("pause-batch-btn").addEventListener("click", () => {
-            this.pauseBatchAutoGrab();
+        // Queue control event listeners
+        document.getElementById("pause-queue-btn").addEventListener("click", () => {
+            this.pauseQueue();
         });
 
-        document.getElementById("resume-batch-btn").addEventListener("click", () => {
-            this.resumeBatchAutoGrab();
+        document.getElementById("resume-queue-btn").addEventListener("click", () => {
+            this.resumeQueue();
         });
 
-        document.getElementById("cancel-batch-btn").addEventListener("click", () => {
-            this.cancelBatchAutoGrab();
+        document.getElementById("cancel-queue-btn").addEventListener("click", () => {
+            this.cancelQueue();
         });
 
-        // Add message listener for batch progress updates
+        // Add message listener for queue progress updates
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-            if (message.type === "batchAutoGrabUpdate") {
-                this.handleBatchProgressUpdate(message.status);
+            if (message.type === "queueUpdate") {
+                this.handleQueueProgressUpdate(message.status);
             }
         });
 
@@ -1007,7 +1007,7 @@ class StoryTrackerTable {
         }
     }
 
-    // Handle auto grab new chapters for selected stories using batch system
+    // Handle auto grab new chapters for selected stories using queue system
     async handleAutoGrabNewChapters() {
         const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
         
@@ -1038,11 +1038,11 @@ class StoryTrackerTable {
 
 
         try {
-            // Send message to background to start batch auto-grab
+            // Send message to background to start queue processing
             const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({
                     target: "background",
-                    type: "startBatchAutoGrab",
+                    type: "startQueueProcessing",
                     stories: eligibleStories
                 }, (response) => {
                     if (chrome.runtime.lastError) {
@@ -1054,19 +1054,19 @@ class StoryTrackerTable {
             });
 
             if (response.error) {
-                alert(`Error starting batch auto-grab: ${response.error}`);
+                alert(`Error starting queue processing: ${response.error}`);
                 return;
             }
 
-            console.log(`Started batch auto-grab for ${response.total} stories:`, response);
+            console.log(`Started queue processing for ${response.total} stories:`, response);
             
-            // Show the batch progress section
-            this.showBatchProgress();
+            // Show the queue progress section
+            this.showQueueProgress();
             
         } catch (error) {
-            console.error("Error starting batch auto-grab:", error);
+            console.error("Error starting queue processing:", error);
             const errorMessage = error.message || error.toString() || "Unknown error";
-            alert(`Error starting batch auto-grab: ${errorMessage}`);
+            alert(`Error starting queue processing: ${errorMessage}`);
         }
     }
 
@@ -1077,60 +1077,60 @@ class StoryTrackerTable {
         this.renderTable();
     }
 
-    // Batch control methods
-    pauseBatchAutoGrab() {
+    // Queue control methods
+    pauseQueue() {
         chrome.runtime.sendMessage({
             target: "background",
-            type: "pauseBatchAutoGrab"
+            type: "pauseQueue"
         });
     }
 
-    resumeBatchAutoGrab() {
+    resumeQueue() {
         chrome.runtime.sendMessage({
             target: "background",
-            type: "resumeBatchAutoGrab"
+            type: "resumeQueue"
         });
     }
 
-    cancelBatchAutoGrab() {
-        if (confirm("Are you sure you want to cancel the batch auto-grab? This will stop all pending operations.")) {
+    cancelQueue() {
+        if (confirm("Are you sure you want to cancel the queue processing? This will stop all pending operations.")) {
             chrome.runtime.sendMessage({
                 target: "background",
-                type: "cancelBatchAutoGrab"
+                type: "cancelQueue"
             });
         }
     }
 
-    // Show/hide batch progress section
-    showBatchProgress() {
-        const batchProgress = document.getElementById("batch-progress");
-        batchProgress.style.display = "block";
+    // Show/hide queue progress section
+    showQueueProgress() {
+        const queueProgress = document.getElementById("queue-progress");
+        queueProgress.style.display = "block";
     }
 
-    hideBatchProgress() {
-        const batchProgress = document.getElementById("batch-progress");
-        batchProgress.style.display = "none";
+    hideQueueProgress() {
+        const queueProgress = document.getElementById("queue-progress");
+        queueProgress.style.display = "none";
     }
 
-    // Handle batch progress updates from background script
-    handleBatchProgressUpdate(status) {
+    // Handle queue progress updates from background script
+    handleQueueProgressUpdate(status) {
         if (!status) {
-            this.hideBatchProgress();
+            this.hideQueueProgress();
             return;
         }
 
-        // Show progress section if batch is active
+        // Show progress section if queue is active
         if (status.isActive) {
-            this.showBatchProgress();
+            this.showQueueProgress();
         } else {
-            this.hideBatchProgress();
+            this.hideQueueProgress();
             return;
         }
 
-        // Update batch control button states
-        const pauseBtn = document.getElementById("pause-batch-btn");
-        const resumeBtn = document.getElementById("resume-batch-btn");
-        const cancelBtn = document.getElementById("cancel-batch-btn");
+        // Update queue control button states
+        const pauseBtn = document.getElementById("pause-queue-btn");
+        const resumeBtn = document.getElementById("resume-queue-btn");
+        const cancelBtn = document.getElementById("cancel-queue-btn");
 
         if (status.isPaused) {
             pauseBtn.style.display = "none";
@@ -1141,26 +1141,26 @@ class StoryTrackerTable {
         }
 
         // Update statistics
-        document.getElementById("batch-total").textContent = status.stats.total;
-        document.getElementById("batch-processing").textContent = status.stats.processing;
-        document.getElementById("batch-queued").textContent = status.stats.queued;
-        document.getElementById("batch-completed").textContent = status.stats.completed;
-        document.getElementById("batch-failed").textContent = status.stats.failed;
+        document.getElementById("queue-total").textContent = status.stats.total;
+        document.getElementById("queue-processing").textContent = status.stats.processing;
+        document.getElementById("queue-queued").textContent = status.stats.queued;
+        document.getElementById("queue-completed").textContent = status.stats.completed;
+        document.getElementById("queue-failed").textContent = status.stats.failed;
 
         // Update progress bar
         const progressPercent = status.stats.total > 0 ? 
             Math.round(((status.stats.completed + status.stats.failed) / status.stats.total) * 100) : 0;
-        const progressFill = document.getElementById("batch-progress-fill");
+        const progressFill = document.getElementById("queue-progress-fill");
         progressFill.style.width = `${progressPercent}%`;
 
         // Update story lists
-        this.updateBatchStoryList("processing-stories", status.processing);
-        this.updateBatchStoryList("queued-stories", status.queue);
-        this.updateBatchStoryList("completed-stories", status.completed);
+        this.updateQueueStoryList("processing-stories", status.processing);
+        this.updateQueueStoryList("queued-stories", status.queue);
+        this.updateQueueStoryList("completed-stories", status.completed);
     }
 
-    // Update a specific story list in the batch progress section
-    updateBatchStoryList(containerId, stories) {
+    // Update a specific story list in the queue progress section
+    updateQueueStoryList(containerId, stories) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -1245,13 +1245,13 @@ class StoryTrackerTable {
 document.addEventListener("DOMContentLoaded", () => {
     const storyTracker = new StoryTrackerTable();
     
-    // Check for any active batch operations on page load
+    // Check for any active queue operations on page load
     chrome.runtime.sendMessage({
         target: "background",
-        type: "getBatchAutoGrabStatus"
+        type: "getQueueStatus"
     }, (response) => {
         if (response && response.isActive) {
-            storyTracker.handleBatchProgressUpdate(response);
+            storyTracker.handleQueueProgressUpdate(response);
         }
     });
 });

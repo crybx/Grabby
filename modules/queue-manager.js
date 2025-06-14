@@ -1,5 +1,5 @@
-// Batch Auto-Grab Manager - Handles queued batch processing of story auto-grabs
-export class BatchAutoGrabManager {
+// Queue Manager - Handles queued processing of story auto-grabs
+export class QueueManager {
     constructor(handleAutoGrabFunction) {
         this.handleAutoGrab = handleAutoGrabFunction;
         this.queue = [];
@@ -10,20 +10,20 @@ export class BatchAutoGrabManager {
         this.isActive = false;
         this.maxConcurrent = 2; // Max stories to process simultaneously
         this.queueDelayMinutes = 0.25; // Delay between starting queued stories (15 seconds)
-        this.currentBatchId = null;
+        this.currentQueueId = null;
         
         // Register this instance for alarm handling
-        BatchAutoGrabManager.registerInstance(this);
+        QueueManager.registerInstance(this);
     }
 
-    // Start batch auto-grab for multiple stories
-    startBatchAutoGrab(stories) {
+    // Start queue processing for multiple stories
+    startQueueProcessing(stories) {
         if (this.isActive) {
-            console.warn("Batch auto-grab is already running, cancelling current batch first");
-            this.cancelBatch();
+            console.warn("Queue processing is already running, cancelling current queue first");
+            this.cancelQueue();
         }
 
-        this.currentBatchId = Date.now().toString();
+        this.currentQueueId = Date.now().toString();
         this.isActive = true;
         this.isPaused = false;
         this.queue = [];
@@ -31,7 +31,7 @@ export class BatchAutoGrabManager {
         this.completed.clear();
         this.tabToStoryMap.clear();
 
-        console.log(`Starting batch auto-grab for ${stories.length} stories`);
+        console.log(`Starting queue processing for ${stories.length} stories`);
 
         // Categorize stories
         const backgroundStories = [];
@@ -58,7 +58,7 @@ export class BatchAutoGrabManager {
 
         // Return response immediately
         const result = {
-            batchId: this.currentBatchId,
+            queueId: this.currentQueueId,
             immediate: immediateStories.length,
             queued: queuedStories.length,
             total: stories.length
@@ -69,8 +69,8 @@ export class BatchAutoGrabManager {
             void this.startImmediateProcessing(immediateStories);
         }, 0);
 
-        // Notify UI of batch start
-        this.notifyBatchUpdate();
+        // Notify UI of queue start
+        this.notifyQueueUpdate();
 
         return result;
     }
@@ -125,7 +125,7 @@ export class BatchAutoGrabManager {
             const processingStory = this.processing.get(story.id);
             if (processingStory) {
                 processingStory.status = 'processing';
-                this.notifyBatchUpdate();
+                this.notifyQueueUpdate();
             }
 
         } catch (error) {
@@ -141,7 +141,7 @@ export class BatchAutoGrabManager {
             return;
         }
 
-        const alarmName = `batch-auto-grab-${this.currentBatchId}-${Date.now()}`;
+        const alarmName = `queue-processing-${this.currentQueueId}-${Date.now()}`;
         const when = Date.now() + (this.queueDelayMinutes * 60 * 1000);
         
         chrome.alarms.create(alarmName, { when });
@@ -194,11 +194,11 @@ export class BatchAutoGrabManager {
                 duration: Date.now() - processingStory.startTime
             });
             this.processing.delete(storyId);
-            this.notifyBatchUpdate();
+            this.notifyQueueUpdate();
 
-            // Check if batch is complete
+            // Check if queue is complete
             if (this.processing.size === 0 && this.queue.length === 0) {
-                this.completeBatch();
+                this.completeQueue();
             } else if (this.queue.length > 0) {
                 // If there are items in queue but no processing, restart queue processing
                 const currentProcessing = Array.from(this.processing.values())
@@ -212,68 +212,68 @@ export class BatchAutoGrabManager {
         }
     }
 
-    // Complete the batch
-    completeBatch() {
-        console.log('Batch auto-grab completed');
+    // Complete the queue
+    completeQueue() {
+        console.log('Queue processing completed');
         this.isActive = false;
-        this.currentBatchId = null;
+        this.currentQueueId = null;
         
         // Clear any remaining alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('batch-auto-grab-')) {
+                if (alarm.name.startsWith('queue-processing-')) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
         });
 
-        this.notifyBatchUpdate();
+        this.notifyQueueUpdate();
     }
 
-    // Pause batch processing
-    pauseBatch() {
+    // Pause queue processing
+    pauseQueue() {
         if (!this.isActive) return;
         
         this.isPaused = true;
-        console.log('Batch auto-grab paused');
+        console.log('Queue processing paused');
         
         // Clear scheduled alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('batch-auto-grab-')) {
+                if (alarm.name.startsWith('queue-processing-')) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
         });
 
-        this.notifyBatchUpdate();
+        this.notifyQueueUpdate();
     }
 
-    // Resume batch processing
-    resumeBatch() {
+    // Resume queue processing
+    resumeQueue() {
         if (!this.isActive || !this.isPaused) return;
         
         this.isPaused = false;
-        console.log('Batch auto-grab resumed');
+        console.log('Queue processing resumed');
         
         // Restart queue processing if needed
         if (this.queue.length > 0) {
             this.scheduleNextQueueProcess();
         }
 
-        this.notifyBatchUpdate();
+        this.notifyQueueUpdate();
     }
 
-    // Cancel batch processing
-    cancelBatch() {
+    // Cancel queue processing
+    cancelQueue() {
         if (!this.isActive) return;
         
-        console.log('Batch auto-grab cancelled');
+        console.log('Queue processing cancelled');
         
         // Clear alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('batch-auto-grab-')) {
+                if (alarm.name.startsWith('queue-processing-')) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -290,7 +290,7 @@ export class BatchAutoGrabManager {
                     target: "background",
                     type: "stopGrabbing",
                     tabId: tabId,
-                    status: "Batch cancelled by user",
+                    status: "Queue cancelled by user",
                     url: story.lastChapterUrl
                 }).catch(() => {
                     // Ignore errors if message fails
@@ -300,7 +300,7 @@ export class BatchAutoGrabManager {
             this.completed.set(storyId, {
                 ...story,
                 status: 'cancelled',
-                message: 'Batch cancelled by user',
+                message: 'Queue cancelled by user',
                 endTime: Date.now(),
                 duration: Date.now() - story.startTime
             });
@@ -310,7 +310,7 @@ export class BatchAutoGrabManager {
             this.completed.set(story.id, {
                 ...story,
                 status: 'cancelled',
-                message: 'Batch cancelled by user',
+                message: 'Queue cancelled by user',
                 startTime: Date.now(),
                 endTime: Date.now(),
                 duration: 0
@@ -322,19 +322,19 @@ export class BatchAutoGrabManager {
         this.tabToStoryMap.clear();
         this.isActive = false;
         this.isPaused = false;
-        this.currentBatchId = null;
+        this.currentQueueId = null;
 
-        this.notifyBatchUpdate();
+        this.notifyQueueUpdate();
     }
 
-    // Get current batch status
-    getBatchStatus() {
+    // Get current queue status
+    getQueueStatus() {
         if (!this.isActive) {
             return null;
         }
 
         return {
-            batchId: this.currentBatchId,
+            queueId: this.currentQueueId,
             isActive: this.isActive,
             isPaused: this.isPaused,
             processing: Array.from(this.processing.values()),
@@ -352,16 +352,16 @@ export class BatchAutoGrabManager {
         };
     }
 
-    // Notify UI of batch updates
-    notifyBatchUpdate() {
-        const status = this.getBatchStatus();
+    // Notify UI of queue updates
+    notifyQueueUpdate() {
+        const status = this.getQueueStatus();
         
         // Send message to story tracker page if it's open
         chrome.tabs.query({}, (tabs) => {
             tabs.forEach(tab => {
                 if (tab.url && tab.url.includes('story-tracker.html')) {
                     chrome.tabs.sendMessage(tab.id, {
-                        type: 'batchAutoGrabUpdate',
+                        type: 'queueUpdate',
                         status: status
                     }).catch(() => {
                         // Ignore errors if story tracker page isn't listening
@@ -409,19 +409,19 @@ export class BatchAutoGrabManager {
     static currentInstance = null;
     
     static registerInstance(instance) {
-        BatchAutoGrabManager.currentInstance = instance;
+        QueueManager.currentInstance = instance;
         
         // Set up global alarm listener only once
-        if (!BatchAutoGrabManager.alarmListenerSet) {
+        if (!QueueManager.alarmListenerSet) {
             chrome.alarms.onAlarm.addListener((alarm) => {
-                if (alarm.name.startsWith('batch-auto-grab-') && BatchAutoGrabManager.currentInstance) {
+                if (alarm.name.startsWith('queue-processing-') && QueueManager.currentInstance) {
                     console.log(`Processing alarm: ${alarm.name}`);
-                    BatchAutoGrabManager.currentInstance.processNextInQueue();
+                    QueueManager.currentInstance.processNextInQueue();
                 }
             });
-            BatchAutoGrabManager.alarmListenerSet = true;
+            QueueManager.alarmListenerSet = true;
         }
     }
 }
 
-BatchAutoGrabManager.alarmListenerSet = false;
+QueueManager.alarmListenerSet = false;

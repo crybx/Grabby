@@ -2,7 +2,7 @@
 import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
-import { BatchAutoGrabManager } from "./modules/batch-auto-grab-manager.js";
+import { QueueManager } from "./modules/queue-manager.js";
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
@@ -23,11 +23,11 @@ async function handleGrabContent(message, sender) {
 
 // Create completion callback for bulk grab manager
 const handleBulkGrabComplete = (tabId, success, message) => {
-    batchAutoGrabManager.handleBulkGrabComplete(tabId, success, message);
+    queueManager.handleBulkGrabComplete(tabId, success, message);
 };
 
 const bulkGrabManager = new BulkGrabManager(handleGrabContent, handleBulkGrabComplete, scriptInjector);
-const batchAutoGrabManager = new BatchAutoGrabManager(handleAutoGrab);
+const queueManager = new QueueManager(handleAutoGrab);
 
 // Handle auto grab for individual stories
 async function handleAutoGrab(message) {
@@ -59,9 +59,9 @@ async function handleAutoGrab(message) {
         
         console.log(`Opened tab ${tab.id} for ${message.storyTitle}`);
         
-        // Register tab with batch manager if story has an ID
+        // Register tab with queue manager if story has an ID
         if (message.storyId) {
-            batchAutoGrabManager.registerStoryTab(message.storyId, tab.id);
+            queueManager.registerStoryTab(message.storyId, tab.id);
         }
         
         // Wait for tab to load, then start the auto-grab process
@@ -178,9 +178,9 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                         args: [initialUrl, "No next chapter found"]
                     });
                     
-                    // Notify batch manager directly since no bulk grab will run
+                    // Notify queue manager directly since no bulk grab will run
                     if (storyInfo.storyId) {
-                        batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, true, "No next chapter found");
+                        queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, true, "No next chapter found");
                     }
                     
                     // Close the tab since no new content
@@ -188,18 +188,18 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                 }
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);
-                // Notify batch manager of error
+                // Notify queue manager of error
                 if (storyInfo.storyId) {
-                    batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
+                    queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
                 }
             }
         }, 4000); // Wait 3 seconds for navigation
         
     } catch (error) {
         console.error(`Error in performAutoGrabSequence for ${storyInfo.storyTitle}:`, error);
-        // Notify batch manager of error
+        // Notify queue manager of error
         if (storyInfo.storyId) {
-            batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
+            queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
         }
     }
 }
@@ -295,26 +295,26 @@ async function handleMessages(message, sender, sendResponse) {
     case "startAutoGrab":
         await handleAutoGrab(message);
         break;
-    case "startBatchAutoGrab":
+    case "startQueueProcessing":
         try {
-            const result = batchAutoGrabManager.startBatchAutoGrab(message.stories);
+            const result = queueManager.startQueueProcessing(message.stories);
             sendResponse(result);
         } catch (error) {
-            console.error("Error starting batch auto-grab:", error);
+            console.error("Error starting queue processing:", error);
             sendResponse({ error: error.message });
         }
         break;
-    case "pauseBatchAutoGrab":
-        batchAutoGrabManager.pauseBatch();
+    case "pauseQueue":
+        queueManager.pauseQueue();
         break;
-    case "resumeBatchAutoGrab":
-        batchAutoGrabManager.resumeBatch();
+    case "resumeQueue":
+        queueManager.resumeQueue();
         break;
-    case "cancelBatchAutoGrab":
-        batchAutoGrabManager.cancelBatch();
+    case "cancelQueue":
+        queueManager.cancelQueue();
         break;
-    case "getBatchAutoGrabStatus":
-        sendResponse(batchAutoGrabManager.getBatchStatus());
+    case "getQueueStatus":
+        sendResponse(queueManager.getQueueStatus());
         return true; // Keep message channel open for async response
     default:
         console.warn(`Unexpected message type received: '${message.type}'.`);
