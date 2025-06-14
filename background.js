@@ -143,19 +143,19 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     const defaultDelay = autoGrabConfig.defaultDelay;
                     
                     // Start bulk grab on this tab
-                    await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId);
+                    await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId, storyInfo.storyId);
                     console.log(`Started bulk grab for ${storyInfo.storyTitle}: ${defaultCount} chapters, ${defaultDelay}s delay`);
                     
                     // Update story tracker with bulk grab start status
                     await scriptInjector.injectScriptsSequentially(tabId);
                     await chrome.scripting.executeScript({
                         target: { tabId: tabId },
-                        func: async (url, status) => {
+                        func: async (url, status, storyId) => {
                             if (typeof StoryTracker !== "undefined") {
-                                await StoryTracker.updateLastCheckStatus(url, status);
+                                await StoryTracker.updateLastCheckStatus(url, status, storyId);
                             }
                         },
-                        args: [newUrl, `Bulk grabbing ${defaultCount} chapters...`]
+                        args: [newUrl, `Bulk grabbing ${defaultCount} chapters...`, storyInfo.storyId]
                     });
                     
                     // Note: Don't mark as completed here - wait for bulk grab to finish
@@ -164,12 +164,12 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     await scriptInjector.injectScriptsSequentially(tabId);
                     await chrome.scripting.executeScript({
                         target: { tabId: tabId },
-                        func: async (url, status) => {
+                        func: async (url, status, storyId) => {
                             if (typeof StoryTracker !== "undefined") {
-                                await StoryTracker.updateLastCheckStatus(url, status);
+                                await StoryTracker.updateLastCheckStatus(url, status, storyId);
                             }
                         },
-                        args: [initialUrl, "No next chapter found"]
+                        args: [initialUrl, "No next chapter found", storyInfo.storyId]
                     });
                     
                     // Notify queue manager directly since no bulk grab will run

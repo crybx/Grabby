@@ -157,7 +157,7 @@ export class BulkGrabManager {
     }
 
     // Start bulk grab process
-    async startBulkGrab(pageCount, delaySeconds, tabId) {
+    async startBulkGrab(pageCount, delaySeconds, tabId, storyId = null) {
         if (!tabId) {
             console.error("No tab ID available for bulk grab");
             return;
@@ -178,7 +178,8 @@ export class BulkGrabManager {
             totalPages: pageCount,
             delaySeconds: delaySeconds,
             startTime: Date.now(),
-            tabId: tabId
+            tabId: tabId,
+            storyId: storyId
         };
         
         await this.saveBulkGrabState(tabId, state);
@@ -210,12 +211,12 @@ export class BulkGrabManager {
             }
             await chrome.scripting.executeScript({
                 target: { tabId: tabId },
-                func: async (status) => {
+                func: async (status, storyId) => {
                     if (typeof StoryTracker !== "undefined") {
-                        await StoryTracker.updateLastCheckStatus(window.location.href, status);
+                        await StoryTracker.updateLastCheckStatus(window.location.href, status, storyId);
                     }
                 },
-                args: [reason]
+                args: [reason, state.storyId]
             });
         } catch (error) {
             console.warn("Could not update story tracker status:", error);
@@ -266,12 +267,12 @@ export class BulkGrabManager {
                 }
                 await chrome.scripting.executeScript({
                     target: { tabId: tabId },
-                    func: async (status) => {
+                    func: async (status, storyId) => {
                         if (typeof StoryTracker !== "undefined") {
-                            await StoryTracker.updateLastCheckStatus(window.location.href, status);
+                            await StoryTracker.updateLastCheckStatus(window.location.href, status, storyId);
                         }
                     },
-                    args: [`Completed ${state.totalPages} chapters in ${duration}s`]
+                    args: [`Completed ${state.totalPages} chapters in ${duration}s`, state.storyId]
                 });
             } catch (error) {
                 console.warn("Could not update story tracker status:", error);

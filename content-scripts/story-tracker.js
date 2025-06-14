@@ -180,8 +180,19 @@ function cleanTitle(chapterTitle, storyTitle = null) {
 }
 
 // Update last check status for a story (used for aborts or other check results)
-async function updateLastCheckStatus(chapterUrl, status) {
-    const story = await findStoryByChapterUrl(chapterUrl);
+async function updateLastCheckStatus(chapterUrl, status, storyId = null) {
+    console.log(`StoryTracker.updateLastCheckStatus called: URL=${chapterUrl}, status=${status}, storyId=${storyId}`);
+    
+    // If storyId is provided (from queue context), use it directly
+    let story;
+    if (storyId) {
+        console.log(`Using provided storyId: ${storyId} for status update: ${chapterUrl}`);
+        story = await getStory(storyId);
+        console.log(`Found story by ID:`, story ? story.title : 'NOT FOUND');
+    } else {
+        story = await findStoryByChapterUrl(chapterUrl);
+        console.log(`Found story by URL:`, story ? story.title : 'NOT FOUND');
+    }
     
     if (story) {
         // Update the story object with check status
@@ -194,6 +205,7 @@ async function updateLastCheckStatus(chapterUrl, status) {
         return story;
     }
     
+    console.log(`Could not find story to update last check status. URL: ${chapterUrl}, storyId: ${storyId}`);
     return null;
 }
 
