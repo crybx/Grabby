@@ -8,6 +8,7 @@ export class QueueManager {
         this.tabToStoryMap = new Map(); // Map tabId to storyId for bulk grab completion
         this.isPaused = false;
         this.isActive = false;
+        this.isCompleted = false; // Track if queue has completed
         this.maxConcurrent = 2; // Max stories to process simultaneously
         this.queueDelayMinutes = 0.25; // Delay between starting queued stories (15 seconds)
         this.currentQueueId = null;
@@ -26,6 +27,7 @@ export class QueueManager {
         this.currentQueueId = Date.now().toString();
         this.isActive = true;
         this.isPaused = false;
+        this.isCompleted = false;
         this.queue = [];
         this.processing.clear();
         this.completed.clear();
@@ -216,7 +218,7 @@ export class QueueManager {
     completeQueue() {
         console.log('Queue processing completed');
         this.isActive = false;
-        this.currentQueueId = null;
+        this.isCompleted = true;
         
         // Clear any remaining alarms
         chrome.alarms.getAll((alarms) => {
@@ -322,14 +324,25 @@ export class QueueManager {
         this.tabToStoryMap.clear();
         this.isActive = false;
         this.isPaused = false;
-        this.currentQueueId = null;
+        this.isCompleted = true; // Mark as completed when cancelled
+        // Keep currentQueueId for summary display
 
         this.notifyQueueUpdate();
     }
 
+    // Clear completed queue status (called when user closes summary)
+    clearCompletedQueue() {
+        if (this.isCompleted && !this.isActive) {
+            this.isCompleted = false;
+            this.currentQueueId = null;
+            this.completed.clear();
+            console.log('Cleared completed queue status');
+        }
+    }
+
     // Get current queue status
     getQueueStatus() {
-        if (!this.isActive) {
+        if (!this.isActive && !this.isCompleted) {
             return null;
         }
 
@@ -337,6 +350,7 @@ export class QueueManager {
             queueId: this.currentQueueId,
             isActive: this.isActive,
             isPaused: this.isPaused,
+            isCompleted: this.isCompleted,
             processing: Array.from(this.processing.values()),
             queue: this.queue,
             completed: Array.from(this.completed.values()),

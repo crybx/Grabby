@@ -59,6 +59,10 @@ class StoryTrackerTable {
             this.cancelQueue();
         });
 
+        document.getElementById("close-queue-btn").addEventListener("click", () => {
+            this.closeQueueProgress();
+        });
+
         // Add message listener for queue progress updates
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.type === "queueUpdate") {
@@ -1105,6 +1109,11 @@ class StoryTrackerTable {
     showQueueProgress() {
         const queueProgress = document.getElementById("queue-progress");
         queueProgress.style.display = "block";
+        
+        // Disable Auto Grab button when queue starts
+        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
+        autoGrabBtn.disabled = true;
+        autoGrabBtn.textContent = "Queue Processing...";
     }
 
     hideQueueProgress() {
@@ -1112,32 +1121,62 @@ class StoryTrackerTable {
         queueProgress.style.display = "none";
     }
 
+    closeQueueProgress() {
+        this.hideQueueProgress();
+        
+        // Clear completed queue status in background
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "clearCompletedQueue"
+        });
+        
+        // Re-enable Auto Grab button when queue is manually closed
+        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
+        autoGrabBtn.disabled = this.selectedStories.size === 0; // Enable if stories are selected
+        autoGrabBtn.textContent = "Auto Grab New Chapters";
+    }
+
     // Handle queue progress updates from background script
     handleQueueProgressUpdate(status) {
         if (!status) {
-            this.hideQueueProgress();
+            // Only hide if no queue was ever started, otherwise keep summary visible
             return;
         }
 
-        // Show progress section if queue is active
+        // Show progress section if queue is active or completed
         if (status.isActive) {
             this.showQueueProgress();
         } else {
-            this.hideQueueProgress();
-            return;
+            // Queue is complete - show summary with close button
+            const queueProgress = document.getElementById("queue-progress");
+            queueProgress.style.display = "block";
         }
 
         // Update queue control button states
         const pauseBtn = document.getElementById("pause-queue-btn");
         const resumeBtn = document.getElementById("resume-queue-btn");
         const cancelBtn = document.getElementById("cancel-queue-btn");
+        const closeBtn = document.getElementById("close-queue-btn");
 
-        if (status.isPaused) {
-            pauseBtn.style.display = "none";
-            resumeBtn.style.display = "inline-block";
+        if (status.isActive) {
+            // Queue is running - show appropriate control buttons
+            if (status.isPaused) {
+                pauseBtn.style.display = "none";
+                resumeBtn.style.display = "inline-block";
+                cancelBtn.style.display = "inline-block";
+                closeBtn.style.display = "none";
+            } else {
+                pauseBtn.style.display = "inline-block";
+                resumeBtn.style.display = "none";
+                cancelBtn.style.display = "inline-block";
+                closeBtn.style.display = "none";
+            }
         } else {
-            pauseBtn.style.display = "inline-block";
+            // Queue is complete - only show close button
+            pauseBtn.style.display = "none";
             resumeBtn.style.display = "none";
+            cancelBtn.style.display = "none";
+            closeBtn.style.display = "inline-block";
         }
 
         // Update statistics

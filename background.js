@@ -316,6 +316,9 @@ async function handleMessages(message, sender, sendResponse) {
     case "getQueueStatus":
         sendResponse(queueManager.getQueueStatus());
         return true; // Keep message channel open for async response
+    case "clearCompletedQueue":
+        queueManager.clearCompletedQueue();
+        break;
     default:
         console.warn(`Unexpected message type received: '${message.type}'.`);
     }
