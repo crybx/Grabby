@@ -47,6 +47,57 @@
                 </div>
             </div>
 
+            <!-- Batch Auto-Grab Progress -->
+            <div id="batch-progress" class="batch-progress" style="display: none;">
+                <div class="batch-progress-header">
+                    <h3>Batch Auto-Grab Progress</h3>
+                    <div class="batch-controls">
+                        <button id="pause-batch-btn" class="btn secondary-btn">Pause</button>
+                        <button id="resume-batch-btn" class="btn secondary-btn" style="display: none;">Resume</button>
+                        <button id="cancel-batch-btn" class="btn danger-btn">Cancel</button>
+                    </div>
+                </div>
+                <div class="batch-progress-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total:</span>
+                        <span id="batch-total">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Processing:</span>
+                        <span id="batch-processing">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Queued:</span>
+                        <span id="batch-queued">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Completed:</span>
+                        <span id="batch-completed">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Failed:</span>
+                        <span id="batch-failed">0</span>
+                    </div>
+                </div>
+                <div class="batch-progress-bar">
+                    <div id="batch-progress-fill" class="batch-progress-fill"></div>
+                </div>
+                <div class="batch-stories-list">
+                    <div class="stories-section">
+                        <h4>Currently Processing</h4>
+                        <div id="processing-stories" class="story-list"></div>
+                    </div>
+                    <div class="stories-section">
+                        <h4>Queued</h4>
+                        <div id="queued-stories" class="story-list"></div>
+                    </div>
+                    <div class="stories-section">
+                        <h4>Completed</h4>
+                        <div id="completed-stories" class="story-list"></div>
+                    </div>
+                </div>
+            </div>
+
             <div id="no-stories" class="empty-state" style="display: none;">
                 <div class="empty-icon">📚</div>
                 <h2>No Stories Tracked Yet</h2>

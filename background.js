@@ -2,6 +2,7 @@
 import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
+import { BatchAutoGrabManager } from "./modules/batch-auto-grab-manager.js";
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
@@ -20,7 +21,13 @@ async function handleGrabContent(message, sender) {
     }
 }
 
-const bulkGrabManager = new BulkGrabManager(handleGrabContent);
+// Create completion callback for bulk grab manager
+const handleBulkGrabComplete = (tabId, success, message) => {
+    batchAutoGrabManager.handleBulkGrabComplete(tabId, success, message);
+};
+
+const bulkGrabManager = new BulkGrabManager(handleGrabContent, handleBulkGrabComplete, scriptInjector);
+const batchAutoGrabManager = new BatchAutoGrabManager(handleAutoGrab);
 
 // Handle auto grab for individual stories
 async function handleAutoGrab(message) {
@@ -51,6 +58,11 @@ async function handleAutoGrab(message) {
         });
         
         console.log(`Opened tab ${tab.id} for ${message.storyTitle}`);
+        
+        // Register tab with batch manager if story has an ID
+        if (message.storyId) {
+            batchAutoGrabManager.registerStoryTab(message.storyId, tab.id);
+        }
         
         // Wait for tab to load, then start the auto-grab process
         chrome.tabs.onUpdated.addListener(function autoGrabListener(tabId, changeInfo) {
@@ -87,11 +99,27 @@ async function performAutoGrabSequence(tabId, storyInfo) {
             target: { tabId: tabId },
             func: async function() {
                 const config = findMatchingConfig(window.location.href);
-                if (config && config.postGrab && typeof config.postGrab === "function") {
+                if (config && config.postGrab) {
                     try {
-                        const result = await config.postGrab();
-                        console.log("PostGrab action executed for auto-grab");
-                        return { success: true, result: result };
+                        let postGrabFunc = config.postGrab;
+                        
+                        // If postGrab is undefined (due to early evaluation), try to resolve it
+                        if (typeof postGrabFunc !== "function") {
+                            console.log("PostGrab function is not available, attempting to resolve...");
+                            // For peachtea, manually resolve the function
+                            if (window.location.href.includes("peachtea.agency") && typeof PostGrabActions !== "undefined") {
+                                postGrabFunc = PostGrabActions.peachTeaClickNextChapterLink;
+                            }
+                        }
+                        
+                        if (typeof postGrabFunc === "function") {
+                            const result = await postGrabFunc();
+                            console.log("PostGrab action executed for auto-grab");
+                            return { success: true, result: result };
+                        } else {
+                            console.log("PostGrab function could not be resolved");
+                            return { success: false, error: "PostGrab function not available" };
+                        }
                     } catch (error) {
                         console.error("Error in postGrab action:", error);
                         return { success: false, error: error.message };
@@ -149,6 +177,20 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     // Start bulk grab on this tab
                     await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId);
                     console.log(`Started bulk grab for ${storyInfo.storyTitle}: ${defaultCount} chapters, ${defaultDelay}s delay`);
+                    
+                    // Update story tracker with bulk grab start status
+                    await scriptInjector.injectScriptsSequentially(tabId);
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        func: async (url, status) => {
+                            if (typeof StoryTracker !== "undefined") {
+                                await StoryTracker.updateLastCheckStatus(url, status);
+                            }
+                        },
+                        args: [newUrl, `Bulk grabbing ${defaultCount} chapters...`]
+                    });
+                    
+                    // Note: Don't mark as completed here - wait for bulk grab to finish
                 } else {
                     console.log(`No URL change for ${storyInfo.storyTitle} - may be at end or stuck`);
                     
@@ -164,16 +206,29 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                         args: [initialUrl, "No next chapter found"]
                     });
                     
+                    // Notify batch manager directly since no bulk grab will run
+                    if (storyInfo.storyId) {
+                        batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, true, "No next chapter found");
+                    }
+                    
                     // Close the tab since no new content
                     chrome.tabs.remove(tabId);
                 }
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);
+                // Notify batch manager of error
+                if (storyInfo.storyId) {
+                    batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
+                }
             }
         }, 4000); // Wait 3 seconds for navigation
         
     } catch (error) {
         console.error(`Error in performAutoGrabSequence for ${storyInfo.storyTitle}:`, error);
+        // Notify batch manager of error
+        if (storyInfo.storyId) {
+            batchAutoGrabManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
+        }
     }
 }
 
@@ -268,6 +323,27 @@ async function handleMessages(message, sender, sendResponse) {
     case "startAutoGrab":
         await handleAutoGrab(message);
         break;
+    case "startBatchAutoGrab":
+        try {
+            const result = batchAutoGrabManager.startBatchAutoGrab(message.stories);
+            sendResponse(result);
+        } catch (error) {
+            console.error("Error starting batch auto-grab:", error);
+            sendResponse({ error: error.message });
+        }
+        break;
+    case "pauseBatchAutoGrab":
+        batchAutoGrabManager.pauseBatch();
+        break;
+    case "resumeBatchAutoGrab":
+        batchAutoGrabManager.resumeBatch();
+        break;
+    case "cancelBatchAutoGrab":
+        batchAutoGrabManager.cancelBatch();
+        break;
+    case "getBatchAutoGrabStatus":
+        sendResponse(batchAutoGrabManager.getBatchStatus());
+        return true; // Keep message channel open for async response
     default:
         console.warn(`Unexpected message type received: '${message.type}'.`);
     }

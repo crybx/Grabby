@@ -32,19 +32,26 @@ export class ScriptInjector {
             "content-scripts/grabber-core.js"
         ];
 
-        // First, check if GrabbyCore is already available (if so, we can skip injecting scripts)
-        const coreCheckResult = await chrome.scripting.executeScript({
+        // Check what scripts are already available
+        const availabilityCheck = await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: () => {
-                return typeof GrabbyCore !== "undefined";
+                return {
+                    grabbyCore: typeof GrabbyCore !== "undefined",
+                    postGrabActions: typeof PostGrabActions !== "undefined",
+                    preGrabActions: typeof PreGrabActions !== "undefined",
+                    storyTracker: typeof StoryTracker !== "undefined",
+                    websiteConfigs: typeof findMatchingConfig !== "undefined"
+                };
             }
         });
 
-        const grabbyExists = coreCheckResult[0].result;
+        const availability = availabilityCheck[0].result;
+        console.log("Script availability:", availability);
 
-        // If GrabbyCore already exists, just return
-        if (grabbyExists) {
-            console.log("GrabbyCore already exists, skipping script injection");
+        // If all essential scripts are available, we can skip injection
+        if (availability.grabbyCore && availability.postGrabActions && availability.preGrabActions && availability.websiteConfigs) {
+            console.log("All essential scripts already exist, skipping script injection");
             return;
         }
 

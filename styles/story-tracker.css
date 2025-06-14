@@ -28,6 +28,168 @@ header {
     padding: 20px 24px;
 }
 
+/* Batch Progress Styles */
+.batch-progress {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+    padding: 20px 24px;
+    border-left: 4px solid #007bff;
+}
+
+.batch-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.batch-progress-header h3 {
+    color: #007bff;
+    font-size: 1.2em;
+    margin: 0;
+}
+
+.batch-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.batch-progress-stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-item span:last-child {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #333;
+}
+
+.batch-progress-bar {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    height: 8px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.batch-progress-fill {
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.batch-stories-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.stories-section h4 {
+    color: #495057;
+    font-size: 1em;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.story-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.story-item {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border-left: 3px solid transparent;
+}
+
+.story-item.processing {
+    border-left-color: #007bff;
+    background: #e3f2fd;
+}
+
+.story-item.queued {
+    border-left-color: #ffc107;
+    background: #fff3cd;
+}
+
+.story-item.completed {
+    border-left-color: #28a745;
+    background: #d4edda;
+}
+
+.story-item.error {
+    border-left-color: #dc3545;
+    background: #f8d7da;
+}
+
+.story-item.cancelled {
+    border-left-color: #6c757d;
+    background: #e2e3e5;
+}
+
+.story-item-title {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.story-item-status {
+    font-size: 0.8em;
+    color: #666;
+}
+
+@media (max-width: 1200px) {
+    .batch-stories-list {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .batch-stories-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .batch-progress-stats {
+        gap: 16px;
+    }
+    
+    .batch-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .batch-progress-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
+
 .header-content {
     display: flex;
     justify-content: space-between;
@@ -577,4 +739,13 @@ h1 {
         min-width: 100px;
         font-size: 11px;
     }
+}
+
+/* No stories message */
+.no-stories {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 16px;
+    margin: 0;
 }

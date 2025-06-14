@@ -1,7 +1,9 @@
 // BulkGrabManager - Handles all bulk grabbing operations
 export class BulkGrabManager {
-    constructor(grabContentCallback) {
+    constructor(grabContentCallback, completionCallback = null, scriptInjector = null) {
         this.grabContentCallback = grabContentCallback;
+        this.completionCallback = completionCallback;
+        this.scriptInjector = scriptInjector;
     }
 
     // Helper functions for tab-specific storage and alarms
@@ -201,8 +203,32 @@ export class BulkGrabManager {
         }
         
         console.log(`Stopping bulk grab for tab ${tabId}`);
+        
+        // Update story tracker with stopped status
+        try {
+            if (this.scriptInjector) {
+                await this.scriptInjector.injectScriptsSequentially(tabId);
+            }
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                func: async (status) => {
+                    if (typeof StoryTracker !== "undefined") {
+                        await StoryTracker.updateLastCheckStatus(window.location.href, status);
+                    }
+                },
+                args: ["Bulk grab stopped manually"]
+            });
+        } catch (error) {
+            console.warn("Could not update story tracker status:", error);
+        }
+        
         await this.clearBulkGrabState(tabId);
         await this.sendStoppedToPopup(tabId);
+        
+        // Notify completion callback if available
+        if (this.completionCallback) {
+            this.completionCallback(tabId, false, "Bulk grab stopped manually");
+        }
     }
 
     // Perform the next bulk grab - called by alarm or directly
@@ -224,8 +250,32 @@ export class BulkGrabManager {
         if (state.currentPage >= state.totalPages) {
             const duration = Math.round((Date.now() - state.startTime) / 1000);
             console.log(`Bulk grab completed for tab ${tabId}: ${state.totalPages} pages in ${duration}s`);
+            
+            // Update story tracker with completion status
+            try {
+                if (this.scriptInjector) {
+                    await this.scriptInjector.injectScriptsSequentially(tabId);
+                }
+                await chrome.scripting.executeScript({
+                    target: { tabId: tabId },
+                    func: async (status) => {
+                        if (typeof StoryTracker !== "undefined") {
+                            await StoryTracker.updateLastCheckStatus(window.location.href, status);
+                        }
+                    },
+                    args: [`Completed ${state.totalPages} chapters in ${duration}s`]
+                });
+            } catch (error) {
+                console.warn("Could not update story tracker status:", error);
+            }
+            
             await this.sendCompletionToPopup(tabId);
             await this.clearBulkGrabState(tabId);
+            
+            // Notify completion callback if available
+            if (this.completionCallback) {
+                this.completionCallback(tabId, true, `Completed ${state.totalPages} pages in ${duration}s`);
+            }
             return;
         }
         

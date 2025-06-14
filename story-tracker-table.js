@@ -46,6 +46,26 @@ class StoryTrackerTable {
             this.renderTable();
         });
 
+        // Batch control event listeners
+        document.getElementById("pause-batch-btn").addEventListener("click", () => {
+            this.pauseBatchAutoGrab();
+        });
+
+        document.getElementById("resume-batch-btn").addEventListener("click", () => {
+            this.resumeBatchAutoGrab();
+        });
+
+        document.getElementById("cancel-batch-btn").addEventListener("click", () => {
+            this.cancelBatchAutoGrab();
+        });
+
+        // Add message listener for batch progress updates
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            if (message.type === "batchAutoGrabUpdate") {
+                this.handleBatchProgressUpdate(message.status);
+            }
+        });
+
         // Domain filter
         document.getElementById("domain-filter").addEventListener("change", (e) => {
             this.domainFilter = e.target.value;
@@ -987,7 +1007,7 @@ class StoryTrackerTable {
         }
     }
 
-    // Handle auto grab new chapters for selected stories
+    // Handle auto grab new chapters for selected stories using batch system
     async handleAutoGrabNewChapters() {
         const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
         
@@ -1016,25 +1036,37 @@ class StoryTrackerTable {
             return;
         }
 
-        // Start auto-grab for each eligible story
-        for (const story of eligibleStories) {
-            try {
-                console.log(`Starting auto-grab for: ${story.title}`);
-                
-                // Send message to background to start auto-grab for this story
+
+        try {
+            // Send message to background to start batch auto-grab
+            const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({
                     target: "background",
-                    type: "startAutoGrab",
-                    storyId: story.id,
-                    storyTitle: story.title,
-                    lastChapterUrl: story.lastChapterUrl
+                    type: "startBatchAutoGrab",
+                    stories: eligibleStories
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        resolve(response);
+                    }
                 });
-                
-                // Small delay between starting each story to avoid overwhelming
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (error) {
-                console.error(`Error starting auto-grab for ${story.title}:`, error);
+            });
+
+            if (response.error) {
+                alert(`Error starting batch auto-grab: ${response.error}`);
+                return;
             }
+
+            console.log(`Started batch auto-grab for ${response.total} stories:`, response);
+            
+            // Show the batch progress section
+            this.showBatchProgress();
+            
+        } catch (error) {
+            console.error("Error starting batch auto-grab:", error);
+            const errorMessage = error.message || error.toString() || "Unknown error";
+            alert(`Error starting batch auto-grab: ${errorMessage}`);
         }
     }
 
@@ -1044,9 +1076,182 @@ class StoryTrackerTable {
         this.applyFilters();
         this.renderTable();
     }
+
+    // Batch control methods
+    pauseBatchAutoGrab() {
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "pauseBatchAutoGrab"
+        });
+    }
+
+    resumeBatchAutoGrab() {
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "resumeBatchAutoGrab"
+        });
+    }
+
+    cancelBatchAutoGrab() {
+        if (confirm("Are you sure you want to cancel the batch auto-grab? This will stop all pending operations.")) {
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "cancelBatchAutoGrab"
+            });
+        }
+    }
+
+    // Show/hide batch progress section
+    showBatchProgress() {
+        const batchProgress = document.getElementById("batch-progress");
+        batchProgress.style.display = "block";
+    }
+
+    hideBatchProgress() {
+        const batchProgress = document.getElementById("batch-progress");
+        batchProgress.style.display = "none";
+    }
+
+    // Handle batch progress updates from background script
+    handleBatchProgressUpdate(status) {
+        if (!status) {
+            this.hideBatchProgress();
+            return;
+        }
+
+        // Show progress section if batch is active
+        if (status.isActive) {
+            this.showBatchProgress();
+        } else {
+            this.hideBatchProgress();
+            return;
+        }
+
+        // Update batch control button states
+        const pauseBtn = document.getElementById("pause-batch-btn");
+        const resumeBtn = document.getElementById("resume-batch-btn");
+        const cancelBtn = document.getElementById("cancel-batch-btn");
+
+        if (status.isPaused) {
+            pauseBtn.style.display = "none";
+            resumeBtn.style.display = "inline-block";
+        } else {
+            pauseBtn.style.display = "inline-block";
+            resumeBtn.style.display = "none";
+        }
+
+        // Update statistics
+        document.getElementById("batch-total").textContent = status.stats.total;
+        document.getElementById("batch-processing").textContent = status.stats.processing;
+        document.getElementById("batch-queued").textContent = status.stats.queued;
+        document.getElementById("batch-completed").textContent = status.stats.completed;
+        document.getElementById("batch-failed").textContent = status.stats.failed;
+
+        // Update progress bar
+        const progressPercent = status.stats.total > 0 ? 
+            Math.round(((status.stats.completed + status.stats.failed) / status.stats.total) * 100) : 0;
+        const progressFill = document.getElementById("batch-progress-fill");
+        progressFill.style.width = `${progressPercent}%`;
+
+        // Update story lists
+        this.updateBatchStoryList("processing-stories", status.processing);
+        this.updateBatchStoryList("queued-stories", status.queue);
+        this.updateBatchStoryList("completed-stories", status.completed);
+    }
+
+    // Update a specific story list in the batch progress section
+    updateBatchStoryList(containerId, stories) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.innerHTML = "";
+        
+        if (!stories || stories.length === 0) {
+            container.innerHTML = "<p class='no-stories'>None</p>";
+            return;
+        }
+
+        stories.forEach(story => {
+            const storyElement = document.createElement("div");
+            storyElement.className = "story-item";
+            
+            // Apply appropriate status class
+            if (story.status) {
+                switch (story.status) {
+                case "success":
+                    storyElement.classList.add("completed");
+                    break;
+                case "error":
+                    storyElement.classList.add("error");
+                    break;
+                case "cancelled":
+                    storyElement.classList.add("cancelled");
+                    break;
+                case "processing":
+                    storyElement.classList.add("processing");
+                    break;
+                case "starting":
+                    storyElement.classList.add("processing"); // Use processing style for starting
+                    break;
+                }
+            } else {
+                // For queued stories without status
+                storyElement.classList.add("queued");
+            }
+            
+            // Create title and status elements
+            const titleElement = document.createElement("div");
+            titleElement.className = "story-item-title";
+            titleElement.textContent = story.title;
+            
+            const statusElement = document.createElement("div");
+            statusElement.className = "story-item-status";
+            
+            if (story.status) {
+                switch (story.status) {
+                case "success":
+                    statusElement.textContent = "Completed successfully";
+                    break;
+                case "error":
+                    statusElement.textContent = story.message || "Error occurred";
+                    break;
+                case "cancelled":
+                    statusElement.textContent = "Cancelled";
+                    break;
+                case "processing":
+                    statusElement.textContent = "Processing...";
+                    break;
+                case "starting":
+                    statusElement.textContent = "Starting...";
+                    break;
+                }
+            } else {
+                statusElement.textContent = "Queued";
+            }
+            
+            storyElement.appendChild(titleElement);
+            storyElement.appendChild(statusElement);
+            
+            if (story.message && story.status !== "error") {
+                storyElement.title = story.message;
+            }
+            
+            container.appendChild(storyElement);
+        });
+    }
 }
 
 // Initialize the story tracker when the page loads
 document.addEventListener("DOMContentLoaded", () => {
-    new StoryTrackerTable();
+    const storyTracker = new StoryTrackerTable();
+    
+    // Check for any active batch operations on page load
+    chrome.runtime.sendMessage({
+        target: "background",
+        type: "getBatchAutoGrabStatus"
+    }, (response) => {
+        if (response && response.isActive) {
+            storyTracker.handleBatchProgressUpdate(response);
+        }
+    });
 });
