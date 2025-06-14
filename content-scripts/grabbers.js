@@ -350,16 +350,30 @@ function grabLilyonthevalley() {
         if (element.tagName === "P" && !element.hasAttribute("data-paragraph-id")) {
             element.remove();
         }
+
+        // if it's a span, and it's only hexadecimal: `<span class="[^"]*">[a-f0-9]+</span>`
+        if (element.tagName === "SPAN"
+            && element.classList?.length === 1
+            && /^[a-f0-9]+$/.test(element.textContent)) {
+            element.remove();
+        }
+
+        // older way of checking (it worked though)
         // if it's a span
         // and its text content has no spaces or punctuation .!?"“”'‘’,~
         // and there is one class with a name longer than 8 characters and no dashes or underscores
-        if (element.tagName === "SPAN"
-           && /^[^\s.!?"“”'‘’,~]+$/.test(element.textContent.trim())
-            && element.classList?.length === 1
-            && element.classList[0].length >= 5
-            && !/[-_]/.test(element.classList[0])) {
-            // and if the class name matches the regex
-            element.remove();
+        // if (element.tagName === "SPAN"
+        //    && /^[^\s.!?"“”'‘’,~]+$/.test(element.textContent.trim())
+        //     && element.classList?.length === 1
+        //     && element.classList[0].length >= 5
+        //     && !/[-_]/.test(element.classList[0])) {
+        //     // and if the class name matches the regex
+        //     element.remove();
+        // }
+
+        // remove style attribute if style="font-weight: 400;" - it"s just noise
+        if (element.hasAttribute("style") && element.getAttribute("style") === "font-weight: 400;") {
+            element.removeAttribute("style");
         }
 
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
