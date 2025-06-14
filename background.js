@@ -95,48 +95,20 @@ async function performAutoGrabSequence(tabId, storyInfo) {
         await scriptInjector.injectScriptsSequentially(tabId);
         
         // Run postGrab action to navigate to next chapter
-        const postGrabResult = await chrome.scripting.executeScript({
+        await chrome.scripting.executeScript({
             target: { tabId: tabId },
-            func: async function() {
+            func: function() {
                 const config = findMatchingConfig(window.location.href);
-                if (config && config.postGrab) {
+                if (config && config.postGrab && typeof config.postGrab === "function") {
                     try {
-                        let postGrabFunc = config.postGrab;
-                        
-                        // If postGrab is undefined (due to early evaluation), try to resolve it
-                        if (typeof postGrabFunc !== "function") {
-                            console.log("PostGrab function is not available, attempting to resolve...");
-                            // For peachtea, manually resolve the function
-                            if (window.location.href.includes("peachtea.agency") && typeof PostGrabActions !== "undefined") {
-                                postGrabFunc = PostGrabActions.peachTeaClickNextChapterLink;
-                            }
-                        }
-                        
-                        if (typeof postGrabFunc === "function") {
-                            const result = await postGrabFunc();
-                            console.log("PostGrab action executed for auto-grab");
-                            return { success: true, result: result };
-                        } else {
-                            console.log("PostGrab function could not be resolved");
-                            return { success: false, error: "PostGrab function not available" };
-                        }
+                        config.postGrab();
+                        console.log("PostGrab action executed for auto-grab");
                     } catch (error) {
                         console.error("Error in postGrab action:", error);
-                        return { success: false, error: error.message };
                     }
-                } else {
-                    console.log("No postGrab function found for this site");
-                    return { success: false, error: "No postGrab function" };
                 }
             }
         });
-        
-        const postGrabStatus = postGrabResult[0]?.result;
-        if (postGrabStatus?.success) {
-            console.log(`PostGrab executed successfully for ${storyInfo.storyTitle}`);
-        } else {
-            console.log(`PostGrab failed for ${storyInfo.storyTitle}: ${postGrabStatus?.error || "Unknown error"}`);
-        }
         
         // Wait a bit for navigation to complete
         setTimeout(async () => {
