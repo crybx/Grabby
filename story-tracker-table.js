@@ -313,6 +313,7 @@ class StoryTrackerTable {
         domains.sort();
 
         const select = document.getElementById("domain-filter");
+        const currentValue = select.value; // Preserve current selection
         select.innerHTML = "<option value=\"\">All Domains</option>";
 
         domains.forEach(domain => {
@@ -321,6 +322,13 @@ class StoryTrackerTable {
             option.textContent = domain;
             select.appendChild(option);
         });
+        
+        // Restore the previously selected domain if it still exists
+        if (currentValue && domains.includes(currentValue)) {
+            select.value = currentValue;
+        } else if (currentValue === "") {
+            select.value = ""; // Keep "All Domains" selected
+        }
     }
 
     extractDomain(url) {
