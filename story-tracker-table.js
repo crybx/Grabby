@@ -590,8 +590,18 @@ class StoryTrackerTable {
         const manageTagsBtn = document.getElementById("manage-tags-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
-        autoGrabBtn.disabled = count === 0;
         manageTagsBtn.disabled = count === 0;
+        
+        // Check if queue is active to handle Auto Grab button specially
+        const queueProgress = document.getElementById("queue-progress");
+        if (queueProgress && queueProgress.style.display === "block") {
+            // Queue is active, use special handling for Auto Grab button
+            this.updateAutoGrabButtonForActiveQueue();
+        } else {
+            // No queue active, normal behavior
+            autoGrabBtn.disabled = count === 0;
+            autoGrabBtn.textContent = "Grab New Chapters";
+        }
     }
 
     updateTotalCount() {
@@ -1165,13 +1175,39 @@ class StoryTrackerTable {
             return;
         }
 
-
         try {
-            // Send message to background to start queue processing
+            // First check if there's an active queue
+            const queueStatus = await new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({
+                    target: "background",
+                    type: "getQueueStatus"
+                }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        resolve(response);
+                    }
+                });
+            });
+
+            let messageType;
+            let actionDescription;
+            
+            if (queueStatus && queueStatus.isActive) {
+                // Queue is active, add to existing queue
+                messageType = "addToQueue";
+                actionDescription = `Adding ${eligibleStories.length} stories to active queue`;
+            } else {
+                // No active queue, start new one
+                messageType = "startQueueProcessing";
+                actionDescription = `Starting queue processing for ${eligibleStories.length} stories`;
+            }
+
+            // Send message to background to start queue processing or add to queue
             const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({
                     target: "background",
-                    type: "startQueueProcessing",
+                    type: messageType,
                     stories: eligibleStories
                 }, (response) => {
                     if (chrome.runtime.lastError) {
@@ -1183,19 +1219,19 @@ class StoryTrackerTable {
             });
 
             if (response.error) {
-                alert(`Error starting queue processing: ${response.error}`);
+                alert(`Error ${messageType === "addToQueue" ? "adding to queue" : "starting queue processing"}: ${response.error}`);
                 return;
             }
 
-            console.log(`Started queue processing for ${response.total} stories:`, response);
+            console.log(actionDescription + ":", response);
             
             // Show the queue progress section
             this.showQueueProgress();
             
         } catch (error) {
-            console.error("Error starting queue processing:", error);
+            console.error("Error with queue processing:", error);
             const errorMessage = error.message || error.toString() || "Unknown error";
-            alert(`Error starting queue processing: ${errorMessage}`);
+            alert(`Error with queue processing: ${errorMessage}`);
         }
     }
 
@@ -1235,10 +1271,19 @@ class StoryTrackerTable {
         const queueProgress = document.getElementById("queue-progress");
         queueProgress.style.display = "block";
         
-        // Disable Auto Grab button when queue starts
+        // Update Auto Grab button when queue is active
+        this.updateAutoGrabButtonForActiveQueue();
+    }
+
+    updateAutoGrabButtonForActiveQueue() {
         const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
-        autoGrabBtn.disabled = true;
-        autoGrabBtn.textContent = "Queue Processing...";
+        autoGrabBtn.disabled = this.selectedStories.size === 0;
+        
+        if (this.selectedStories.size === 0) {
+            autoGrabBtn.textContent = "Queue Processing...";
+        } else {
+            autoGrabBtn.textContent = "Add to Queue";
+        }
     }
 
     hideQueueProgress() {
@@ -1258,7 +1303,7 @@ class StoryTrackerTable {
         // Re-enable Auto Grab button when queue is manually closed
         const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
         autoGrabBtn.disabled = this.selectedStories.size === 0; // Enable if stories are selected
-        autoGrabBtn.textContent = "Auto Grab New Chapters";
+        autoGrabBtn.textContent = "Grab New Chapters";
     }
 
     // Handle queue progress updates from background script
@@ -1302,6 +1347,16 @@ class StoryTrackerTable {
             resumeBtn.style.display = "none";
             cancelBtn.style.display = "none";
             closeBtn.style.display = "inline-block";
+            
+            // Reset Auto Grab button when queue is complete
+            const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
+            autoGrabBtn.disabled = this.selectedStories.size === 0;
+            autoGrabBtn.textContent = "Grab New Chapters";
+        }
+        
+        // Update Auto Grab button if queue is active
+        if (status.isActive) {
+            this.updateAutoGrabButtonForActiveQueue();
         }
 
         // Update statistics
