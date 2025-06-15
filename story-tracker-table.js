@@ -8,6 +8,7 @@ class StoryTrackerTable {
         this.sortDirection = "desc";
         this.filterText = "";
         this.domainFilter = "";
+        this.tagFilter = ""; // Active tag filter
         this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
 
         this.init();
@@ -18,6 +19,7 @@ class StoryTrackerTable {
         this.setupEventListeners();
         this.populateDomainFilter();
         this.renderTable();
+        this.updateTagFilterDisplay();
     }
 
     async loadStories() {
@@ -148,6 +150,16 @@ class StoryTrackerTable {
             this.refresh();
         });
 
+        // Clear tag filter button
+        document.getElementById("clear-tag-filter").addEventListener("click", () => {
+            this.clearTagFilter();
+        });
+
+        // Make active tag clickable to clear
+        document.getElementById("active-tag-name").addEventListener("click", () => {
+            this.clearTagFilter();
+        });
+
         // Import modal controls
         document.getElementById("import-stories-btn").addEventListener("click", () => {
             this.showImportModal();
@@ -233,13 +245,49 @@ class StoryTrackerTable {
             const domain = this.extractDomain(story.mainStoryUrl);
             const matchesDomain = !this.domainFilter || domain === this.domainFilter;
 
-            return matchesText && matchesDomain;
+            // Tag filter
+            const matchesTag = !this.tagFilter || 
+                (story.tags && story.tags.some(tag => tag.toLowerCase() === this.tagFilter.toLowerCase()));
+
+            return matchesText && matchesDomain && matchesTag;
         });
 
         this.applySorting();
         
         // Reset last clicked index when filters change
         this.lastClickedStoryIndex = -1;
+    }
+
+    filterByTag(tagName) {
+        // Toggle tag filter - if same tag is clicked, clear the filter
+        if (this.tagFilter === tagName) {
+            this.tagFilter = "";
+        } else {
+            this.tagFilter = tagName;
+        }
+        
+        this.applyFilters();
+        this.renderTable();
+        this.updateTagFilterDisplay();
+    }
+
+    clearTagFilter() {
+        this.tagFilter = "";
+        this.applyFilters();
+        this.renderTable();
+        this.updateTagFilterDisplay();
+    }
+
+    updateTagFilterDisplay() {
+        const activeTagFilter = document.getElementById("active-tag-filter");
+        const activeTagName = document.getElementById("active-tag-name");
+        
+        if (this.tagFilter) {
+            activeTagFilter.style.display = "flex";
+            activeTagName.textContent = this.tagFilter;
+        } else {
+            activeTagFilter.style.display = "none";
+        }
     }
 
     applySorting() {
@@ -367,6 +415,7 @@ class StoryTrackerTable {
 
         this.updateSelectionUI();
         this.updateSortIndicators();
+        this.updateTotalCount();
     }
 
     createTableRow(story) {
@@ -389,7 +438,11 @@ class StoryTrackerTable {
         const lastCheckStatus = story.lastCheckStatus || "Unknown";
 
         const tagsDisplay = story.tags && story.tags.length > 0 
-            ? story.tags.map(tag => `<span class="tag">${tag}</span>`).join("")
+            ? story.tags.map(tag => {
+                const isActive = this.tagFilter && tag.toLowerCase() === this.tagFilter.toLowerCase();
+                const activeClass = isActive ? ' active' : '';
+                return `<span class="tag clickable-tag${activeClass}" data-tag="${tag}">${tag}</span>`;
+            }).join("")
             : "<span class=\"no-tags\">None</span>";
 
         row.innerHTML = `
@@ -422,6 +475,16 @@ class StoryTrackerTable {
         const editBtn = row.querySelector(".edit-btn");
         editBtn.addEventListener("click", () => {
             this.showEditModal(story);
+        });
+
+        // Add event listeners for clickable tags
+        const clickableTags = row.querySelectorAll(".clickable-tag");
+        clickableTags.forEach(tagElement => {
+            tagElement.addEventListener("click", (e) => {
+                e.preventDefault();
+                const tagName = e.target.dataset.tag;
+                this.filterByTag(tagName);
+            });
         });
 
         return row;
@@ -533,7 +596,24 @@ class StoryTrackerTable {
 
     updateTotalCount() {
         const totalCount = this.stories.length;
-        const countText = totalCount === 1 ? "1 story" : `${totalCount} stories`;
+        const filteredCount = this.filteredStories.length;
+        
+        // Check if any filters are active
+        const hasFilters = this.filterText || this.domainFilter || this.tagFilter;
+        
+        let countText;
+        if (hasFilters && filteredCount !== totalCount) {
+            // Show filtered count when filters are active and results are different
+            if (filteredCount === 1) {
+                countText = totalCount === 1 ? "1 of 1 story" : `1 of ${totalCount} stories`;
+            } else {
+                countText = totalCount === 1 ? `${filteredCount} of 1 story` : `${filteredCount} of ${totalCount} stories`;
+            }
+        } else {
+            // Show simple count when no filters or filters show all results
+            countText = totalCount === 1 ? "1 story" : `${totalCount} stories`;
+        }
+        
         document.getElementById("total-stories-count").textContent = countText;
     }
 
@@ -681,7 +761,6 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -718,7 +797,6 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -735,7 +813,6 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -817,7 +894,6 @@ class StoryTrackerTable {
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
-                this.updateTotalCount();
                 this.hideImportModal();
                 
                 const skipped = parsedLinks.length - importedCount;
@@ -954,7 +1030,6 @@ class StoryTrackerTable {
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
-                this.updateTotalCount();
                 this.hideJsonImportModal();
                 
                 let message = `Successfully imported ${importedCount} stories from ${files.length} JSON file(s).`;
@@ -1129,7 +1204,6 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
-        this.updateTotalCount();
     }
 
     // Queue control methods
