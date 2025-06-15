@@ -865,37 +865,64 @@ class StoryTrackerTable {
         document.getElementById("import-json-form").reset();
     }
 
-    // Handle JSON file import
+    // Handle JSON file import (supports multiple files)
     async handleJsonImport() {
         const fileInput = document.getElementById("json-file");
-        const file = fileInput.files[0];
+        const files = fileInput.files;
         
-        if (!file) {
-            alert("Please select a JSON file to import.");
+        if (!files || files.length === 0) {
+            alert("Please select one or more JSON files to import.");
             return;
         }
 
         try {
-            const text = await file.text();
-            const data = JSON.parse(text);
-            
-            // Validate the backup format
-            if (!data.stories || !Array.isArray(data.stories)) {
-                alert("Invalid backup file format. Expected a 'stories' array.");
+            let totalStoriesFound = 0;
+            let allStoriesToImport = [];
+            let invalidFiles = [];
+
+            // Process all selected files
+            for (const file of files) {
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    // Validate the backup format
+                    if (!data.stories || !Array.isArray(data.stories)) {
+                        invalidFiles.push(file.name);
+                        continue;
+                    }
+
+                    totalStoriesFound += data.stories.length;
+                    allStoriesToImport.push(...data.stories);
+                } catch (error) {
+                    console.error(`Error reading file ${file.name}:`, error);
+                    invalidFiles.push(file.name);
+                }
+            }
+
+            // Show errors for invalid files
+            if (invalidFiles.length > 0) {
+                alert(`Warning: ${invalidFiles.length} file(s) could not be processed:\n${invalidFiles.join(", ")}\n\nValid files will still be imported.`);
+            }
+
+            if (allStoriesToImport.length === 0) {
+                alert("No valid stories found in the selected files.");
                 return;
             }
 
-            const confirmMessage = `Found ${data.stories.length} stories in backup. Import these stories?\n\nNote: Existing stories with the same URLs will be skipped.`;
+            const confirmMessage = `Found ${totalStoriesFound} stories across ${files.length} file(s). Import these stories?\n\nNote: Existing stories with the same URLs will be skipped.`;
             if (!confirm(confirmMessage)) {
                 return;
             }
 
             let importedCount = 0;
+            let totalSkipped = 0;
             const existingUrls = new Set(this.stories.map(s => s.mainStoryUrl));
 
-            for (const storyData of data.stories) {
+            for (const storyData of allStoriesToImport) {
                 // Skip if story with this URL already exists
                 if (existingUrls.has(storyData.mainStoryUrl)) {
+                    totalSkipped++;
                     continue;
                 }
 
@@ -917,18 +944,20 @@ class StoryTrackerTable {
                 this.renderTable();
                 this.hideJsonImportModal();
                 
-                const skipped = data.stories.length - importedCount;
-                let message = `Successfully imported ${importedCount} stories from JSON backup.`;
-                if (skipped > 0) {
-                    message += ` Skipped ${skipped} duplicates.`;
+                let message = `Successfully imported ${importedCount} stories from ${files.length} JSON file(s).`;
+                if (totalSkipped > 0) {
+                    message += ` Skipped ${totalSkipped} duplicates.`;
+                }
+                if (invalidFiles.length > 0) {
+                    message += ` ${invalidFiles.length} file(s) were invalid.`;
                 }
                 alert(message);
             } else {
-                alert("No new stories to import. All stories in the backup already exist.");
+                alert("No new stories to import. All stories in the selected files already exist.");
             }
         } catch (error) {
-            console.error("Error importing JSON:", error);
-            alert("Error reading JSON file. Please check the file format and try again.");
+            console.error("Error importing JSON files:", error);
+            alert("Error processing JSON files. Please check the file formats and try again.");
         }
     }
 
