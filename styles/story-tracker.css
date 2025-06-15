@@ -333,6 +333,13 @@ h1 {
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
+.total-count {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: 8px 12px;
+}
+
 .selection-info {
     display: flex;
     gap: 8px;

@@ -24,9 +24,11 @@ class StoryTrackerTable {
         try {
             this.stories = await StoryTracker.getAllStories();
             this.applyFilters();
+            this.updateTotalCount();
         } catch (error) {
             console.error("Error loading stories:", error);
             this.stories = [];
+            this.updateTotalCount();
         }
     }
 
@@ -529,6 +531,12 @@ class StoryTrackerTable {
         manageTagsBtn.disabled = count === 0;
     }
 
+    updateTotalCount() {
+        const totalCount = this.stories.length;
+        const countText = totalCount === 1 ? "1 story" : `${totalCount} stories`;
+        document.getElementById("total-stories-count").textContent = countText;
+    }
+
     async openLastChapters() {
         const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
         const chaptersToOpen = selectedStoriesData.filter(s => s.lastChapterUrl);
@@ -673,6 +681,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
+        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -709,6 +718,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
+        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -725,6 +735,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
+        this.updateTotalCount();
         this.hideStoryModal();
     }
 
@@ -806,6 +817,7 @@ class StoryTrackerTable {
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
+                this.updateTotalCount();
                 this.hideImportModal();
                 
                 const skipped = parsedLinks.length - importedCount;
@@ -942,6 +954,7 @@ class StoryTrackerTable {
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
+                this.updateTotalCount();
                 this.hideJsonImportModal();
                 
                 let message = `Successfully imported ${importedCount} stories from ${files.length} JSON file(s).`;
@@ -1116,6 +1129,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
+        this.updateTotalCount();
     }
 
     // Queue control methods
