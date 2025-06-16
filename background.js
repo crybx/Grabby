@@ -113,7 +113,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                 }
             }
         });
-        
+
         // Wait additional time for navigation to complete after postGrab finishes
         setTimeout(async () => {
             try {
@@ -142,6 +142,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     if (!autoGrabConfig || !autoGrabConfig.enabled) {
                         console.log(`No auto-grab config found for ${storyInfo.storyTitle} - closing tab`);
                         chrome.tabs.remove(tabId);
+                        // DEBUG: Comment out the line above to keep tabs open for auto-grab debugging
                         return;
                     }
                     
@@ -185,6 +186,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     // Close the tab since no new content
                     chrome.tabs.remove(tabId);
+                    // DEBUG: Comment out the line above to keep tabs open for auto-grab debugging
                 }
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);

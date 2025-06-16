@@ -75,14 +75,14 @@ const WEBSITE_CONFIGS = {
         "starlightstream.net": {
             grabber: grabStarlightStream,
             preGrab: PreGrabActions.checkForPageNotFound,
-            postGrab: PostGrabActions.clickLinkContaining("Next", { exact: true }),
+            postGrab: () => PostGrabActions.clickLinkContaining("Next", { exact: true }),
             autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },
         "storyseedling.com": {
             grabber: grabStorySeedling,
             useFirstHeadingTitle: true,
             preGrab: PreGrabActions.checkForPremiumContent,
-            // no postGrab needed, site navigates to next chapter automatically on script injection
+            postGrab: () => PostGrabActions.clickLinkContaining("Next", { exact: true }),
             autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "syosetu.com": { grabber: grabSyosetu },
@@ -106,7 +106,7 @@ const WEBSITE_CONFIGS = {
                 "novelib.com", "springofromance.com", "razentl.com"],
             grabber: grabFictioneer,
             useFirstHeadingTitle: true,
-            preGrab: PreGrabActions.checkForPremiumContent,
+            preGrab: () => PreGrabActions.checkForPremiumContent(["h1, h2, h3, .mycred-sell-this-wrapper"]),
             postGrab: PostGrabActions.pressRightArrow,
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },

@@ -121,6 +121,7 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
     }
     
     const premiumIndicators = [
+        "Advanced Chapter",
         "Premium Content",
         "Locked Chapter",
         "Purchase Required",

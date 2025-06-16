@@ -4,7 +4,7 @@ async function peachTeaClickNextChapterLink() {
     // First, ensure the "All on one page?" button is clicked to show the Next chapter link
     if (typeof PreGrabActions !== 'undefined' && PreGrabActions.peachTeaClickAllOnOnePageButton) {
         console.log("Calling peachTeaClickAllOnOnePageButton from postGrab to ensure Next chapter link is visible");
-        await PreGrabActions.peachTeaClickAllOnOnePageButton();
+        await PreGrabActions.peachTeaClickAllOnOnePageButton(false);
     }
     
     // Find all links that contain "Next chapter" as exact text
