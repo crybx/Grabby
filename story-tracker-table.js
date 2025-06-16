@@ -155,6 +155,11 @@ class StoryTrackerTable {
             this.clearTagFilter();
         });
 
+        // Clear all filters button
+        document.getElementById("clear-filters-btn").addEventListener("click", () => {
+            this.clearAllFilters();
+        });
+
         // Make active tag clickable to clear
         document.getElementById("active-tag-name").addEventListener("click", () => {
             this.clearTagFilter();
@@ -273,6 +278,24 @@ class StoryTrackerTable {
 
     clearTagFilter() {
         this.tagFilter = "";
+        this.applyFilters();
+        this.renderTable();
+        this.updateTagFilterDisplay();
+    }
+
+    clearAllFilters() {
+        // Clear text filter
+        this.filterText = "";
+        document.getElementById("filter-input").value = "";
+        
+        // Clear domain filter
+        this.domainFilter = "";
+        document.getElementById("domain-filter").value = "";
+        
+        // Clear tag filter
+        this.tagFilter = "";
+        
+        // Apply changes
         this.applyFilters();
         this.renderTable();
         this.updateTagFilterDisplay();
