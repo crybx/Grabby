@@ -103,6 +103,85 @@ export class QueueManager {
         return result;
     }
 
+    // Add stories to existing active queue
+    addToQueue(stories) {
+        if (!this.isActive) {
+            throw new Error("No active queue to add stories to");
+        }
+
+        console.log(`Adding ${stories.length} stories to existing queue`);
+
+        // Categorize stories by domain and activeTab requirement  
+        const storiesByDomain = new Map();
+        const activeTabStories = [];
+        const backgroundStories = [];
+
+        for (const story of stories) {
+            const domain = this.extractDomain(story.lastChapterUrl);
+            const needsActiveTab = this.checkIfNeedsActiveTab(story.lastChapterUrl);
+            const storyWithMetadata = { ...story, needsActiveTab, domain };
+            
+            if (needsActiveTab) {
+                activeTabStories.push(storyWithMetadata);
+            } else {
+                backgroundStories.push(storyWithMetadata);
+            }
+
+            if (!storiesByDomain.has(domain)) {
+                storiesByDomain.set(domain, []);
+            }
+            storiesByDomain.get(domain).push(storyWithMetadata);
+        }
+
+        // Add stories to existing queue
+        this.queue.push(...backgroundStories, ...activeTabStories);
+
+        // Start processing new stories that can be processed immediately
+        // (domains not currently being processed)
+        const immediateStories = [];
+        for (const story of backgroundStories) {
+            const domainProcessing = this.processingByDomain.get(story.domain);
+            if (!domainProcessing || domainProcessing.size === 0) {
+                immediateStories.push(story);
+                // Remove from queue since we're processing immediately
+                const queueIndex = this.queue.findIndex(q => q.id === story.id);
+                if (queueIndex !== -1) {
+                    this.queue.splice(queueIndex, 1);
+                }
+            }
+        }
+
+        // Process one activeTab story immediately if none is currently processing
+        if (activeTabStories.length > 0 && !this.activeTabDomainProcessing) {
+            immediateStories.push(activeTabStories[0]);
+            // Remove from queue since we're processing immediately
+            const queueIndex = this.queue.findIndex(q => q.id === activeTabStories[0].id);
+            if (queueIndex !== -1) {
+                this.queue.splice(queueIndex, 1);
+            }
+        }
+
+        const result = {
+            queueId: this.currentQueueId,
+            immediate: immediateStories.length,
+            queued: this.queue.length,
+            added: stories.length,
+            total: this.queue.length + this.processing.size + immediateStories.length
+        };
+
+        // Start immediate processing asynchronously (don't await)
+        if (immediateStories.length > 0) {
+            setTimeout(() => {
+                void this.startImmediateProcessing(immediateStories);
+            }, 0);
+        }
+
+        // Notify UI of queue update
+        this.notifyQueueUpdate();
+
+        return result;
+    }
+
     // Start immediate processing asynchronously
     async startImmediateProcessing(immediateStories) {
         try {

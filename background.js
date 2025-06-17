@@ -311,6 +311,15 @@ async function handleMessages(message, sender, sendResponse) {
             sendResponse({ error: error.message });
         }
         break;
+    case "addToQueue":
+        try {
+            const result = queueManager.addToQueue(message.stories);
+            sendResponse(result);
+        } catch (error) {
+            console.error("Error adding to queue:", error);
+            sendResponse({ error: error.message });
+        }
+        break;
     case "pauseQueue":
         queueManager.pauseQueue();
         break;
