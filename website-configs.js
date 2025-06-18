@@ -28,6 +28,12 @@ const WEBSITE_CONFIGS = {
         "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
         "darkstartranslations.com": { grabber: grabStandard(".chapter-content") },
         "docs.google.com": { grabber: grabGoogleDocMobileBasic },
+        "emptymurmurs.wordpress.com": {
+            grabber: grabStandard(".entry-content"),
+            preGrab: PreGrabActions.checkForDuplicateChapter,
+            postGrab: () => PostGrabActions.clickLinkContaining("NEXT", { abortIfNotFound: true }),
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+        },
         "fanfiction.ws": { grabber: grabStandard(".storytext") },
         "fenrirealm.com": { grabber: grabFenrir },
         "helioscans.com": { grabber: grabStandard("#pages div.novel-reader") },
@@ -48,6 +54,16 @@ const WEBSITE_CONFIGS = {
             preGrab: PreGrabActions.checkForPremiumContent,
             postGrab: PostGrabActions.pressRightArrow,
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
+        "maplesantl.com": {
+            grabber: grabStandard(".entry-content"),
+            preGrab: PreGrabActions.checkForDuplicateChapter,
+            postGrab: () =>
+                PostGrabActions.clickLinkContaining(
+                    ["Episode", "Next"],
+                    { selector: ".wp-block-button:nth-child(2) a.wp-block-button__link" }
+                ),
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
         "noveltranslation.net": { grabber: grabNovelTranslationNet },
@@ -116,8 +132,11 @@ const WEBSITE_CONFIGS = {
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
-                "maplesantl.com", "mendacity.me", "wordpress.com"],
-            grabber: grabStandard(".entry-content")
+                "mendacity.me", "wordpress.com"],
+            grabber: grabStandard(".entry-content"),
+            preGrab: PreGrabActions.checkForDuplicateChapter,
+            postGrab: () => PostGrabActions.clickLinkContaining("NEXT", { abortIfNotFound: true }),
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         }
     }
 };

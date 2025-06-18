@@ -33,8 +33,8 @@ async function peachTeaClickNextChapterLink() {
     console.log("No valid \"Next chapter\" link found");
 }
 
-// Generic function to click a link containing specific text
-// Can be used as: clickLinkContaining("Next", { exact: true }) or clickLinkContaining()
+// Generic function to click a link containing specific text or texts
+// Can be used as: clickLinkContaining("Next", { exact: true }) or clickLinkContaining(["Next", "Episode"])
 function clickLinkContaining(text, options = {}) {
     // If no text provided, return a function that can be called later
     if (arguments.length === 0) {
@@ -47,14 +47,23 @@ function clickLinkContaining(text, options = {}) {
         exact = false,           // Whether to match exact text or just contain
         excludeClasses = [],     // Array of classes to exclude
         excludeStyles = {},      // Object of CSS styles to exclude (e.g., {position: 'absolute'})
-        selector = "a"           // CSS selector for elements to check
+        selector = "a",          // CSS selector for elements to check
+        abortIfNotFound = false  // Whether to abort autoGrab sequence if no element is found
     } = options;
     
+    // Convert text to array if it's a string
+    const textArray = Array.isArray(text) ? text : [text];
+    
     const elements = document.querySelectorAll(selector);
+    console.log(elements);
     
     for (const element of elements) {
         const elementText = element.textContent.trim();
-        const textMatches = exact ? elementText === text : elementText.includes(text);
+        
+        // Check if element text matches any of the target texts
+        const textMatches = textArray.some(targetText => 
+            exact ? elementText === targetText : elementText.includes(targetText)
+        );
         
         if (textMatches) {
             // Check excluded classes
@@ -71,7 +80,7 @@ function clickLinkContaining(text, options = {}) {
                 continue;
             }
             
-            console.log(`Found valid element with text "${text}", navigating to:`, element.href);
+            console.log(`Found valid element with text "${elementText}", navigating to:`, element.href);
             // Use window.location.href to ensure navigation happens in same tab
             if (element.href) {
                 window.location.href = element.href;
@@ -83,7 +92,11 @@ function clickLinkContaining(text, options = {}) {
         }
     }
     
-    console.log(`No valid element found with text: "${text}"`);
+    const textDescription = Array.isArray(text) ? `any of [${text.join(', ')}]` : `"${text}"`;
+    console.log(`No valid element found with text: ${textDescription}`);
+    if (abortIfNotFound) {
+        return { abort: true, reason: `No valid element found with text: ${textDescription}` };
+    }
     return false;
 }
 

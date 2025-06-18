@@ -168,8 +168,21 @@ function cleanTitle(chapterTitle, storyTitle = null) {
     cleanedTitle = cleanedTitle.replace(/[-:–|—_!]+/g, " ");
     
     // Remove common words
-    cleanedTitle = cleanedTitle.replace(/\b(chapter|episode|translation\s+weaver|story\s+seedling|ridi)\b/gi, "");
-    
+    const wordsToRemove = [
+        'chapter',
+        'episode',
+        'translation\\s+weaver',
+        'story\\s+seedling',
+        'ridi',
+        'maplesan\\s+translations',
+        'emptymurmurs'
+    ];
+
+    cleanedTitle = cleanedTitle.replace(
+        new RegExp(`\\b(${wordsToRemove.join('|')})\\b`, 'gi'),
+        ""
+    );
+
     // Collapse multiple whitespace to single space
     cleanedTitle = cleanedTitle.replace(/\s+/g, " ");
     

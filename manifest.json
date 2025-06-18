@@ -41,6 +41,10 @@
     {
       "matches": ["*://*.hyacinthbloom.com/*"],
       "css": ["styles/hyacinth.css"]
+    },
+    {
+      "matches": ["*://*.wordpress.com/*"],
+      "css": ["styles/wordpress.css"]
     }
   ],
   "commands": {

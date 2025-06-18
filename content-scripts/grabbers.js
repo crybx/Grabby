@@ -669,13 +669,15 @@ function grabWebnovel() {
 function grabStandard(contentSelector = "body", titleSelector = "title") {
     // Return a function that closes over the selectors
     return function() {
+        // clone the document to avoid altering the original DOM
+        const dom = document.cloneNode(true);
         let result = "";
         if (titleSelector !== null) {
-            const title = document.querySelector(titleSelector)?.textContent || "";
+            const title = dom.querySelector(titleSelector)?.textContent || "";
             result += `<h1>${title.trim()}</h1>\n\n`;
         }
 
-        const content = document.querySelector(contentSelector);
+        const content = dom.querySelector(contentSelector);
         standardCleanup(content);
         result += content.innerHTML.trim();
         return result;
