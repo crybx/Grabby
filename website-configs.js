@@ -128,7 +128,9 @@ const WEBSITE_CONFIGS = {
         },
         madaraWpSites: {
             domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
-            grabber: madaraWpTheme
+            grabber: madaraWpTheme,
+            postGrab: PostGrabActions.pressRightArrow,
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
