@@ -75,7 +75,13 @@ const WEBSITE_CONFIGS = {
             postGrab: PostGrabActions.peachTeaClickNextChapterLink,
             autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60 }
         },
-        "readhive.org": { grabber: grabReadhive, useFirstHeadingTitle: true },
+        "readhive.org": {
+            grabber: grabReadhive,
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForPremiumContent,
+            postGrab: () => PostGrabActions.clickLinkContaining("Next"),
+            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
+        },
         "reaperscans.com": { grabber: grabStandard("#reader-container", null) },
         "requiemtls.com": { grabber: grabRequiemtls },
         "ridibooks.com": {

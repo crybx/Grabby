@@ -216,7 +216,8 @@ export class QueueManager {
     checkIfNeedsActiveTab(url) {
         // Simple domain matching for sites that need active tabs
         if (url.includes("storyseedling.com") ||
-            url.includes("ridibooks.com")) {
+            url.includes("ridibooks.com") ||
+            url.includes("readhive.org")) {
             return true;
         }
         // Add other sites that need active tabs here
