@@ -1000,6 +1000,7 @@ class StoryTrackerTable {
             let totalStoriesFound = 0;
             let allStoriesToImport = [];
             let invalidFiles = [];
+            let total = files.length;
 
             // Process all selected files
             for (const file of files) {
@@ -1065,7 +1066,7 @@ class StoryTrackerTable {
                 this.renderTable();
                 this.hideJsonImportModal();
                 
-                let message = `Successfully imported ${importedCount} stories from ${files.length} JSON file(s).`;
+                let message = `Successfully imported ${importedCount} stories from ${total} JSON file(s).`;
                 if (totalSkipped > 0) {
                     message += ` Skipped ${totalSkipped} duplicates.`;
                 }
