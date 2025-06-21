@@ -98,8 +98,8 @@ async function performAutoGrabSequence(tabId, storyInfo) {
         // Inject scripts and run postGrab action to navigate to next chapter
         await scriptInjector.injectScriptsSequentially(tabId);
         
-        // Run postGrab action to navigate to next chapter
-        await chrome.scripting.executeScript({
+        // Run postGrab action to navigate to next chapter and get delay from config
+        const configResult = await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: async function() {
                 const config = findMatchingConfig(window.location.href);
@@ -107,12 +107,22 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     try {
                         await config.postGrab();
                         console.log("PostGrab action executed for auto-grab");
+
+                        // Return delay from website-config
+                        const delay = config.autoGrab?.defaultDelay || 10; // fallback to 10 seconds if not found
+                        return delay * 1000; // convert to milliseconds
                     } catch (error) {
                         console.error("Error in postGrab action:", error);
+                        return 10000; // fallback delay
                     }
                 }
+                return 10000; // fallback delay if no config found
             }
         });
+
+        // Get the delay from the script result, with fallback
+        const delayMs = configResult[0]?.result || 10000;
+        console.log(`Delay from website-config: ${delayMs}ms`);
 
         // Wait additional time for navigation to complete after postGrab finishes
         setTimeout(async () => {
@@ -195,7 +205,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, error.message);
                 }
             }
-        }, 4000); // Wait 3 seconds for navigation
+        }, delayMs);
         
     } catch (error) {
         console.error(`Error in performAutoGrabSequence for ${storyInfo.storyTitle}:`, error);
