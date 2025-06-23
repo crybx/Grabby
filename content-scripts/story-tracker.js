@@ -175,7 +175,8 @@ function cleanTitle(chapterTitle, storyTitle = null) {
         'story\\s+seedling',
         'ridi',
         'maplesan\\s+translations',
-        'emptymurmurs'
+        'emptymurmurs',
+        'darkstar\\s+translations'
     ];
 
     cleanedTitle = cleanedTitle.replace(

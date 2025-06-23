@@ -26,7 +26,12 @@ const WEBSITE_CONFIGS = {
         "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
         "blogspot.com": { grabber: grabBlogspot },
         "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
-        "darkstartranslations.com": { grabber: grabStandard(".chapter-content") },
+        "stellarrealm.net": {
+            grabber: grabStandard(".chapter-content"),
+            preGrab: () => PreGrabActions.checkForPremiumContent(["h4"]),
+            postGrab: () => PostGrabActions.clickLinkContaining("Next", { exact: true }),
+            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+        },
         "docs.google.com": { grabber: grabGoogleDocMobileBasic },
         "emptymurmurs.wordpress.com": {
             grabber: grabStandard(".entry-content"),

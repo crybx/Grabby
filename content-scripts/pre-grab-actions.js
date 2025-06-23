@@ -129,13 +129,15 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
         "VIP Content",
         "Paid Content",
         "Please Login or Register First",
-        "Login to buy access to the advanced chapters."
+        "Login to buy access to the advanced chapters.",
+        "This is a premium chapter"
     ];
     
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
+            console.log("checking text ", text);
             if (premiumIndicators.some(indicator => text.includes(indicator))) {
                 console.log(`Premium content detected: "${text}" - aborting grab`);
                 return { abort: true, reason: `Premium content detected: ${text}`, invalidateGrab: true };
