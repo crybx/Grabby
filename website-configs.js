@@ -70,7 +70,11 @@ const WEBSITE_CONFIGS = {
                 ),
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
-        "novelingua.com": { grabber: grabNovelingua, useFirstHeadingTitle: true },
+        "novelingua.com": {
+            grabber: grabNovelingua,
+            useFirstHeadingTitle: true,
+            postGrab: () => PostGrabActions.clickLinkContaining("Next Chapter"),
+        },
         "noveltranslation.net": { grabber: grabNovelTranslationNet },
         "patreon.com": { grabber: grabPatreon },
         "peachtea.agency": { 

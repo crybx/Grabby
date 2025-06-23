@@ -429,15 +429,17 @@ function grabStarlightStream() {
 }
 
 function grabNovelingua() {
+    const dom = document.cloneNode(true);
+
     // title is in the canonical link
-    let canonical = document.querySelector("link[rel='canonical']").href.split("/");
+    let canonical = dom.querySelector("link[rel='canonical']").href.split("/");
     let title = canonical.pop();
     if (title === "") {
         title = canonical.pop();
     }
     title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
-    const content = document.querySelector(".entry-content");
+    const content = dom.querySelector(".entry-content");
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
         utils.replaceSemanticInlineStylesWithTags(element, true);
