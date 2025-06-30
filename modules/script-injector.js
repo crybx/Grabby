@@ -26,8 +26,7 @@ export class ScriptInjector {
         const scripts = [
             "content-scripts/utils.js",
             "content-scripts/story-tracker.js",
-            "content-scripts/pre-grab-actions.js",
-            "content-scripts/post-grab-actions.js",
+            "content-scripts/grab-actions.js",
             "content-scripts/grabbers.js",
             "website-configs.js",
             "content-scripts/grabber-core.js"
@@ -39,8 +38,7 @@ export class ScriptInjector {
             func: () => {
                 return {
                     grabbyCore: typeof GrabbyCore !== "undefined",
-                    postGrabActions: typeof PostGrabActions !== "undefined",
-                    preGrabActions: typeof PreGrabActions !== "undefined",
+                    grabActions: typeof GrabActions !== "undefined",
                     storyTracker: typeof StoryTracker !== "undefined",
                     websiteConfigs: typeof findMatchingConfig !== "undefined"
                 };
@@ -50,7 +48,7 @@ export class ScriptInjector {
         const availability = availabilityCheck[0].result;
 
         // If all essential scripts are available, we can skip injection
-        if (availability.grabbyCore && availability.postGrabActions && availability.preGrabActions && availability.websiteConfigs) {
+        if (availability.grabbyCore && availability.grabActions && availability.websiteConfigs) {
             return;
         }
 
@@ -67,8 +65,7 @@ export class ScriptInjector {
                 "website-configs": ["WEBSITE_CONFIGS", "findMatchingConfig"], // Objects from website-configs.js
                 "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
                 "story-tracker": ["StoryTracker"], // Object from story-tracker.js
-                "pre-grab-actions": ["PreGrabActions"], // Object from pre-grab-actions.js
-                "post-grab-actions": ["PostGrabActions"], // Object from post-grab-actions.js
+                "grab-actions": ["GrabActions"], // Object from grab-actions.js
                 "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
                 "grabber-core": ["GrabbyCore"] // Object from grabber-core.js
             };

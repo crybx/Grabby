@@ -463,7 +463,7 @@ class StoryTrackerTable {
         const tagsDisplay = story.tags && story.tags.length > 0 
             ? story.tags.map(tag => {
                 const isActive = this.tagFilter && tag.toLowerCase() === this.tagFilter.toLowerCase();
-                const activeClass = isActive ? ' active' : '';
+                const activeClass = isActive ? " active" : "";
                 return `<span class="tag clickable-tag${activeClass}" data-tag="${tag}">${tag}</span>`;
             }).join("")
             : "<span class=\"no-tags\">None</span>";

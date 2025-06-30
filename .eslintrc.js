@@ -43,8 +43,7 @@ module.exports = {
     "globals": {
         "chrome": "readonly",
         "GrabbyCore": "readonly",
-        "PreGrabActions": "readonly",
-        "PostGrabActions": "readonly",
+        "GrabActions": "readonly",
         "removeTag": "readonly",
         "unwrapTag": "readonly",
         "cleanHTML": "readonly",
