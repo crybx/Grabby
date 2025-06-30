@@ -176,7 +176,8 @@ function cleanTitle(chapterTitle, storyTitle = null) {
         'ridi',
         'maplesan\\s+translations',
         'emptymurmurs',
-        'darkstar\\s+translations'
+        'darkstar\\s+translations',
+        '✿ dusk blossoms ✿'
     ];
 
     cleanedTitle = cleanedTitle.replace(

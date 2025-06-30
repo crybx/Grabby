@@ -25,7 +25,14 @@ const WEBSITE_CONFIGS = {
     singleDomains: {
         "archiveofourown.org": { grabber: grabAO3, useFirstHeadingTitle: true },
         "blogspot.com": { grabber: grabBlogspot },
-        "chrysanthemumgarden.com": { grabber: grabChrysanthemum },
+        "chrysanthemumgarden.com": {
+            grabber: grabChrysanthemum,
+            postGrab: () => PostGrabActions.clickLinkContaining("Next", {
+                exact: true,
+                selector: '.nav-next',
+                abortIfNotFound: true
+            }),
+        },
         "stellarrealm.net": {
             grabber: grabStandard(".chapter-content"),
             preGrab: () => PreGrabActions.checkForPremiumContent(["h4"]),
@@ -80,9 +87,9 @@ const WEBSITE_CONFIGS = {
         "peachtea.agency": { 
             grabber: grabPeachTeaAgency, 
             useFirstHeadingTitle: true,
-            preGrab: PreGrabActions.peachTeaClickAllOnOnePageButton,
             postGrab: PostGrabActions.peachTeaClickNextChapterLink,
-            autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60 }
+            // Site has changed. Content changes as it scrolls.
+            // autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60 }
         },
         "readhive.org": {
             grabber: grabReadhive,
@@ -142,8 +149,10 @@ const WEBSITE_CONFIGS = {
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         madaraWpSites: {
-            domains: ["foxaholic.com", "sleepytranslations.com", "system707.com"],
+            domains: ["duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
             grabber: madaraWpTheme,
+            useFirstHeadingTitle: true,
+            preGrab: PreGrabActions.checkForDuplicateChapter,
             postGrab: PostGrabActions.pressRightArrow,
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },

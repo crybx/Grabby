@@ -449,6 +449,35 @@ const utils = (function() {
         }
     }
 
+    function wrapRawTextInPTags(dom) {
+        // wrap raw text in p tags
+        // Find text nodes that are direct children of the content div
+        const textNodes = [];
+        const walker = document.createTreeWalker(
+            dom,
+            NodeFilter.SHOW_TEXT,
+            { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== "" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
+        );
+
+        while (walker.nextNode()) {
+            const node = walker.currentNode;
+            // Only process text nodes that are direct children of the content div
+            if (node.parentNode === content) {
+                textNodes.push(node);
+            }
+        }
+
+        // Replace each text node with a paragraph
+        textNodes.forEach(node => {
+            const text = node.nodeValue.trim();
+            if (text) {
+                const p = document.createElement("p");
+                p.textContent = text;
+                node.parentNode.replaceChild(p, node);
+            }
+        });
+    }
+
     function standardElementCleanup(element) {
         const ids = [
             "chapter-comments",

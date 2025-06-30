@@ -202,11 +202,15 @@ function grabBlogspot() {
 }
 
 function madaraWpTheme() {
-    const title =
+    const chapter =
+        document.querySelector(".selectpicker_chapter .selected")?.textContent ||
         document.querySelector("ol.breadcrumb li.active")?.textContent ||
         document.querySelector("#chapter-heading")?.textContent ||
         document.querySelector(".wp-block-heading")?.textContent ||
         "";
+    let title = document.querySelector("title")?.textContent;
+    title += chapter;
+
     const content =
         document.querySelector(".text-left") ||
         document.querySelector(".entry-content_wrap");
@@ -534,10 +538,11 @@ function grabReadhive() {
 }
 
 function grabPeachTeaAgency() {
-    const content = document.querySelector(".transition-all");
+    const dom = document.cloneNode(true);
+
     // title is all the text inside the ol tag inside nav tag, with the li items
     let title = "";
-    const ol = document.querySelector("nav ol");
+    const ol = dom.querySelector("nav ol");
 
     if (ol) {
         const li = ol.querySelectorAll("li");
@@ -546,7 +551,7 @@ function grabPeachTeaAgency() {
             title += li[i].querySelector("a").textContent + " ";
         }
     }
-    document.querySelectorAll(".text-lg").forEach(element => {
+    dom.querySelectorAll(".text-lg").forEach(element => {
         // if textContent contains [number] or Episode, then it's the episode
         if (element.textContent.match(/\[\d+\]/) || element.textContent.toLowerCase().includes("episode")) {
             let episode = element.textContent.trim();
@@ -559,40 +564,31 @@ function grabPeachTeaAgency() {
         }
     });
 
-    // TODO: make this a util function
-    // wrap raw text in p tags
-    // Find text nodes that are direct children of the content div
-    const textNodes = [];
-    const walker = document.createTreeWalker(
-        content,
-        NodeFilter.SHOW_TEXT,
-        { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== "" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
-    );
+    let allContent = "";
+    // Loop 5 times
+    for (let i = 0; i < 5; i++) {
+        const content = dom.querySelector(".transition-all");
+        content.querySelectorAll("*").forEach(element => {
+            utils.replaceSemanticInlineStylesWithTags(element, true);
+            // If tag is div, replace with p
+            if (element.tagName === "DIV") {
+                const pElement = dom.createElement("p");
+                utils.replaceTag(element, pElement);
+            }
+            utils.standardElementCleanup(element);
+        });
+        utils.standardContentCleanup(content);
+        allContent += standardCleanup(content).innerHTML;
+        // simulate Page Down key press
 
-    while (walker.nextNode()) {
-        const node = walker.currentNode;
-        // Only process text nodes that are direct children of the content div
-        if (node.parentNode === content) {
-            textNodes.push(node);
-        }
     }
-
-    // Replace each text node with a paragraph
-    textNodes.forEach(node => {
-        const text = node.nodeValue.trim();
-        if (text) {
-            const p = document.createElement("p");
-            p.textContent = text;
-            node.parentNode.replaceChild(p, node);
-        }
-    });
 
     // convert title to Title case
     title = title.split(" ").map(word => {
         if (word.length === 0) return word;
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }).join(" ");
-    return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
+    return "<h1>" + title.trim() + "</h1>" + allContent;
 }
 
 function grabAO3() {
@@ -671,7 +667,6 @@ function grabWebnovel() {
 function grabStandard(contentSelector = "body", titleSelector = "title") {
     // Return a function that closes over the selectors
     return function() {
-        // clone the document to avoid altering the original DOM
         const dom = document.cloneNode(true);
         let result = "";
         if (titleSelector !== null) {

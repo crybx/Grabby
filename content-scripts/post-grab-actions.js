@@ -93,14 +93,14 @@ function clickLinkContaining(text, options = {}) {
     }
     
     const textDescription = Array.isArray(text) ? `any of [${text.join(', ')}]` : `"${text}"`;
-    console.log(`No valid element found with text: ${textDescription}`);
     if (abortIfNotFound) {
         return { abort: true, reason: `No valid element found with text: ${textDescription}` };
     }
+    console.log(`No valid element found with text: ${textDescription}`);
     return false;
 }
 
-// Function to click any button/link with specific text (case insensitive)
+// Function to click any button/link with specific text (not case-sensitive)
 function clickElementWithText(text, options = {}) {
     const {
         selector = "a, button, [role=\"button\"]",  // Default to clickable elements
