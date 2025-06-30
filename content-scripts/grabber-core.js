@@ -66,14 +66,14 @@ async function grabFromWebsite(isBulkGrab = false) {
                 }
 
                 try {
-                    content = config.grabber();
+                    content = await config.grabber();
                 } catch (grabError) {
                     console.error(`Error in grabber for ${url}:`, grabError);
-                    content = grabStandard()(); // Fallback to generic grabber
+                    content = await grabStandard()(); // Fallback to generic grabber
                 }
                 filename = extractTitle(content, config.useFirstHeadingTitle);
             } else {
-                content = grabStandard()();
+                content = await grabStandard()();
                 filename = extractTitle(content, false);
                 console.log("This website is not specifically supported: ", url);
             }

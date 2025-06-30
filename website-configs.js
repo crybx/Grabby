@@ -87,9 +87,9 @@ const WEBSITE_CONFIGS = {
         "peachtea.agency": { 
             grabber: grabPeachTeaAgency, 
             useFirstHeadingTitle: true,
+            preGrab: GrabActions.checkForDuplicateChapter,
             postGrab: GrabActions.peachTeaClickNextChapterLink,
-            // Site has changed. Content changes as it scrolls.
-            // autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60 }
+            autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60, activeTab: true }
         },
         "readhive.org": {
             grabber: grabReadhive,

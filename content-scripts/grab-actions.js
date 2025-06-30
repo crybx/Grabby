@@ -321,7 +321,6 @@ function clickElementWithText(text, options = {}) {
     return clickLinkContaining(text, { selector, exact, excludeClasses, excludeStyles });
 }
 
-// Function to click the previous chapter/page link
 function clickPreviousChapterLink() {
     const previousTexts = ["Previous chapter", "Previous", "Prev", "← Previous", "‹ Previous"];
     
@@ -335,7 +334,6 @@ function clickPreviousChapterLink() {
     return false;
 }
 
-// Function to click the next page/chapter link (generic)
 function clickNextPageLink() {
     const nextTexts = ["Next chapter", "Next page", "Next", "→", "Continue", "Read more"];
     

@@ -537,8 +537,8 @@ function grabReadhive() {
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
 
-function grabPeachTeaAgency() {
-    const dom = document.cloneNode(true);
+async function grabPeachTeaAgency() {
+    let dom = document.cloneNode(true);
 
     // title is all the text inside the ol tag inside nav tag, with the li items
     let title = "";
@@ -564,24 +564,44 @@ function grabPeachTeaAgency() {
         }
     });
 
-    let allContent = "";
+    let allContentDivs = [];
     // Loop 5 times
-    for (let i = 0; i < 5; i++) {
-        const content = dom.querySelector(".transition-all");
-        content.querySelectorAll("*").forEach(element => {
+    for (let i = 0; i < 7; i++) {
+        dom = document.cloneNode(true);
+        const contentDivs = dom.querySelectorAll(".transition-all > div > div");
+
+        // Add contentDivs that aren't exact duplicates already in allContentDivs
+        contentDivs.forEach(div => {
+            if (!allContentDivs.some(existingDiv => existingDiv.innerHTML.trim() === div.innerHTML.trim())) {
+                allContentDivs.push(div);
+            }
+        });
+
+        window.scrollBy({
+            top: window.innerHeight,
+            behavior: 'smooth'
+        });
+        console.log(`Scrolled down by ${window.innerHeight}px (viewport height)`);
+        // Wait 1 second for content to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    let allContent = "";
+    // for each div in allContentDivs
+    allContentDivs.forEach(contentDiv => {
+        contentDiv.querySelectorAll("*").forEach(element => {
             utils.replaceSemanticInlineStylesWithTags(element, true);
             // If tag is div, replace with p
             if (element.tagName === "DIV") {
                 const pElement = dom.createElement("p");
                 utils.replaceTag(element, pElement);
+                util.removeAttributes(element, ["data-reader-disable"])
             }
             utils.standardElementCleanup(element);
         });
-        utils.standardContentCleanup(content);
-        allContent += standardCleanup(content).innerHTML;
-        // simulate Page Down key press
-
-    }
+        utils.standardContentCleanup(contentDiv);
+        allContent += standardCleanup(contentDiv).innerHTML;
+    });
 
     // convert title to Title case
     title = title.split(" ").map(word => {
