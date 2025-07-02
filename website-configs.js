@@ -43,7 +43,7 @@ const WEBSITE_CONFIGS = {
         "emptymurmurs.wordpress.com": {
             grabber: grabStandard(".entry-content"),
             preGrab: GrabActions.checkForDuplicateChapter,
-            postGrab: () => GrabActions.clickLinkContaining("NEXT", { abortIfNotFound: true }),
+            postGrab: () => GrabActions.clickLinkContaining(["NEXT", "Next"], { abortIfNotFound: true }),
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "fanfiction.ws": { grabber: grabStandard(".storytext") },
