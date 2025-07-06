@@ -27,11 +27,13 @@ const WEBSITE_CONFIGS = {
         "blogspot.com": { grabber: grabBlogspot },
         "chrysanthemumgarden.com": {
             grabber: grabChrysanthemum,
+            preGrab: GrabActions.checkForDuplicateChapter,
             postGrab: () => GrabActions.clickLinkContaining("Next", {
                 exact: true,
                 selector: ".nav-next",
                 abortIfNotFound: true
             }),
+            autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
         "stellarrealm.net": {
             grabber: grabStandard(".chapter-content"),
