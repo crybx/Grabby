@@ -40,9 +40,15 @@ async function grabFromWebsite(isBulkGrab = false) {
         if (url.includes("file://")) {
             ({ filename, content } = handleLocalFile(url));
         } else {
-            const config = findMatchingConfig(url);
+            const matchingConfig = findMatchingConfig(url);
 
-            if (config) {
+            if (matchingConfig) {
+                // Resolve function references to actual functions
+                const config = resolveConfigFunctions(matchingConfig, {
+                    grabbers: window, // All grabber functions are in global scope
+                    GrabActions: window.GrabActions 
+                });
+                
                 // Run pre-grab function if it exists and conditions are met
                 // Default to true if runActionsOnDirectGrab is not specified
                 const configAllowsDirectActions = config.runActionsOnDirectGrab !== false;
@@ -89,13 +95,19 @@ async function grabFromWebsite(isBulkGrab = false) {
 
         // Run post-grab function if it exists and conditions are met
         if (!url.includes("file://")) {
-            const config = findMatchingConfig(url);
+            const matchingConfig = findMatchingConfig(url);
             // Default to true if runActionsOnDirectGrab is not specified
-            const configAllowsDirectActions = config?.runActionsOnDirectGrab !== false;
+            const configAllowsDirectActions = matchingConfig?.runActionsOnDirectGrab !== false;
             const shouldRunActions = isBulkGrab || configAllowsDirectActions;
             
-            if (config && config.postGrab && typeof config.postGrab === "function" && shouldRunActions) {
+            if (matchingConfig && matchingConfig.postGrab && shouldRunActions) {
                 try {
+                    // Resolve function references
+                    const config = resolveConfigFunctions(matchingConfig, {
+                        grabbers: window,
+                        GrabActions: window.GrabActions
+                    });
+
                     const postGrabResult = await config.postGrab();
                     
                     // Check if postGrab returned an abort signal

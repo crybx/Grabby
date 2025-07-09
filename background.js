@@ -3,6 +3,8 @@ import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
 import { QueueManager } from "./modules/queue-manager.js";
+import "./website-configs.js";
+// WEBSITE_CONFIGS and related functions are now available via globalThis
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
@@ -103,17 +105,25 @@ async function performAutoGrabSequence(tabId, storyInfo) {
             target: { tabId: tabId },
             func: async function() {
                 const config = findMatchingConfig(window.location.href);
-                if (config && config.postGrab && typeof config.postGrab === "function") {
-                    try {
-                        await config.postGrab();
-                        console.log("PostGrab action executed for auto-grab");
+                if (config && config.postGrab) {
+                    // Resolve function references
+                    const resolvedConfig = resolveConfigFunctions(config, { 
+                        grabbers: window, 
+                        GrabActions: window.GrabActions 
+                    });
+                    
+                    if (typeof resolvedConfig.postGrab === "function") {
+                        try {
+                            await resolvedConfig.postGrab();
+                            console.log("PostGrab action executed for auto-grab");
 
-                        // Return delay from website-config
-                        const delay = config.autoGrab?.defaultDelay || 10; // fallback to 10 seconds if not found
-                        return delay * 1000; // convert to milliseconds
-                    } catch (error) {
-                        console.error("Error in postGrab action:", error);
-                        return 10000; // fallback delay
+                            // Return delay from website-config
+                            const delay = config.autoGrab?.defaultDelay || 10; // fallback to 10 seconds if not found
+                            return delay * 1000; // convert to milliseconds
+                        } catch (error) {
+                            console.error("Error in postGrab action:", error);
+                            return 10000; // fallback delay
+                        }
                     }
                 }
                 return 10000; // fallback delay if no config found

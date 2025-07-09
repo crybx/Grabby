@@ -214,13 +214,12 @@ export class QueueManager {
 
     // Check if a story needs active tab based on URL
     checkIfNeedsActiveTab(url) {
-        let activeTabSites = ["peachtea.agency", "ridibooks.com", "storyseedling.com", "readhive.org"]
-        // Simple domain matching for sites that need active tabs
-        if (activeTabSites.some(site => url.includes(site))) {
-            return true;
+        if (typeof findMatchingConfig === 'undefined') {
+            throw new Error('findMatchingConfig is not available - website-configs.js may not be loaded');
         }
-        // Add other sites that need active tabs here
-        return false;
+        
+        const config = findMatchingConfig(url);
+        return config?.autoGrab?.activeTab === true;
     }
 
     // Start auto-grab for a single story
