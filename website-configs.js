@@ -215,6 +215,11 @@ function resolveFunctionReference(ref, dependencies = {}) {
     if (typeof ref === "object" && ref.fn) {
         const fn = resolveFunctionReference(ref.fn, dependencies);
         if (!fn) return undefined;
+        // Special handling for grabStandard which returns a function
+        if (ref.fn === "grabStandard" && ref.args) {
+            // Call grabStandard with args to get the actual grabber function
+            return fn(...ref.args);
+        }
         // Return a function that calls the resolved function with the provided arguments
         return ref.args ? () => fn(...ref.args) : fn;
     }

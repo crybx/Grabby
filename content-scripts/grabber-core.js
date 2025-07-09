@@ -75,11 +75,11 @@ async function grabFromWebsite(isBulkGrab = false) {
                     content = await config.grabber();
                 } catch (grabError) {
                     console.error(`Error in grabber for ${url}:`, grabError);
-                    content = await grabStandard()(); // Fallback to generic grabber
+                    content = grabStandard()(); // Fallback to generic grabber
                 }
                 filename = extractTitle(content, config.useFirstHeadingTitle);
             } else {
-                content = await grabStandard()();
+                content = grabStandard()();
                 filename = extractTitle(content, false);
                 console.log("This website is not specifically supported: ", url);
             }
