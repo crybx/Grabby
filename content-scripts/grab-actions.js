@@ -512,16 +512,26 @@ async function ridiNext() {
     // wait to let popup load
     await new Promise(r => setTimeout(r, 3100));
     let checkoutButtons = document.querySelectorAll('.checkout_buttons button');
+    let paidText = [
+        "pay and watch right away",
+        "결제하고 바로 보기",
+        "charge and pay",
+        "충전하고 결제"
+    ];
+    let freeText = [
+        "view for free",
+        "무료로 보기"
+    ]
 
     for (let button of checkoutButtons) {
         const buttonText = button.textContent.trim().toLowerCase();
-        if (buttonText.includes("view for free") || buttonText.includes("무료로 보기")) {
+        if (freeText.some(p => buttonText.includes(p))) {
             console.log("Free content button found, clicking");
             button.click();
             // wait for page to load
             await new Promise(r => setTimeout(r, 3100));
             return;
-        } else if (buttonText.includes("pay and watch right away") || buttonText.includes("결제하고 바로 보기")) {
+        } else if (paidText.some(p => buttonText.includes(p))) {
             console.log("Paid content detected, aborting");
             return { abort: true, reason: `Paid content detected: ${buttonText}` };
         }
