@@ -406,7 +406,19 @@ class StoryTrackerTable {
 
     extractDomain(url) {
         try {
-            return new URL(url).hostname;
+            const hostname = new URL(url).hostname;
+            
+            // Check if this domain requires active tab
+            try {
+                const config = findMatchingConfig(url);
+                if (config?.autoGrab?.activeTab === true) {
+                    return hostname + " (Active Tab)";
+                }
+            } catch (e) {
+                // If error getting config, just return hostname
+            }
+            
+            return hostname;
         } catch {
             return "unknown";
         }
@@ -1469,14 +1481,26 @@ class StoryTrackerTable {
                     statusElement.textContent = "Cancelled";
                     break;
                 case "processing":
-                    statusElement.textContent = "Processing...";
-                    break;
                 case "starting":
-                    statusElement.textContent = "Starting...";
+                    // Show domain info for processing items
+                    let statusText = "";
+                    if (story.lastChapterUrl) {
+                        statusText = this.extractDomain(story.lastChapterUrl);
+                    } else {
+                        statusText = story.status === "starting" ? "Starting..." : "Processing...";
+                    }
+                    statusElement.textContent = statusText;
                     break;
                 }
             } else {
-                statusElement.textContent = "Queued";
+                // For queued items, show domain
+                let statusText = "";
+                if (story.lastChapterUrl) {
+                    statusText = this.extractDomain(story.lastChapterUrl);
+                } else {
+                    statusText = "Queued";
+                }
+                statusElement.textContent = statusText;
             }
             
             storyElement.appendChild(titleElement);
