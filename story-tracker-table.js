@@ -487,7 +487,7 @@ class StoryTrackerTable {
             <td class="title-col">
                 <a href="${story.mainStoryUrl}" target="_blank" class="story-title-link">${story.title}</a>
             </td>
-            <td class="domain-col">${domain}</td>
+            <td class="domain-col" title="${domain}">${domain}</td>
             <td class="chapter-col">${lastChapterDisplay}</td>
             <td class="tags-col">${tagsDisplay}</td>
             <td class="date-col">${lastGrabbedText}</td>
