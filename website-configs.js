@@ -112,6 +112,7 @@ const WEBSITE_CONFIGS = {
             runActionsOnDirectGrab: false,
             preGrab: "GrabActions.ridiTranslate",
             postGrab: "GrabActions.ridiNext",
+            // postGrab: "GrabActions.pressRightArrow",
             autoGrab: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
