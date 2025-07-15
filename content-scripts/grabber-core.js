@@ -29,7 +29,7 @@ function extractTitle(content, useFirstHeadingTitle) {
 function handleLocalFile(url) {
     const filename = url.split("/").pop().split(".").slice(0, -1).join(".");
     const content = grabLocalFile();
-    return { filename, content };
+    return { filename, content, url };
 }
 
 async function grabFromWebsite(isBulkGrab = false) {
@@ -132,7 +132,7 @@ async function grabFromWebsite(isBulkGrab = false) {
             }
         }
 
-        return { filename, content };
+        return { filename, content, url };
 
     } catch (error) {
         console.error("Error grabbing content:", error);
@@ -189,7 +189,7 @@ function copyToClipboard(text) {
     document.body.removeChild(copyFrom);
 }
 
-async function handleContentDownload(filename, content) {
+async function handleContentDownload(filename, content, originalUrl = null) {
     let blobUrl;
     try {
         copyToClipboard(content);
@@ -206,10 +206,11 @@ async function handleContentDownload(filename, content) {
         });
 
         // Update story tracker with the grabbed content
+        // Use the original URL from before any grabbing actions modified it
         chrome.runtime.sendMessage({
             target: "background",
             type: "updateStoryTracker",
-            url: window.location.href,
+            url: originalUrl || window.location.href,
             title: filename
         });
 

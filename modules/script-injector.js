@@ -12,7 +12,7 @@ export class ScriptInjector {
                 // Use the shared core functionality
                 return GrabbyCore.grabFromWebsite(isBulkGrab).then(result => {
                     if (result && result.filename && result.content) {
-                        return GrabbyCore.handleContentDownload(result.filename, result.content);
+                        return GrabbyCore.handleContentDownload(result.filename, result.content, result.url);
                     }
                     return false;
                 });
