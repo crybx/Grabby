@@ -78,7 +78,7 @@ const WEBSITE_CONFIGS = {
             postGrab: {
                 fn: "GrabActions.clickLinkContaining",
                 args: [
-                    ["Episode", "Next"],
+                    ["Episode", "Next", "Chapter"],
                     { selector: ".wp-block-button:nth-child(2) a.wp-block-button__link" }
                 ]
             },
