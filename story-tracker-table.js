@@ -739,6 +739,11 @@ class StoryTrackerTable {
         document.getElementById("submit-story-btn").textContent = "Add Story";
         document.getElementById("delete-story-btn").style.display = "none";
         document.getElementById("story-form").reset();
+        
+        // Hide date fields for add mode
+        const editOnlyElements = document.querySelectorAll('.edit-only');
+        editOnlyElements.forEach(el => el.style.display = 'none');
+        
         document.getElementById("story-modal").style.display = "flex";
     }
 
@@ -755,12 +760,31 @@ class StoryTrackerTable {
         document.getElementById("last-chapter-title").value = story.lastChapterTitle || "";
         document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
+        
+        // Show and populate date fields for edit mode
+        const editOnlyElements = document.querySelectorAll('.edit-only');
+        editOnlyElements.forEach(el => el.style.display = 'block');
+        
+        // Convert dates to datetime-local format if they exist
+        if (story.dateLastGrabbed) {
+            const date = new Date(story.dateLastGrabbed);
+            document.getElementById("date-last-grabbed").value = date.toISOString().slice(0, 16);
+        }
+        if (story.dateLastChecked) {
+            const date = new Date(story.dateLastChecked);
+            document.getElementById("date-last-checked").value = date.toISOString().slice(0, 16);
+        }
+        
         document.getElementById("story-modal").style.display = "flex";
     }
 
     hideStoryModal() {
         document.getElementById("story-modal").style.display = "none";
         document.getElementById("story-form").reset();
+        
+        // Hide date fields when closing modal
+        const editOnlyElements = document.querySelectorAll('.edit-only');
+        editOnlyElements.forEach(el => el.style.display = 'none');
     }
 
     async handleStoryFormSubmit() {
@@ -828,7 +852,11 @@ class StoryTrackerTable {
         const secondaryUrlMatches = secondaryUrlMatchesInput ? 
             secondaryUrlMatchesInput.split(",").map(url => url.trim()).filter(url => url) : [];
 
-        this.stories[storyIndex] = {
+        // Get the manually set dates
+        const dateLastGrabbedInput = document.getElementById("date-last-grabbed").value;
+        const dateLastCheckedInput = document.getElementById("date-last-checked").value;
+
+        const updatedStory = {
             ...this.stories[storyIndex],
             title,
             mainStoryUrl: mainUrl,
@@ -837,6 +865,16 @@ class StoryTrackerTable {
             secondaryUrlMatches,
             tags
         };
+
+        // Update dates only if they were manually set
+        if (dateLastGrabbedInput) {
+            updatedStory.dateLastGrabbed = new Date(dateLastGrabbedInput).toISOString();
+        }
+        if (dateLastCheckedInput) {
+            updatedStory.dateLastChecked = new Date(dateLastCheckedInput).toISOString();
+        }
+
+        this.stories[storyIndex] = updatedStory;
 
         await this.saveStory(this.stories[storyIndex]);
         this.populateDomainFilter();
