@@ -565,24 +565,72 @@ async function grabPeachTeaAgency() {
     });
 
     let allContentDivs = [];
-    // Loop 5 times
-    for (let i = 0; i < 7; i++) {
+    let lastContentCount = 0;
+    let noNewContentIterations = 0;
+    const maxIterations = 25; // Max iterations to prevent infinite loops
+    
+    // Keep scrolling until we reach the bottom or stop finding new content
+    for (let i = 0; i < maxIterations; i++) {
+        // Check if we've reached the bottom of the page
+        const isAtBottom = (window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 10;
+        
         dom = document.cloneNode(true);
         const contentDivs = dom.querySelectorAll(".transition-all > div > div");
 
         // Add contentDivs that aren't exact duplicates already in allContentDivs
+        let newContentAdded = 0;
+        let duplicatesFound = 0;
+        let firstDuplicateContent = null;
         contentDivs.forEach(div => {
-            if (!allContentDivs.some(existingDiv => existingDiv.innerHTML.trim() === div.innerHTML.trim())) {
+            const divContent = div.innerHTML.trim();
+            if (!allContentDivs.some(existingDiv => existingDiv.innerHTML.trim() === divContent)) {
                 allContentDivs.push(div);
+                newContentAdded++;
+            } else {
+                // Only count as duplicate if it has actual content and isn't the empty div pattern
+                if (divContent !== '' && divContent !== '<div data-reader-disable="true"><span><br></span></div>') {
+                    duplicatesFound++;
+                    // Capture first duplicate for debugging
+                    if (!firstDuplicateContent) {
+                        const textContent = div.textContent.trim();
+                        firstDuplicateContent = textContent.substring(0, 100) + (textContent.length > 100 ? '...' : '');
+                    }
+                }
             }
         });
 
+        console.log(`${i + 1}: Found ${newContentAdded} new content divs, ${duplicatesFound} duplicates`);
+        if (firstDuplicateContent) {
+            console.log(`   First duplicate: ${firstDuplicateContent}`);
+        }
+        
+        // Check if we found new content
+        if (allContentDivs.length === lastContentCount) {
+            noNewContentIterations++;
+            console.log(`No new content found (${noNewContentIterations} times)`);
+            
+            // If no new content for 2 iterations or we're at the bottom, stop
+            if (noNewContentIterations >= 2 || isAtBottom) {
+                console.log(`Stopping: ${isAtBottom ? 'Reached bottom of page' : 'No new content after 2 attempts'}`);
+                break;
+            }
+        } else {
+            noNewContentIterations = 0;
+            lastContentCount = allContentDivs.length;
+        }
+
+        // If we're already at the bottom, no need to scroll more
+        if (isAtBottom) {
+            console.log("Already at bottom of page, stopping");
+            break;
+        }
+
         window.scrollBy({
-            top: window.innerHeight,
+            top: window.innerHeight * 0.75,
             behavior: 'smooth'
         });
-        console.log(`Scrolled down by ${window.innerHeight}px (viewport height)`);
-        // Wait 1 second for content to load
+        
+        // Wait for content to load
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
@@ -591,11 +639,11 @@ async function grabPeachTeaAgency() {
     allContentDivs.forEach(contentDiv => {
         contentDiv.querySelectorAll("*").forEach(element => {
             utils.replaceSemanticInlineStylesWithTags(element, true);
+            util.removeAttributes(element, ["data-reader-disable"])
             // If tag is div, replace with p
             if (element.tagName === "DIV") {
                 const pElement = dom.createElement("p");
                 utils.replaceTag(element, pElement);
-                util.removeAttributes(element, ["data-reader-disable"])
             }
             utils.standardElementCleanup(element);
         });

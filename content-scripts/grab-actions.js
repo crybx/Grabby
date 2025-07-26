@@ -209,7 +209,6 @@ async function ridiTranslate() {
 
 // specifically for Peach Tea Agency
 async function peachTeaClickNextChapterLink() {
-    console.log("HERE -------------------- clicking peachTeaClickNextChapterLink")
     // First, ensure the "All on one page?" button is clicked to show the Next chapter link
     if (typeof GrabActions !== 'undefined' && GrabActions.peachTeaClickAllOnOnePageButton) {
         console.log("Calling peachTeaClickAllOnOnePageButton from postGrab to ensure Next chapter link is visible");
