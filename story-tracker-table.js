@@ -768,11 +768,23 @@ class StoryTrackerTable {
         // Convert dates to datetime-local format if they exist
         if (story.dateLastGrabbed) {
             const date = new Date(story.dateLastGrabbed);
-            document.getElementById("date-last-grabbed").value = date.toISOString().slice(0, 16);
+            // Convert to local time for datetime-local input
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            document.getElementById("date-last-grabbed").value = `${year}-${month}-${day}T${hours}:${minutes}`;
         }
         if (story.dateLastChecked) {
             const date = new Date(story.dateLastChecked);
-            document.getElementById("date-last-checked").value = date.toISOString().slice(0, 16);
+            // Convert to local time for datetime-local input
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            document.getElementById("date-last-checked").value = `${year}-${month}-${day}T${hours}:${minutes}`;
         }
         
         document.getElementById("story-modal").style.display = "flex";
