@@ -1439,13 +1439,6 @@ class StoryTrackerTable {
         document.getElementById("queue-queued").textContent = status.stats.queued;
         document.getElementById("queue-completed").textContent = status.stats.completed;
         document.getElementById("queue-failed").textContent = status.stats.failed;
-        document.getElementById("queue-no-content").textContent = status.stats.noContent;
-
-        // Update progress bar
-        const progressPercent = status.stats.total > 0 ? 
-            Math.round(((status.stats.completed + status.stats.failed + status.stats.noContent) / status.stats.total) * 100) : 0;
-        const progressFill = document.getElementById("queue-progress-fill");
-        progressFill.style.width = `${progressPercent}%`;
 
         // Update story lists
         this.updateQueueStoryList("processing-stories", status.processing);
