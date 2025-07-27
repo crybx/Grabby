@@ -564,8 +564,9 @@ async function grabPeachTeaAgency() {
         }
     });
 
-    let allContentDivs = [];
-    let lastContentCount = 0;
+    // Collect all the text
+    let collectedDivs = []; // Store divs with their loop number
+    let lastContentSnapshot = ""; // Track content to detect changes
     let noNewContentIterations = 0;
     const maxIterations = 25; // Max iterations to prevent infinite loops
     
@@ -576,55 +577,41 @@ async function grabPeachTeaAgency() {
         
         dom = document.cloneNode(true);
         const contentDivs = dom.querySelectorAll(".transition-all > div > div");
-
-        // Add contentDivs that aren't exact duplicates already in allContentDivs
-        let newContentAdded = 0;
-        let duplicatesFound = 0;
-        let firstDuplicateContent = null;
-        contentDivs.forEach(div => {
-            const divContent = div.innerHTML.trim();
-            if (!allContentDivs.some(existingDiv => existingDiv.innerHTML.trim() === divContent)) {
-                allContentDivs.push(div);
-                newContentAdded++;
-            } else {
-                // Only count as duplicate if it has actual content and isn't the empty div pattern
-                if (divContent !== '' && divContent !== '<div data-reader-disable="true"><span><br></span></div>') {
-                    duplicatesFound++;
-                    // Capture first duplicate for debugging
-                    if (!firstDuplicateContent) {
-                        const textContent = div.textContent.trim();
-                        firstDuplicateContent = textContent.substring(0, 100) + (textContent.length > 100 ? '...' : '');
-                    }
-                }
-            }
-        });
-
-        console.log(`${i + 1}: Found ${newContentAdded} new content divs, ${duplicatesFound} duplicates`);
-        if (firstDuplicateContent) {
-            console.log(`   First duplicate: ${firstDuplicateContent}`);
-        }
         
-        // Check if we found new content
-        if (allContentDivs.length === lastContentCount) {
+        // Store all divs from this loop with their loop number
+        const divsFromThisLoop = [];
+        contentDivs.forEach(div => {
+            divsFromThisLoop.push({
+                element: div,
+                loopNumber: i,
+                textContent: div.textContent.trim()
+            });
+        });
+        
+        // Create a snapshot of current content to compare
+        const currentContentSnapshot = divsFromThisLoop.map(d => d.textContent).join('|');
+
+        // Check if the content has changed from last iteration
+        if (currentContentSnapshot === lastContentSnapshot && i > 0) {
             noNewContentIterations++;
-            console.log(`No new content found (${noNewContentIterations} times)`);
             
             // If no new content for 2 iterations or we're at the bottom, stop
             if (noNewContentIterations >= 2 || isAtBottom) {
-                console.log(`Stopping: ${isAtBottom ? 'Reached bottom of page' : 'No new content after 2 attempts'}`);
                 break;
             }
         } else {
             noNewContentIterations = 0;
-            lastContentCount = allContentDivs.length;
+            lastContentSnapshot = currentContentSnapshot;
         }
-
+        
+        // Always add the divs we found (we'll dedupe later)
+        collectedDivs.push(...divsFromThisLoop);
+        
         // If we're already at the bottom, no need to scroll more
         if (isAtBottom) {
-            console.log("Already at bottom of page, stopping");
             break;
         }
-
+        
         window.scrollBy({
             top: window.innerHeight * 0.75,
             behavior: 'smooth'
@@ -633,7 +620,80 @@ async function grabPeachTeaAgency() {
         // Wait for content to load
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
+    
+    
+    // First, remove items with no textContent and "Scroll down to continue reading" prompts
+    let filteredDivs = collectedDivs.filter(item => {
+        return item.textContent !== '' && 
+               item.textContent !== 'Scroll down to continue reading';
+    });
+    // Now remove duplicates that overlap between loops only
+    let finalDivs = [];
+    
+    // Group divs by loop number for easier processing
+    const divsByLoop = {};
+    filteredDivs.forEach(div => {
+        if (!divsByLoop[div.loopNumber]) {
+            divsByLoop[div.loopNumber] = [];
+        }
+        divsByLoop[div.loopNumber].push(div);
+    });
+    
+    // Process each loop
+    const loopNumbers = Object.keys(divsByLoop).map(n => parseInt(n)).sort((a, b) => a - b);
+    
+    for (let loopIdx = 0; loopIdx < loopNumbers.length; loopIdx++) {
+        const currentLoopNum = loopNumbers[loopIdx];
+        const currentLoopDivs = divsByLoop[currentLoopNum];
+        
+        if (loopIdx === 0) {
+            // First loop - keep everything
+            finalDivs.push(...currentLoopDivs);
+        } else {
+            // For subsequent loops, remove items that appeared at the end of previous loop
+            const previousLoopNum = loopNumbers[loopIdx - 1];
+            const previousLoopDivs = divsByLoop[previousLoopNum];
+            
+            // Find the longest overlap between end of previous loop and start of current loop
+            let overlapLength = 0;
+            
+            // Start from the largest possible overlap and work down
+            const maxOverlap = Math.min(currentLoopDivs.length, previousLoopDivs.length);
+            
+            for (let checkLength = maxOverlap; checkLength > 0; checkLength--) {
+                let isMatch = true;
+                
+                // Check if the last 'checkLength' items of previous loop match
+                // the first 'checkLength' items of current loop
+                for (let j = 0; j < checkLength; j++) {
+                    const prevIdx = previousLoopDivs.length - checkLength + j;
+                    if (previousLoopDivs[prevIdx].textContent !== currentLoopDivs[j].textContent) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+                
+                if (isMatch) {
+                    overlapLength = checkLength;
+                    break;
+                }
+            }
+            
+            // Add non-overlapping divs from current loop
+            if (overlapLength > 0) {
+                // Keep only items after the overlap
+                finalDivs.push(...currentLoopDivs.slice(overlapLength));
+            } else {
+                // No overlap found, keep all divs from this loop
+                finalDivs.push(...currentLoopDivs);
+            }
+        }
+    }
+    
+    // Extract just the elements for further processing
+    let allContentDivs = finalDivs.map(item => item.element);
 
+    // Now format and return
     let allContent = "";
     // for each div in allContentDivs
     allContentDivs.forEach(contentDiv => {
@@ -656,6 +716,8 @@ async function grabPeachTeaAgency() {
         if (word.length === 0) return word;
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }).join(" ");
+    // replace every instance of exactly </p><p> in allContent with </p>/n/n<p>
+    allContent = allContent.replace(/<\/p><p>/g, "</p>\n\n<p>");
     return "<h1>" + title.trim() + "</h1>" + allContent;
 }
 
