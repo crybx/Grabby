@@ -514,13 +514,15 @@ async function ridiNext() {
 
     let paidText = [
         "pay and watch right away",
+        "pay and watch immediately",
         "결제하고 바로 보기",
         "charge and pay",
         "충전하고 결제"
     ];
     let freeText = [
         "view for free",
-        "무료로 보기"
+        "무료로 보기",
+        "watch for free"
     ]
     
     // No check button found, so look for real checkout buttons
