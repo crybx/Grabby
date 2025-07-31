@@ -500,9 +500,15 @@ function pressSpace() {
 
 async function ridiNext() {
     let unownedEpisodeButtons = document.querySelectorAll('.checkout_contents_wrapper button');
+    let unownedText = [
+        "view next episode",
+        "watch the next episode",
+        "watch the nextepisode",
+        "다음화 보기"
+    ]
     for (let button of unownedEpisodeButtons) {
         const buttonText = button.textContent.trim().toLowerCase();
-        if (buttonText.includes("view next episode") || buttonText.includes("다음화 보기")) {
+        if (unownedText.some(t => buttonText.includes(t))) {
             button.click();
         }
     }
@@ -528,12 +534,12 @@ async function ridiNext() {
     // No check button found, so look for real checkout buttons
     for (let button of checkoutButtons) {
         const buttonText = button.textContent?.trim()?.toLowerCase() || '';
-        if (freeText.some(p => buttonText.includes(p))) {
+        if (freeText.some(t => buttonText.includes(t))) {
             button.click();
             // wait for page to load
             await new Promise(r => setTimeout(r, 3100));
             return;
-        } else if (paidText.some(p => buttonText.includes(p))) {
+        } else if (paidText.some(t => buttonText.includes(t))) {
             return { abort: true, reason: `Paid content detected: ${buttonText}` };
         }
     }
