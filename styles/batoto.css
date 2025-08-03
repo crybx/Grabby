@@ -1,0 +1,7 @@
+/* Green blanket covering the screen. Probably because of adblockers. */
+.notification {
+    background-color: transparent !important;
+    display: none !important;
+    z-index: -9000 !important;
+    overflow: auto !important;
+}
