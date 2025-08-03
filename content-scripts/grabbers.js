@@ -49,7 +49,8 @@ function grabPublang() {
         utils.removeTags(element, ["LINK", "BASE", "META"]);
 
         if (element.tagName === "TITLE") {
-            element.outerHTML = "<h1>" + element.innerHTML + "</h1>";
+            const hElement = document.createElement("H1");
+            utils.replaceTag(element, hElement);
         }
     });
     return temp.innerHTML;
@@ -117,12 +118,14 @@ function grabChrysanthemum() {
     content.querySelectorAll("*").forEach(element => {
         if (element.tagName === "DIV") {
             if (element.classList.contains("chrys-iklan")) {
-                element.outerHTML = "";
+                utils.removeElements(element);
+                return;
             }
         } else {
             const elementStyle = element.getAttribute("style");
             if (elementStyle?.includes("height:1px")) {
-                element.outerHTML = "";
+                utils.removeElements(element);
+                return;
             }
         }
 
@@ -157,7 +160,7 @@ function grabGoogleDocMobileBasic() {
     const headings = ["H1", "H2", "H3", "H4", "H5", "H6"];
 
     content.querySelectorAll("*").forEach(element => {
-        element.removeAttribute("style");
+        utils.replaceSemanticInlineStylesWithTags(element, true);
         // if element contains "table of contents", remove the element
         if (element.textContent.toLowerCase().includes("table of contents")) {
             element.remove();
@@ -166,15 +169,13 @@ function grabGoogleDocMobileBasic() {
         else if (element.textContent.toLowerCase().includes("docs.google.com")) {
             element.remove();
         }
-        else if (element.tagName === "SPAN" || element.tagName === "A") {
-            // remove "span" and "a" tag elements while keeping the inner text
-            element.outerHTML = element.innerHTML;
-        }
         // if element is a heading, remove the "id" attribute
         else if (headings.includes(element.tagName)) {
             element.removeAttribute("id");
         }
     });
+    utils.unwrapAllOfTag(content, "SPAN");
+    utils.unwrapAllOfTag(content, "A");
     return content.innerHTML.trim();
 }
 
@@ -261,7 +262,7 @@ function grabJjwxc() {
     const content = document.querySelector(".novelbody");
 
     content.querySelectorAll("*").forEach(element => {
-        replaceSemanticInlineStylesWithTags(element, true);
+        utils.replaceSemanticInlineStylesWithTags(element, true);
     });
 
     return `<h1>${title}</h1>\n\n${content.innerHTML.trim()}`;
@@ -501,7 +502,7 @@ function grabZenithtls() {
         // if element is div or span, remove it but keep the inner text
         if (element.tagName === "DIV" || element.tagName === "SPAN") {
             try {
-                element.outerHTML = element.innerHTML;
+                utils.unwrapTag(element);
             } catch (e) {
                 console.log(e);
             }
@@ -528,7 +529,7 @@ function grabReadhive() {
         utils.standardElementCleanup(element);
         // remove "span" tag elements while keeping the inner text
         if (element.tagName === "SPAN") {
-            element.outerHTML = element.innerHTML;
+            utils.unwrapTag(element);
         }
         utils.removeElementWithClasses(element, ["absolute", "fixed", "flex", "sticky"]);
         utils.removeAttributes(element, ["@click"]);
