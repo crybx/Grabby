@@ -717,8 +717,6 @@ async function grabPeachTeaAgency() {
         if (word.length === 0) return word;
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }).join(" ");
-    // replace every instance of exactly </p><p> in allContent with </p>/n/n<p>
-    allContent = allContent.replace(/<\/p><p>/g, "</p>\n\n<p>");
     return "<h1>" + title.trim() + "</h1>" + allContent;
 }
 
