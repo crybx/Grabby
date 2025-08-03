@@ -84,6 +84,7 @@ const WEBSITE_CONFIGS = {
             },
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
+        "medium.com": { grabber: { fn: "grabStandard", args: ["section", null] } },
         "novelingua.com": {
             grabber: "grabNovelingua",
             useFirstHeadingTitle: true,
