@@ -149,7 +149,8 @@ const WEBSITE_CONFIGS = {
         fictioneerSites: {
             domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz",
                 "floraegarden.com",
-                "novelib.com", "springofromance.com", "smeraldogarden.com"],
+                "novelib.com", "springofromance.com", "smeraldogarden.com",
+                "talesinthevalley.com"],
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h1, h2, h3, .mycred-sell-this-wrapper"]] },
