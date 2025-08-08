@@ -51,7 +51,7 @@ const WEBSITE_CONFIGS = {
             postGrab: { fn: "GrabActions.clickLinkContaining", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
             autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
-        "fanfiction.ws": { grabber: { fn: "grabStandard", args: [".storytext"] } },
+        "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
         "fenrirealm.com": { grabber: "grabFenrir" },
         "helioscans.com": { grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] } },
         "hyacinthbloom.com": {
