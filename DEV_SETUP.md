@@ -1,6 +1,6 @@
 # Grabby Development Setup
 
-This guide helps you set up a development environment for Grabby, a Chrome extension for extracting and saving readable content from web pages.
+This guide helps you set up a development environment for Grabby, a Chrome extension that saves web pages as clean, readable files and tracks your reading progress across ongoing stories.
 
 ## Prerequisites
 

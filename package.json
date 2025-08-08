@@ -1,7 +1,7 @@
 {
   "name": "grabby",
-  "version": "1.0.0",
-  "description": "Chrome extension for extracting readable content from web pages",
+  "version": "0.1.0-alpha",
+  "description": "Chrome extension that saves web pages as clean, readable files and tracks your reading progress across ongoing stories",
   "scripts": {
     "lint": "eslint *.js",
     "lint:fix": "eslint *.js --fix"
@@ -15,5 +15,5 @@
     "content-extraction",
     "web-scraping"
   ],
-  "author": ""
+  "author": "crybx"
 }
