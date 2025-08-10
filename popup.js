@@ -5,7 +5,10 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log("Grabby popup opened");
     
     // Get UI elements
-    const grabbyButton = document.getElementById("grabby-button");
+    const grabButton = document.getElementById("grab-button");
+    const storyTrackerButton = document.getElementById("story-tracker-button");
+    const optionsButton = document.getElementById("options-button");
+    const supportButton = document.getElementById("support-button");
     const startBulkBtn = document.getElementById("start-bulk-grab");
     const stopBulkBtn = document.getElementById("stop-bulk-grab");
     const clearStatusBtn = document.getElementById("clear-status");
@@ -14,26 +17,47 @@ document.addEventListener("DOMContentLoaded", function() {
     const statusDisplay = document.getElementById("bulk-status");
     const statusText = document.getElementById("status-text");
     const progressFill = document.getElementById("progress-fill");
-    const openStoryTrackerBtn = document.getElementById("open-story-tracker");
     
-    // Add click handler to the clipboard button
-    if (grabbyButton) {
-        grabbyButton.addEventListener("click", () => {
-            // Show a quick visual feedback
-            grabbyButton.classList.add("clicked");
-            
+    // Add click handler for the grab button
+    if (grabButton) {
+        grabButton.addEventListener("click", () => {
             // Send a message to the background script to grab content
             chrome.runtime.sendMessage({
                 target: "background",
                 type: "grabContent"
             });
             
-            // Reset button after animation
-            setTimeout(() => {
-                grabbyButton.classList.remove("clicked");
-            }, 300);
-            
             // Close the popup after clicking
+            window.close();
+        });
+    }
+    
+    // Add click handler for story tracker button
+    if (storyTrackerButton) {
+        storyTrackerButton.addEventListener("click", () => {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL("story-tracker.html")
+            });
+            window.close();
+        });
+    }
+    
+    // Add click handler for options button
+    if (optionsButton) {
+        optionsButton.addEventListener("click", () => {
+            chrome.tabs.create({
+                url: chrome.runtime.getURL("options.html")
+            });
+            window.close();
+        });
+    }
+    
+    // Add click handler for support button
+    if (supportButton) {
+        supportButton.addEventListener("click", () => {
+            chrome.tabs.create({
+                url: "https://ko-fi.com/crybx"
+            });
             window.close();
         });
     }
@@ -103,16 +127,6 @@ document.addEventListener("DOMContentLoaded", function() {
             pageCountInput.value = "5";
             delayInput.value = "3";
             updateStatus("Ready", 0);
-        });
-    }
-    
-    // Add click handler for story tracker button
-    if (openStoryTrackerBtn) {
-        openStoryTrackerBtn.addEventListener("click", () => {
-            chrome.tabs.create({
-                url: chrome.runtime.getURL("story-tracker.html")
-            });
-            window.close();
         });
     }
     

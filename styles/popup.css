@@ -15,46 +15,69 @@ h1 {
 
 .settings-section {
     margin-bottom: 16px;
+}
 
-    #grabby-button {
-        margin: 0 auto;
-        width: 30px;
-        height: 30px;
-        border-radius: 0 0 3px 3px;
-        background-color: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
+/* Icon grid styles */
+.icon-grid {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 8px;
+    margin-bottom: 8px;
+}
 
-    #grabby-button img {
-        width: 20px;
-        height: 20px;
-        object-fit: contain;
-    }
+.icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
 
-    #grabby-button:hover {
-        transform: scale(1.1);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    }
+.icon-item:hover {
+    transform: translateY(-2px);
+}
 
-    #grabby-button.clicked {
-        background-color: rgba(66, 133, 244, 0.9);
-    }
+.icon-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    /* Animation for button click */
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-    }
+.icon-item:hover .icon-button {
+    background-color: #e8eaf6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
 
-    #grabby-button:active {
-        animation: pulse 0.3s ease;
-    }
+.icon-item:active .icon-button {
+    transform: scale(0.95);
+}
+
+.icon-image {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.icon-emoji {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.icon-label {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #5f6368;
+    text-align: center;
+}
+
+.icon-item:hover .icon-label {
+    color: #333;
 }
 
 h2 {

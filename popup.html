@@ -6,15 +6,33 @@
 </head>
 <body class="popup">
 
-<h1>About Grabby</h1>
-
-<hr>
-
-<div class="settings-section">
-  <p>Grabby extracts the readable content from web pages and downloads it as an HTML file.</p>
-  <p>Click the clipboard icon at the top-right of any page to grab its content:</p>
-  <div id="grabby-button" title="Grab content">
-    <img src="images/clipboard128.png" alt="Grabby Icon" class="grabby-icon">
+<div class="icon-grid">
+  <div class="icon-item" id="grab-button">
+    <div class="icon-button">
+      <img src="images/clipboard128.png" alt="Grab" class="icon-image">
+    </div>
+    <span class="icon-label">Grab</span>
+  </div>
+  
+  <div class="icon-item" id="story-tracker-button">
+    <div class="icon-button">
+      <span class="icon-emoji">📚</span>
+    </div>
+    <span class="icon-label">Story Tracker</span>
+  </div>
+  
+  <div class="icon-item" id="options-button">
+    <div class="icon-button">
+      <span class="icon-emoji">⚙️</span>
+    </div>
+    <span class="icon-label">About</span>
+  </div>
+  
+  <div class="icon-item" id="support-button">
+    <div class="icon-button">
+      <img src="images/kofi_symbol.png" alt="Ko-fi" class="icon-image">
+    </div>
+    <span class="icon-label">Support</span>
   </div>
 </div>
 
@@ -52,14 +70,6 @@
       </div>
     </div>
   </div>
-</div>
-
-<hr>
-
-<div class="settings-section">
-  <h2>Story Tracking</h2>
-  <p>Track your reading progress and manage your story collection.</p>
-  <button id="open-story-tracker" class="primary-btn full-width">📚 Open Story Tracker</button>
 </div>
 
 <hr>
