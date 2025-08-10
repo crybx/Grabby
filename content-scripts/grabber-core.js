@@ -132,8 +132,8 @@ async function grabFromWebsite(isBulkGrab = false) {
             }
         }
 
-        // in content, replace every instance of exactly </p><p> with </p>/n/n<p>
-        content = content.replace(/<\/p><p>/g, "</p>\n\n<p>");
+        // in content, replace every instance of exactly </p><p with </p>/n/n<p
+        content = content.replace(/<\/p><p/g, "</p>\n\n<p");
 
         return { filename, content, url };
 
