@@ -107,6 +107,17 @@ p {
     margin-top: 12px;
 }
 
+.input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.input-row .input-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
 .input-group {
     margin-bottom: 12px;
 }
