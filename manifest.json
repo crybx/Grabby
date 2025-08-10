@@ -27,7 +27,7 @@
     {
       "matches": ["<all_urls>"],
       "match_origin_as_fallback": true,
-      "css": ["styles/grabby.css"],
+      "css": ["styles/grabby-button.css", "styles/grabby.css"],
       "js": ["content-scripts/grabby-button.js"]
     },
     {
