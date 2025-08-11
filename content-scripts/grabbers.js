@@ -14,7 +14,7 @@ function grabKakaoPage() {
 function grabRidi() {
     let title = document.querySelector("title").textContent;
     // remove " – Ridi" from the title
-    title = title.replace(" - Ridi", "");
+    title = title.replace(" - Ridibooks", "");
 
     // Ridi can have multiple articles, create a container
     const content = document.createElement("div");
