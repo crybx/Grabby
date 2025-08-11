@@ -1,8 +1,36 @@
 // This script handles any interactive functionality in the popup
 // Currently it's minimal but can be expanded as settings needs grow
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
     console.log("Grabby popup opened");
+    
+    // Check if current tab supports bulk grabbing
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    let supportsAutoGrab = false;
+    
+    if (tab && tab.url && typeof findMatchingConfig !== "undefined") {
+        // Check directly using findMatchingConfig from website-configs.js
+        const config = findMatchingConfig(tab.url);
+        supportsAutoGrab = config?.autoGrab?.enabled === true;
+    }
+    
+    // Show bulk grabbing section only if supported
+    if (supportsAutoGrab) {
+        const bulkSection = document.querySelector(".bulk-section");
+        const bulkSeparator = document.querySelector(".bulk-separator");
+        if (bulkSection) {
+            bulkSection.style.display = "block";
+        }
+        if (bulkSeparator) {
+            bulkSeparator.style.display = "block";
+        }
+    } else {
+        // Remove extra spacing when bulk section is hidden
+        const keyboardSection = document.querySelector(".settings-section:has(.shortcut)");
+        if (keyboardSection) {
+            keyboardSection.style.marginBottom = "0";
+        }
+    }
     
     // Get UI elements
     const grabButton = document.getElementById("grab-button");
