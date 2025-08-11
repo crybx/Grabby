@@ -8,6 +8,7 @@ function addGrabbyButton() {
     // Create the button element
     const button = document.createElement("div");
     button.id = "grabby-button";
+    button.className = "grabby-button";
     button.title = "Grab content";
 
     const img = document.createElement("img");

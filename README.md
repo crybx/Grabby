@@ -2,7 +2,7 @@
 
 A Chrome extension that saves web pages as clean, readable files and tracks your reading progress across ongoing stories.
 
-[![Ko-fi](https://img.shields.io/badge/Support%20on-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/crybx)
+<a href='https://ko-fi.com/crybx' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 > **⚠️ Alpha Version**: This extension is in active development. While I use it extensively daily, 
 > you may encounter bugs or incomplete features. If you find any issues or have suggestions, please
@@ -107,7 +107,9 @@ To contribute or customize Grabby, check the [Development Setup Guide](DEV_SETUP
 
 ## Support
 
-If you find Grabby useful, consider [buying me a coffee](https://ko-fi.com/crybx) ☕
+If you find Grabby useful, consider supporting the project:
+
+<a href='https://ko-fi.com/crybx' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 ## License
 
