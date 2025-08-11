@@ -7,7 +7,7 @@
     "128": "images/clipboard128.png"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "pages/popup.html",
     "default_icon": "images/clipboard128.png"
   },
   "background": {

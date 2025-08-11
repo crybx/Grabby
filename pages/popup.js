@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (storyTrackerButton) {
         storyTrackerButton.addEventListener("click", () => {
             chrome.tabs.create({
-                url: chrome.runtime.getURL("story-tracker.html")
+                url: chrome.runtime.getURL("pages/story-tracker.html")
             });
             window.close();
         });
@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (optionsButton) {
         optionsButton.addEventListener("click", () => {
             chrome.tabs.create({
-                url: chrome.runtime.getURL("options.html")
+                url: chrome.runtime.getURL("pages/options.html")
             });
             window.close();
         });

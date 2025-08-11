@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (openStoryTrackerBtn) {
     openStoryTrackerBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      chrome.tabs.create({ url: chrome.runtime.getURL('story-tracker.html') });
+      chrome.tabs.create({ url: chrome.runtime.getURL('pages/story-tracker.html') });
     });
   }
 });
