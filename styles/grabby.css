@@ -1,13 +1,3 @@
-/*
-Track visited links by turning visited ones a specific color
-despite whatever styles individual websites use. Very handy
-to know where you've been.
-*/
-a:visited,
-a:visited > div > span {
-    color: #9d80ff !important;
-}
-
 .notification {
     position: fixed;
     top: 15px;

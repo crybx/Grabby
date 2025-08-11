@@ -31,24 +31,12 @@
       "js": ["content-scripts/grabby-button.js"]
     },
     {
-      "matches": ["*://*.battwo.com/*"],
-      "css": ["styles/batoto.css"]
-    },
-    {
       "matches": ["*://*.hyacinthbloom.com/*"],
       "css": ["styles/hyacinth.css"]
     },
     {
-      "matches": ["*://*.ridibooks.com/*"],
-      "css": ["styles/ridibooks.css"]
-    },
-    {
       "matches": ["*://*.wordpress.com/*"],
       "css": ["styles/wordpress.css"]
-    },
-    {
-      "matches": ["*://*.youtube.com/*"],
-      "css": ["styles/youtube-nyan-cat.css"]
     }
   ],
   "commands": {
