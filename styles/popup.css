@@ -47,6 +47,7 @@ h1 {
     justify-content: center;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #bbb0d9;
 }
 
 .icon-item:hover .icon-button {
