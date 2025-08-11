@@ -194,7 +194,8 @@ grabby/
 ├── .eslintrc.js               # Code style rules
 ├── LICENSE.md                 # GNU GPL v3 License
 ├── README.md                  # User documentation
-└── DEV_SETUP.md               # This development guide
+└── docs/
+    └── DEVELOPERS.md          # This development guide
 ```
 
 ## Troubleshooting

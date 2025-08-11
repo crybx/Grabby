@@ -1,13 +1,15 @@
 {
   "name": "grabby",
-  "version": "0.1.0-alpha",
-  "description": "Chrome extension that saves web pages as clean, readable files and tracks your reading progress across ongoing stories",
+  "version": "0.1.0",
+  "description": "Make reading stories online easier. Save chapters as clean, readable files and track reading progress across ongoing stories.",
   "scripts": {
     "lint": "eslint *.js",
-    "lint:fix": "eslint *.js --fix"
+    "lint:fix": "eslint *.js --fix",
+    "build": "node build.js"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.326",
+    "@zip.js/zip.js": "^2.7.72",
     "eslint": "^8.57.0"
   },
   "keywords": [

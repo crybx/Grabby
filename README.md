@@ -99,7 +99,7 @@ Grabby requests these Chrome permissions:
 
 ## Development
 
-To contribute or customize Grabby, check the [Development Setup Guide](DEV_SETUP.md) for instructions on:
+To contribute or customize Grabby, check the [Development Setup Guide](docs/DEVELOPERS.md) for instructions on:
 - Setting up your development environment
 - Adding support for new websites
 - Understanding the codebase structure
