@@ -257,7 +257,7 @@ function clickLinkContaining(text, options = {}) {
         excludeClasses = [],     // Array of classes to exclude
         excludeStyles = {},      // Object of CSS styles to exclude (e.g., {position: 'absolute'})
         selector = "a",          // CSS selector for elements to check
-        abortIfNotFound = false  // Whether to abort autoGrab sequence if no element is found
+        abortIfNotFound = false  // Whether to abort bulk grab sequence if no element is found
     } = options;
     
     // Convert text to array if it's a string

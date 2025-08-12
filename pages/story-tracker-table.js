@@ -107,7 +107,7 @@ class StoryTrackerTable {
             this.showManageTagsModal();
         });
 
-        document.getElementById("auto-grab-chapters-btn").addEventListener("click", () => {
+        document.getElementById("grab-chapters-btn").addEventListener("click", () => {
             this.handleAutoGrabNewChapters();
         });
 
@@ -411,7 +411,7 @@ class StoryTrackerTable {
             // Check if this domain requires active tab
             try {
                 const config = findMatchingConfig(url);
-                if (config?.autoGrab?.activeTab === true) {
+                if (config?.autoNav?.activeTab === true) {
                     return hostname + " (Active Tab)";
                 }
             } catch (e) {
@@ -621,7 +621,7 @@ class StoryTrackerTable {
         // Enable/disable bulk action buttons
         const openChaptersBtn = document.getElementById("open-last-chapters-btn");
         const openMainBtn = document.getElementById("open-main-stories-btn");
-        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
+        const grabChaptersBtn = document.getElementById("grab-chapters-btn");
         const manageTagsBtn = document.getElementById("manage-tags-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
@@ -634,8 +634,8 @@ class StoryTrackerTable {
             this.updateAutoGrabButtonForActiveQueue();
         } else {
             // No queue active, normal behavior
-            autoGrabBtn.disabled = count === 0;
-            autoGrabBtn.textContent = "Grab New Chapters";
+            grabChaptersBtn.disabled = count === 0;
+            grabChaptersBtn.textContent = "Grab New Chapters";
         }
     }
 
@@ -1247,17 +1247,17 @@ class StoryTrackerTable {
                 return false;
             }
             
-            // Check if the domain supports auto-grab using WEBSITE_CONFIGS
+            // Check if the domain supports auto-nav using WEBSITE_CONFIGS
             try {
                 const config = findMatchingConfig(story.lastChapterUrl);
-                return config?.autoGrab?.enabled === true;
+                return config?.autoNav?.enabled === true;
             } catch {
                 return false;
             }
         });
 
         if (eligibleStories.length === 0) {
-            alert("No selected stories are eligible for auto-grab. Stories need:\n• A saved last chapter URL\n• Be from a site with auto-grab enabled in config");
+            alert("No selected stories support auto-nav. Stories need:\n• A saved last chapter URL\n• Be from a site with auto-nav enabled in config");
             return;
         }
 
@@ -1362,13 +1362,13 @@ class StoryTrackerTable {
     }
 
     updateAutoGrabButtonForActiveQueue() {
-        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
-        autoGrabBtn.disabled = this.selectedStories.size === 0;
+        const grabChaptersBtn = document.getElementById("grab-chapters-btn");
+        grabChaptersBtn.disabled = this.selectedStories.size === 0;
         
         if (this.selectedStories.size === 0) {
-            autoGrabBtn.textContent = "Queue Processing...";
+            grabChaptersBtn.textContent = "Queue Processing...";
         } else {
-            autoGrabBtn.textContent = "Add to Queue";
+            grabChaptersBtn.textContent = "Add to Queue";
         }
     }
 
@@ -1387,9 +1387,9 @@ class StoryTrackerTable {
         });
         
         // Re-enable Auto Grab button when queue is manually closed
-        const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
-        autoGrabBtn.disabled = this.selectedStories.size === 0; // Enable if stories are selected
-        autoGrabBtn.textContent = "Grab New Chapters";
+        const grabChaptersBtn = document.getElementById("grab-chapters-btn");
+        grabChaptersBtn.disabled = this.selectedStories.size === 0; // Enable if stories are selected
+        grabChaptersBtn.textContent = "Grab New Chapters";
     }
 
     // Handle queue progress updates from background script
@@ -1435,9 +1435,9 @@ class StoryTrackerTable {
             closeBtn.style.display = "inline-block";
             
             // Reset Auto Grab button when queue is complete
-            const autoGrabBtn = document.getElementById("auto-grab-chapters-btn");
-            autoGrabBtn.disabled = this.selectedStories.size === 0;
-            autoGrabBtn.textContent = "Grab New Chapters";
+            const grabChaptersBtn = document.getElementById("grab-chapters-btn");
+            grabChaptersBtn.disabled = this.selectedStories.size === 0;
+            grabChaptersBtn.textContent = "Grab New Chapters";
         }
         
         // Update Auto Grab button if queue is active

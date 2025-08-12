@@ -5,8 +5,8 @@
 // - preGrab: function to run before grabbing content (optional)
 // - postGrab: function to run after grabbing content (optional)
 // - runActionsOnDirectGrab: boolean to run pre/post actions on direct grabs (optional, defaults to true)
-// - autoGrab: configuration for automatic new chapter grabbing (optional)
-//   - enabled: boolean to enable auto-grab for this site
+// - autoNav: configuration for automatic navigation during chapter grabbing (optional)
+//   - enabled: boolean to enable auto-nav for this site
 //   - defaultCount: default number of chapters to grab
 //   - defaultDelay: default delay between grabs in seconds
 //   - activeTab: boolean to open tabs as active/focused (defaults to false)
@@ -18,7 +18,7 @@
 //     runActionsOnDirectGrab: false,  // Disable pre/post actions for direct grabs (shortcut/button)
 //     preGrab: GrabActions.scrollToBottom,  // Pre-grab actions
 //     postGrab: GrabActions.clickLinkContaining("Next", { exact: true }),  // Post-grab actions
-//     autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 5, activeTab: true }  // Auto-grab config
+//     autoNav: { enabled: true, defaultCount: 10, defaultDelay: 5, activeTab: true }  // Auto-nav config
 // }
 const WEBSITE_CONFIGS = {
     // Grabbers for single domains
@@ -36,20 +36,20 @@ const WEBSITE_CONFIGS = {
                     abortIfNotFound: true
                 }]
             },
-            autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
         "stellarrealm.net": {
             grabber: { fn: "grabStandard", args: [".chapter-content"] },
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h4"]] },
             postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "docs.google.com": { grabber: "grabGoogleDocMobileBasic" },
         "emptymurmurs.wordpress.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: { fn: "GrabActions.clickLinkContaining", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
         "fenrirealm.com": { grabber: "grabFenrir" },
@@ -59,7 +59,7 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 10, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
         "jjwxc.net": { grabber: "grabJjwxc" },
         "joara.com": { grabber: "grabJoara" },
@@ -70,7 +70,7 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         "maplesantl.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
@@ -82,7 +82,7 @@ const WEBSITE_CONFIGS = {
                     { selector: ".wp-block-button:nth-child(2) a.wp-block-button__link" }
                 ]
             },
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "medium.com": { grabber: { fn: "grabStandard", args: ["section", null] } },
         "novelingua.com": {
@@ -97,14 +97,14 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: "GrabActions.peachTeaClickNextChapterLink",
-            autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 60, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 5, defaultDelay: 60, activeTab: true }
         },
         "readhive.org": {
             grabber: "grabReadhive",
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next"] },
-            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "reaperscans.com": { grabber: { fn: "grabStandard", args: ["#reader-container", null] } },
         "requiemtls.com": { grabber: "grabRequiemtls" },
@@ -114,7 +114,7 @@ const WEBSITE_CONFIGS = {
             preGrab: "GrabActions.ridiTranslate",
             postGrab: "GrabActions.ridiNext",
             // postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
         "publang.com": { grabber: "grabPublang", useFirstHeadingTitle: true },
@@ -123,14 +123,14 @@ const WEBSITE_CONFIGS = {
             grabber: "grabStarlightStream",
             preGrab: "GrabActions.checkForPageNotFound",
             postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
-            autoGrab: { enabled: true, defaultCount: 5, defaultDelay: 20 }
+            autoNav: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },
         "storyseedling.com": {
             grabber: "grabStorySeedling",
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
-            autoGrab: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "syosetu.com": { grabber: "grabSyosetu" },
         "tapas.io": { grabber: "grabTapas", useFirstHeadingTitle: true },
@@ -138,7 +138,7 @@ const WEBSITE_CONFIGS = {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 18, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 18, defaultDelay: 10 }
         },
         "webnovel.com": { grabber: "grabWebnovel" },
         "watashiwasugoidesu.com": { grabber: "grabWatashiWaSugoiDesu" },
@@ -155,7 +155,7 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h1, h2, h3, .mycred-sell-this-wrapper"]] },
             postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         madaraWpSites: {
             domains: ["duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
@@ -163,7 +163,7 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: "GrabActions.pressRightArrow",
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
@@ -171,7 +171,7 @@ const WEBSITE_CONFIGS = {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: { fn: "GrabActions.clickLinkContaining", args: ["NEXT", { abortIfNotFound: true }] },
-            autoGrab: { enabled: true, defaultCount: 15, defaultDelay: 5 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         }
     }
 };

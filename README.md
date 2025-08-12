@@ -68,8 +68,8 @@ Grabby will attempt to extract and clean content from any page you're viewing.
 - Various web serial hosts and blogs (WordPress)
 - See [website-configs.js](website-configs.js) for the full list.
 
-### Sites with Bulk Grab & Auto-Check Support
-For sites with navigation support, look for ones with `autoGrab: { enabled: true }` in their configuration.
+### Sites with Bulk Grab & Auto-Check Support require automatic navigation configuration
+For sites with navigation support, look for ones with `autoNav: { enabled: true }` in their configuration.
 
 ### Universal Extraction
 For any other webpage, Grabby does its best to extract the main text while removing ads, navigation, and other clutter. This works for:

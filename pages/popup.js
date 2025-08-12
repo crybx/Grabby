@@ -6,16 +6,16 @@ document.addEventListener("DOMContentLoaded", async function() {
     
     // Check if current tab supports bulk grabbing
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    let supportsAutoGrab = false;
+    let supportsAutoNav = false;
     
     if (tab && tab.url && typeof findMatchingConfig !== "undefined") {
         // Check directly using findMatchingConfig from website-configs.js
         const config = findMatchingConfig(tab.url);
-        supportsAutoGrab = config?.autoGrab?.enabled === true;
+        supportsAutoNav = config?.autoNav?.enabled === true;
     }
     
     // Show bulk grabbing section only if supported
-    if (supportsAutoGrab) {
+    if (supportsAutoNav) {
         const bulkSection = document.querySelector(".bulk-section");
         const bulkSeparator = document.querySelector(".bulk-separator");
         if (bulkSection) {

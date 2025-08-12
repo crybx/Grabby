@@ -44,10 +44,10 @@ const handleBulkGrabComplete = (tabId, success, message, isError = false, chapte
 const bulkGrabManager = new BulkGrabManager(handleBulkGrabContent, handleBulkGrabComplete, scriptInjector);
 const queueManager = new QueueManager(handleAutoGrab);
 
-// Handle auto grab for individual stories
+// Handle bulk grab for individual stories
 async function handleAutoGrab(message) {
     try {
-        // Get auto-grab config to check if tab should be active
+        // Get auto-nav config to check if tab should be active
         // Simple domain matching to check activeTab setting without loading all grabber functions
         let shouldBeActive = false;
         try {
@@ -70,13 +70,13 @@ async function handleAutoGrab(message) {
             queueManager.registerStoryTab(message.storyId, tab.id);
         }
         
-        // Wait for tab to load, then start the auto-grab process
+        // Wait for tab to load, then start the auto-nav and grabbing process
         chrome.tabs.onUpdated.addListener(function autoGrabListener(tabId, changeInfo) {
             if (tabId === tab.id && changeInfo.status === "complete") {
                 // Remove this listener
                 chrome.tabs.onUpdated.removeListener(autoGrabListener);
                 
-                // Start the auto-grab process for this tab
+                // Start the auto-nav and grabbing process for this tab
                 setTimeout(() => {
                     performAutoGrabSequence(tab.id, message);
                 }, 2000); // Give page time to fully load
@@ -88,10 +88,10 @@ async function handleAutoGrab(message) {
     }
 }
 
-// Perform the auto-grab sequence: postGrab -> check URL change -> start bulk grab
+// Perform the auto-nav and grabbing sequence: postGrab -> check URL change -> start bulk grab
 async function performAutoGrabSequence(tabId, storyInfo) {
     try {
-        console.log(`Performing auto-grab sequence for tab ${tabId}: ${storyInfo.storyTitle}`);
+        console.log(`Performing auto-nav and grabbing sequence for tab ${tabId}: ${storyInfo.storyTitle}`);
         
         // Get the current URL before post-grab action
         const initialTab = await chrome.tabs.get(tabId);
@@ -115,10 +115,10 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     if (typeof resolvedConfig.postGrab === "function") {
                         try {
                             await resolvedConfig.postGrab();
-                            console.log("PostGrab action executed for auto-grab");
+                            console.log("PostGrab action executed for auto-nav");
 
                             // Return delay from website-config
-                            const delay = config.autoGrab?.defaultDelay || 10; // fallback to 10 seconds if not found
+                            const delay = config.autoNav?.defaultDelay || 10; // fallback to 10 seconds if not found
                             return delay * 1000; // convert to milliseconds
                         } catch (error) {
                             console.error("Error in postGrab action:", error);
@@ -144,7 +144,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     // Ensure scripts are injected before trying to get config
                     await scriptInjector.injectScriptsSequentially(tabId);
                     
-                    // Get site-specific auto-grab config from WEBSITE_CONFIGS
+                    // Get site-specific auto-nav config from WEBSITE_CONFIGS
                     const configResult = await chrome.scripting.executeScript({
                         target: { tabId: tabId },
                         func: function() {
@@ -153,21 +153,21 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                                 return null;
                             }
                             const config = findMatchingConfig(window.location.href);
-                            return config?.autoGrab || null;
+                            return config?.autoNav || null;
                         }
                     });
                     
-                    const autoGrabConfig = configResult[0]?.result;
+                    const autoNavConfig = configResult[0]?.result;
                     
-                    if (!autoGrabConfig || !autoGrabConfig.enabled) {
-                        console.log(`No auto-grab config found for ${storyInfo.storyTitle} - closing tab`);
+                    if (!autoNavConfig || !autoNavConfig.enabled) {
+                        console.log(`No auto-nav config found for ${storyInfo.storyTitle} - closing tab`);
                         chrome.tabs.remove(tabId);
-                        // DEBUG: Comment out the line above to keep tabs open for auto-grab debugging
+                        // DEBUG: Comment out the line above to keep tabs open for auto-nav debugging
                         return;
                     }
                     
-                    const defaultCount = autoGrabConfig.defaultCount;
-                    const defaultDelay = autoGrabConfig.defaultDelay;
+                    const defaultCount = autoNavConfig.defaultCount;
+                    const defaultDelay = autoNavConfig.defaultDelay;
                     
                     // Start bulk grab on this tab
                     await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId, storyInfo.storyId);
@@ -206,7 +206,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     // Close the tab since no new content
                     chrome.tabs.remove(tabId);
-                    // DEBUG: Comment out the line above to keep tabs open for auto-grab debugging
+                    // DEBUG: Comment out the line above to keep tabs open for auto-nav debugging
                 }
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);

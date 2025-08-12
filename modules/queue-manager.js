@@ -1,4 +1,4 @@
-// Queue Manager - Handles queued processing of story auto-grabs
+// Queue Manager - Handles queued processing of story auto-nav and grabbing
 export class QueueManager {
     constructor(handleAutoGrabFunction) {
         this.handleAutoGrab = handleAutoGrabFunction;
@@ -219,10 +219,10 @@ export class QueueManager {
         }
         
         const config = findMatchingConfig(url);
-        return config?.autoGrab?.activeTab === true;
+        return config?.autoNav?.activeTab === true;
     }
 
-    // Start auto-grab for a single story
+    // Start auto-nav and grabbing for a single story
     async startStoryAutoGrab(story) {
         // Track by domain
         if (!this.processingByDomain.has(story.domain)) {
@@ -242,7 +242,7 @@ export class QueueManager {
         });
 
         try {
-            console.log(`Starting auto-grab for story: ${story.title} (domain: ${story.domain}, activeTab: ${story.needsActiveTab})`);
+            console.log(`Starting auto-nav and grabbing for story: ${story.title} (domain: ${story.domain}, activeTab: ${story.needsActiveTab})`);
             
             // Use existing handleAutoGrab function
             await this.handleAutoGrab({
@@ -259,7 +259,7 @@ export class QueueManager {
             }
 
         } catch (error) {
-            console.error(`Error starting auto-grab for ${story.title}:`, error);
+            console.error(`Error starting auto-nav and grabbing for ${story.title}:`, error);
             this.markStoryCompleted(story.id, 'error', error.message);
         }
     }
@@ -554,7 +554,7 @@ export class QueueManager {
     // Handle story completion from other parts of the system (for cases where no bulk grab runs)
     handleStoryAutoGrabComplete(storyId, success, message = '') {
         if (this.processing.has(storyId)) {
-            // For auto-grab completions that don't go through bulk grab, 
+            // For auto-nav and grabbing completions that don't go through bulk grab,
             // we know 0 chapters were downloaded, so determine status based on message
             let status;
             let displayMessage = message;
@@ -614,7 +614,7 @@ export class QueueManager {
         }
     }
 
-    // Register tab-to-story mapping when auto-grab starts
+    // Register tab-to-story mapping when auto-nav and grabbing starts
     registerStoryTab(storyId, tabId) {
         this.tabToStoryMap.set(tabId, storyId);
         console.log(`Registered tab ${tabId} for story ${storyId}`);
