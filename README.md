@@ -102,10 +102,15 @@ For any other webpage, Grabby does its best to extract the main text while remov
 ### Required Permissions
 Grabby requests these Chrome permissions:
 - **activeTab** - To access the current tab's content when you trigger a grab
-- **storage** - To save your story tracking data and extension settings
-- **downloads** - To save grabbed content to your computer
 - **alarms** - To schedule bulk grab operations
+- **cookies** - To access login-protected content and handle site authentication (epub creation)
+- **declarativeNetRequest** - To handle complex site interactions (epub creation)
+- **downloads** - To save grabbed content to your computer
 - **scripting** - To inject content extraction scripts
+- **storage** - To save your story tracking data and extension settings
+- **tabs** - To manage tab operations for bulk grabbing and epub creation
+- **unlimitedStorage** - For large epub files and extensive story tracking data
+- **webRequest** - To monitor and modify network requests for enhanced content extraction (epub creation)
 
 ## Development
 

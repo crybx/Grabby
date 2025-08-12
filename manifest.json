@@ -17,15 +17,15 @@
   },
   "permissions": [
     "activeTab",
+    "alarms",
     "cookies",
-    "downloads",
-    "webRequest",
     "declarativeNetRequest",
+    "downloads",
     "scripting",
-    "tabs",
     "storage",
+    "tabs",
     "unlimitedStorage",
-    "alarms"
+    "webRequest"
   ],
   "host_permissions": ["*://*/*", "file:///*"],
   "content_scripts": [
