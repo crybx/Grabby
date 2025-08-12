@@ -1,7 +1,7 @@
 /* Popup styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 320px;
+    width: 250px;
     margin: 0;
     padding: 16px;
     color: #333;
@@ -19,10 +19,20 @@ h1 {
 
 /* Icon grid styles */
 .icon-grid {
-    display: flex;
-    justify-content: space-around;
     padding: 16px 8px;
     margin-bottom: 8px;
+}
+
+.icon-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+    justify-items: center;
+}
+
+.icon-row:last-child {
+    margin-bottom: 0;
 }
 
 .icon-item {

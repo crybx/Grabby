@@ -1,9 +1,12 @@
 .idea
 .vscode
 node_modules
-dev-reference/
 
 # Build artifacts
 dist/
 *.zip
 grabby-extension.zip
+
+# npm dependencies copied by postinstall scripts
+epub/@zip.js/
+epub/dompurify/

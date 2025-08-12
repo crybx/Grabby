@@ -17,6 +17,7 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 - **Smart extraction** - Custom extraction logic for 50+ fiction and novel sites
 - **Cleans output** - Automatically removes ads, navigation, and other clutter
 - **Structured file naming** - Consistent naming pattern with chapter numbers and story titles for easy searching and identification
+- **Epub creation** - Embedded [WebToEpub-Codex](https://github.com/crybx/WebToEpub-Codex) for converting web stories to epub format with enhanced features
 
 ## Installation
 
@@ -51,6 +52,15 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 2. Click "Start Bulk Grab" from the extension popup
 3. Choose how many chapters to grab
 4. Grabby will automatically navigate and download chapters*
+
+### Epub Creation
+1. Navigate to any webpage or story you want to convert
+2. Click "Create Epub" from the extension popup
+3. Use the embedded WebToEpub-Codex interface to:
+   - Parse and extract content from 200+ supported websites
+   - Customize metadata, cover images, and formatting
+   - Generate epub files for e-readers
+   - Access enhanced features from the WebToEpub-Codex fork
 
 *Note: Bulk grabbing and automatic new chapter checking require site-specific configuration. (More details below.)
 These features are available for sites with navigation support. Single-page grabbing works on any webpage.

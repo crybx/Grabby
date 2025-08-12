@@ -3,6 +3,7 @@
   "name": "Grabby",
   "description": "Make reading stories online easier. Save chapters as clean, readable files and track reading progress across ongoing stories.",
   "version": "0.1.0",
+  "default_locale": "en",
   "icons": {
     "128": "images/clipboard128.png"
   },
@@ -16,10 +17,14 @@
   },
   "permissions": [
     "activeTab",
+    "cookies",
     "downloads",
+    "webRequest",
+    "declarativeNetRequest",
     "scripting",
     "tabs",
     "storage",
+    "unlimitedStorage",
     "alarms"
   ],
   "host_permissions": ["*://*/*", "file:///*"],

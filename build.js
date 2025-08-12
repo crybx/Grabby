@@ -53,9 +53,8 @@ function copyRecursiveSync(src, dest) {
             const srcPath = path.join(src, childItemName);
             const destPath = path.join(dest, childItemName);
       
-            if (!shouldExclude(srcPath)) {
-                copyRecursiveSync(srcPath, destPath);
-            }
+            // Don't apply exclusion logic during recursive copying
+            copyRecursiveSync(srcPath, destPath);
         });
     } else {
         fs.copyFileSync(src, dest);

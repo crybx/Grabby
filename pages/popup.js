@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     const storyTrackerButton = document.getElementById("story-tracker-button");
     const optionsButton = document.getElementById("options-button");
     const supportButton = document.getElementById("support-button");
+    const epubButton = document.getElementById("epub-button");
     const startBulkBtn = document.getElementById("start-bulk-grab");
     const stopBulkBtn = document.getElementById("stop-bulk-grab");
     const clearStatusBtn = document.getElementById("clear-status");
@@ -85,6 +86,19 @@ document.addEventListener("DOMContentLoaded", async function() {
         supportButton.addEventListener("click", () => {
             chrome.tabs.create({
                 url: "https://ko-fi.com/crybx"
+            });
+            window.close();
+        });
+    }
+    
+    // Add click handler for epub button
+    if (epubButton) {
+        epubButton.addEventListener("click", async () => {
+            // Get current tab ID to pass for epub creation
+            const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            const epubUrl = chrome.runtime.getURL("epub/details.html") + "?id=" + currentTab.id;
+            chrome.tabs.create({
+                url: epubUrl
             });
             window.close();
         });

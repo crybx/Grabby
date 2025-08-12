@@ -180,8 +180,8 @@ function findMatchingConfig(url) {
     // Check single domain configs first
     for (const [domain, config] of Object.entries(WEBSITE_CONFIGS.singleDomains)) {
         if (url.includes(domain))  {
-            console.log(`Domain: ${domain}`);
-            console.log(`Grabber: ${typeof config.grabber === "string" ? config.grabber : config.grabber.fn}`);
+            // console.log(`Domain: ${domain}`);
+            // console.log(`Grabber: ${typeof config.grabber === "string" ? config.grabber : config.grabber.fn}`);
             return config;
         }
     }
@@ -189,8 +189,8 @@ function findMatchingConfig(url) {
     // Then check multi-domain configs
     for (const [key, config] of Object.entries(WEBSITE_CONFIGS.multiDomains)) {
         if (config.domains.some(domain => url.includes(domain))) {
-            console.log(`Multi-domain: ${key}`);
-            console.log(`Grabber: ${typeof config.grabber === "string" ? config.grabber : config.grabber.fn}`);
+            // console.log(`Multi-domain: ${key}`);
+            // console.log(`Grabber: ${typeof config.grabber === "string" ? config.grabber : config.grabber.fn}`);
             return config;
         }
     }

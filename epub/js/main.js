@@ -344,7 +344,7 @@ const main = (function() {
         try {
             chrome.scripting.executeScript({
                 target: {tabId: tabId},
-                files: ["js/ContentScript.js"]
+                files: ["epub/js/ContentScript.js"]
             });
         } catch {
             if (chrome.runtime.lastError) {
@@ -528,7 +528,7 @@ const main = (function() {
     function openTabWindow() {
         // open new tab window, passing ID of open tab with content to convert to epub as query parameter.
         getActiveTab().then(function(tabId) {
-            let url = chrome.runtime.getURL("popup.html") + "?id=";
+            let url = chrome.runtime.getURL("epub/details.html") + "?id=";
             url += tabId;
             try {
                 chrome.tabs.create({ url: url, openerTabId: tabId });

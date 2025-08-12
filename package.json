@@ -5,12 +5,19 @@
   "scripts": {
     "lint": "eslint *.js",
     "lint:fix": "eslint *.js --fix",
-    "build": "node build.js"
+    "build": "node build.js",
+    "postinstall-zip": "copyfiles -V -u 1 node_modules/@zip.js/zip.js/dist/zip-no-worker.min.js epub",
+    "postinstall-dompurify": "copyfiles -V -u 1 node_modules/dompurify/dist/purify.min.js epub",
+    "postinstall": "npm run -s postinstall-zip && npm run -s postinstall-dompurify"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "^2.7.72",
+    "dompurify": "^3.2.6"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.326",
-    "@zip.js/zip.js": "^2.7.72",
-    "eslint": "^8.57.0"
+    "eslint": "^8.57.0",
+    "copyfiles": "^2.4.1"
   },
   "keywords": [
     "chrome-extension",
