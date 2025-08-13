@@ -234,129 +234,129 @@ async function handleMessages(message, sender, sendResponse) {
     }
 
     switch (message.type) {
-    case "downloadAsFile":
-        await downloadHandler.downloadAsFile(message.title, message.blobUrl, message.cleanup);
-        break;
-    case "showError":
+        case "downloadAsFile":
+            await downloadHandler.downloadAsFile(message.title, message.blobUrl, message.cleanup);
+            break;
+        case "showError":
         // You could implement a notification system here
-        console.log("ERROR: " + message.message);
-        break;
-    case "grabContent":
-        await handleGrabContent(message, sender);
-        break;
-    case "updateStoryTracker": {
-        const tabId = await scriptInjector.getTabId(message, sender);
+            console.log("ERROR: " + message.message);
+            break;
+        case "grabContent":
+            await handleGrabContent(message, sender);
+            break;
+        case "updateStoryTracker": {
+            const tabId = await scriptInjector.getTabId(message, sender);
         
-        // Check if this tab is associated with a queue story
-        const storyId = queueManager.getStoryIdForTab(tabId);
+            // Check if this tab is associated with a queue story
+            const storyId = queueManager.getStoryIdForTab(tabId);
         
-        // Inject story tracker script and update via content script
-        await scriptInjector.injectScriptsSequentially(tabId);
-        await chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            func: async (url, title, storyId) => {
-                if (typeof StoryTracker !== "undefined") {
-                    await StoryTracker.updateLastChapter(url, title, storyId);
-                }
-            },
-            args: [message.url, message.title, storyId]
-        });
-        break;
-    }
-    case "openBackgroundTab":
-        // Open URL in background tab (for Ctrl+click functionality)
-        try {
-            chrome.tabs.create({
-                url: message.url,
-                active: false
-            });
-            console.log("Opened background tab:", message.url);
-        } catch (error) {
-            console.error("Failed to open background tab:", error);
-        }
-        break;
-    case "startBulkGrab": {
-        const startTabId = await scriptInjector.getTabId(message, sender);
-        await bulkGrabManager.startBulkGrab(message.pageCount, message.delaySeconds, startTabId);
-        break;
-    }
-    case "stopGrabbing": {
-        const stopTabId = await scriptInjector.getTabId(message, sender);
-        
-        // Update story tracker with status and show message if provided
-        if (message.status && message.url) {
             // Inject story tracker script and update via content script
-            await scriptInjector.injectScriptsSequentially(stopTabId);
+            await scriptInjector.injectScriptsSequentially(tabId);
             await chrome.scripting.executeScript({
-                target: { tabId: stopTabId },
-                func: async (url, status) => {
+                target: { tabId: tabId },
+                func: async (url, title, storyId) => {
                     if (typeof StoryTracker !== "undefined") {
-                        await StoryTracker.updateLastCheckStatus(url, status);
+                        await StoryTracker.updateLastChapter(url, title, storyId);
                     }
                 },
-                args: [message.url, message.status]
+                args: [message.url, message.title, storyId]
             });
-            console.log("ERROR: " + message.status);
+            break;
         }
+        case "openBackgroundTab":
+        // Open URL in background tab (for Ctrl+click functionality)
+            try {
+                chrome.tabs.create({
+                    url: message.url,
+                    active: false
+                });
+                console.log("Opened background tab:", message.url);
+            } catch (error) {
+                console.error("Failed to open background tab:", error);
+            }
+            break;
+        case "startBulkGrab": {
+            const startTabId = await scriptInjector.getTabId(message, sender);
+            await bulkGrabManager.startBulkGrab(message.pageCount, message.delaySeconds, startTabId);
+            break;
+        }
+        case "stopGrabbing": {
+            const stopTabId = await scriptInjector.getTabId(message, sender);
         
-        // Stop the grabbing process with the reason
-        const reason = message.status || "Bulk grab stopped manually";
-        await bulkGrabManager.stopGrabbing(stopTabId, reason);
+            // Update story tracker with status and show message if provided
+            if (message.status && message.url) {
+            // Inject story tracker script and update via content script
+                await scriptInjector.injectScriptsSequentially(stopTabId);
+                await chrome.scripting.executeScript({
+                    target: { tabId: stopTabId },
+                    func: async (url, status) => {
+                        if (typeof StoryTracker !== "undefined") {
+                            await StoryTracker.updateLastCheckStatus(url, status);
+                        }
+                    },
+                    args: [message.url, message.status]
+                });
+                console.log("ERROR: " + message.status);
+            }
         
-        break;
-    }
-    case "getBulkGrabStatus":
+            // Stop the grabbing process with the reason
+            const reason = message.status || "Bulk grab stopped manually";
+            await bulkGrabManager.stopGrabbing(stopTabId, reason);
+        
+            break;
+        }
+        case "getBulkGrabStatus":
         // Handle async response properly
-        void (async () => {
-            const tabId = await scriptInjector.getTabId(message, sender);
-            const status = await bulkGrabManager.getBulkGrabStatus(tabId);
-            sendResponse(status);
-        })();
-        return true; // Keep message channel open for async response
-    case "clearBulkGrabStatus":
-        void (async () => {
-            const tabId = await scriptInjector.getTabId(message, sender);
-            await bulkGrabManager.removeBulkGrabState(tabId);
-        })();
-        break;
-    case "startAutoGrab":
-        await handleAutoGrab(message);
-        break;
-    case "startQueueProcessing":
-        try {
-            const result = queueManager.startQueueProcessing(message.stories);
-            sendResponse(result);
-        } catch (error) {
-            console.error("Error starting queue processing:", error);
-            sendResponse({ error: error.message });
-        }
-        break;
-    case "addToQueue":
-        try {
-            const result = queueManager.addToQueue(message.stories);
-            sendResponse(result);
-        } catch (error) {
-            console.error("Error adding to queue:", error);
-            sendResponse({ error: error.message });
-        }
-        break;
-    case "pauseQueue":
-        queueManager.pauseQueue();
-        break;
-    case "resumeQueue":
-        queueManager.resumeQueue();
-        break;
-    case "cancelQueue":
-        queueManager.cancelQueue();
-        break;
-    case "getQueueStatus":
-        sendResponse(queueManager.getQueueStatus());
-        return true; // Keep message channel open for async response
-    case "clearCompletedQueue":
-        queueManager.clearCompletedQueue();
-        break;
-    default:
-        console.warn(`Unexpected message type received: '${message.type}'.`);
+            void (async () => {
+                const tabId = await scriptInjector.getTabId(message, sender);
+                const status = await bulkGrabManager.getBulkGrabStatus(tabId);
+                sendResponse(status);
+            })();
+            return true; // Keep message channel open for async response
+        case "clearBulkGrabStatus":
+            void (async () => {
+                const tabId = await scriptInjector.getTabId(message, sender);
+                await bulkGrabManager.removeBulkGrabState(tabId);
+            })();
+            break;
+        case "startAutoGrab":
+            await handleAutoGrab(message);
+            break;
+        case "startQueueProcessing":
+            try {
+                const result = queueManager.startQueueProcessing(message.stories);
+                sendResponse(result);
+            } catch (error) {
+                console.error("Error starting queue processing:", error);
+                sendResponse({ error: error.message });
+            }
+            break;
+        case "addToQueue":
+            try {
+                const result = queueManager.addToQueue(message.stories);
+                sendResponse(result);
+            } catch (error) {
+                console.error("Error adding to queue:", error);
+                sendResponse({ error: error.message });
+            }
+            break;
+        case "pauseQueue":
+            queueManager.pauseQueue();
+            break;
+        case "resumeQueue":
+            queueManager.resumeQueue();
+            break;
+        case "cancelQueue":
+            queueManager.cancelQueue();
+            break;
+        case "getQueueStatus":
+            sendResponse(queueManager.getQueueStatus());
+            return true; // Keep message channel open for async response
+        case "clearCompletedQueue":
+            queueManager.clearCompletedQueue();
+            break;
+        default:
+            console.warn(`Unexpected message type received: '${message.type}'.`);
     }
     return false;
 }

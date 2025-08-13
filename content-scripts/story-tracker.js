@@ -169,19 +169,19 @@ function cleanTitle(chapterTitle, storyTitle = null) {
     
     // Remove common words
     const wordsToRemove = [
-        'chapter',
-        'episode',
-        'translation\\s+weaver',
-        'story\\s+seedling',
-        'ridi',
-        'maplesan\\s+translations',
-        'emptymurmurs',
-        'darkstar\\s+translations',
-        '✿ dusk blossoms ✿'
+        "chapter",
+        "episode",
+        "translation\\s+weaver",
+        "story\\s+seedling",
+        "ridi",
+        "maplesan\\s+translations",
+        "emptymurmurs",
+        "darkstar\\s+translations",
+        "✿ dusk blossoms ✿"
     ];
 
     cleanedTitle = cleanedTitle.replace(
-        new RegExp(`\\b(${wordsToRemove.join('|')})\\b`, 'gi'),
+        new RegExp(`\\b(${wordsToRemove.join("|")})\\b`, "gi"),
         ""
     );
 
@@ -203,10 +203,10 @@ async function updateLastCheckStatus(chapterUrl, status, storyId = null) {
     if (storyId) {
         console.log(`Using provided storyId: ${storyId} for status update: ${chapterUrl}`);
         story = await getStory(storyId);
-        console.log(`Found story by ID:`, story ? story.title : 'NOT FOUND');
+        console.log("Found story by ID:", story ? story.title : "NOT FOUND");
     } else {
         story = await findStoryByChapterUrl(chapterUrl);
-        console.log(`Found story by URL:`, story ? story.title : 'NOT FOUND');
+        console.log("Found story by URL:", story ? story.title : "NOT FOUND");
     }
     
     if (story) {
@@ -233,12 +233,12 @@ async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null
     if (storyId) {
         console.log(`Using provided storyId: ${storyId} for chapter: ${chapterUrl}`);
         story = await getStory(storyId);
-        console.log(`Found story by ID:`, story ? story.title : 'NOT FOUND');
+        console.log("Found story by ID:", story ? story.title : "NOT FOUND");
     } else {
         // Fall back to URL matching for non-queue grabs
         console.log(`Falling back to URL matching for chapter: ${chapterUrl}`);
         story = await findStoryByChapterUrl(chapterUrl);
-        console.log(`Found story by URL:`, story ? story.title : 'NOT FOUND');
+        console.log("Found story by URL:", story ? story.title : "NOT FOUND");
     }
     
     if (story) {

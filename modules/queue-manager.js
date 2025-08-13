@@ -208,14 +208,14 @@ export class QueueManager {
         } catch {
             // Fallback for malformed URLs
             const match = url.match(/https?:\/\/([^/]+)/);
-            return match ? match[1] : 'unknown';
+            return match ? match[1] : "unknown";
         }
     }
 
     // Check if a story needs active tab based on URL
     checkIfNeedsActiveTab(url) {
-        if (typeof findMatchingConfig === 'undefined') {
-            throw new Error('findMatchingConfig is not available - website-configs.js may not be loaded');
+        if (typeof findMatchingConfig === "undefined") {
+            throw new Error("findMatchingConfig is not available - website-configs.js may not be loaded");
         }
         
         const config = findMatchingConfig(url);
@@ -237,7 +237,7 @@ export class QueueManager {
         
         this.processing.set(story.id, {
             ...story,
-            status: 'starting',
+            status: "starting",
             startTime: Date.now()
         });
 
@@ -254,13 +254,13 @@ export class QueueManager {
             // Update status to processing
             const processingStory = this.processing.get(story.id);
             if (processingStory) {
-                processingStory.status = 'processing';
+                processingStory.status = "processing";
                 this.notifyQueueUpdate();
             }
 
         } catch (error) {
             console.error(`Error starting auto-nav and grabbing for ${story.title}:`, error);
-            this.markStoryCompleted(story.id, 'error', error.message);
+            this.markStoryCompleted(story.id, "error", error.message);
         }
     }
 
@@ -326,7 +326,7 @@ export class QueueManager {
     }
 
     // Mark a story as completed
-    markStoryCompleted(storyId, status, message = '') {
+    markStoryCompleted(storyId, status, message = "") {
         const processingStory = this.processing.get(storyId);
         if (processingStory) {
             // Remove from domain tracking
@@ -379,14 +379,14 @@ export class QueueManager {
 
     // Complete the queue
     completeQueue() {
-        console.log('Queue processing completed');
+        console.log("Queue processing completed");
         this.isActive = false;
         this.isCompleted = true;
         
         // Clear any remaining alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('queue-processing-')) {
+                if (alarm.name.startsWith("queue-processing-")) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -400,12 +400,12 @@ export class QueueManager {
         if (!this.isActive) return;
         
         this.isPaused = true;
-        console.log('Queue processing paused');
+        console.log("Queue processing paused");
         
         // Clear scheduled alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('queue-processing-')) {
+                if (alarm.name.startsWith("queue-processing-")) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -419,7 +419,7 @@ export class QueueManager {
         if (!this.isActive || !this.isPaused) return;
         
         this.isPaused = false;
-        console.log('Queue processing resumed');
+        console.log("Queue processing resumed");
         
         // Restart queue processing if needed
         if (this.queue.length > 0) {
@@ -433,12 +433,12 @@ export class QueueManager {
     cancelQueue() {
         if (!this.isActive) return;
         
-        console.log('Queue processing cancelled');
+        console.log("Queue processing cancelled");
         
         // Clear alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith('queue-processing-')) {
+                if (alarm.name.startsWith("queue-processing-")) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -464,8 +464,8 @@ export class QueueManager {
             
             this.completed.set(storyId, {
                 ...story,
-                status: 'cancelled',
-                message: 'Queue cancelled by user',
+                status: "cancelled",
+                message: "Queue cancelled by user",
                 endTime: Date.now(),
                 duration: Date.now() - story.startTime
             });
@@ -474,8 +474,8 @@ export class QueueManager {
         for (const story of this.queue) {
             this.completed.set(story.id, {
                 ...story,
-                status: 'cancelled',
-                message: 'Queue cancelled by user',
+                status: "cancelled",
+                message: "Queue cancelled by user",
                 startTime: Date.now(),
                 endTime: Date.now(),
                 duration: 0
@@ -501,7 +501,7 @@ export class QueueManager {
             this.isCompleted = false;
             this.currentQueueId = null;
             this.completed.clear();
-            console.log('Cleared completed queue status');
+            console.log("Cleared completed queue status");
         }
     }
 
@@ -524,10 +524,10 @@ export class QueueManager {
                 processing: this.processing.size,
                 queued: this.queue.length,
                 completed: this.completed.size,
-                successful: Array.from(this.completed.values()).filter(s => s.status === 'success').length,
-                failed: Array.from(this.completed.values()).filter(s => s.status === 'error').length,
-                noContent: Array.from(this.completed.values()).filter(s => s.status === 'no-content').length,
-                cancelled: Array.from(this.completed.values()).filter(s => s.status === 'cancelled').length
+                successful: Array.from(this.completed.values()).filter(s => s.status === "success").length,
+                failed: Array.from(this.completed.values()).filter(s => s.status === "error").length,
+                noContent: Array.from(this.completed.values()).filter(s => s.status === "no-content").length,
+                cancelled: Array.from(this.completed.values()).filter(s => s.status === "cancelled").length
             }
         };
     }
@@ -539,9 +539,9 @@ export class QueueManager {
         // Send message to story tracker page if it's open
         chrome.tabs.query({}, (tabs) => {
             tabs.forEach(tab => {
-                if (tab.url && tab.url.includes('story-tracker.html')) {
+                if (tab.url && tab.url.includes("story-tracker.html")) {
                     chrome.tabs.sendMessage(tab.id, {
-                        type: 'queueUpdate',
+                        type: "queueUpdate",
                         status: status
                     }).catch(() => {
                         // Ignore errors if story tracker page isn't listening
@@ -552,24 +552,24 @@ export class QueueManager {
     }
 
     // Handle story completion from other parts of the system (for cases where no bulk grab runs)
-    handleStoryAutoGrabComplete(storyId, success, message = '') {
+    handleStoryAutoGrabComplete(storyId, success, message = "") {
         if (this.processing.has(storyId)) {
             // For auto-nav and grabbing completions that don't go through bulk grab,
             // we know 0 chapters were downloaded, so determine status based on message
             let status;
             let displayMessage = message;
             
-            if (message.toLowerCase().includes('error')) {
-                status = 'error';
+            if (message.toLowerCase().includes("error")) {
+                status = "error";
             } else {
                 // No bulk grab ran, so 0 chapters downloaded - this is a no-content case
-                status = 'no-content';
-                if (message.toLowerCase().includes('no next')) {
-                    displayMessage = 'No new chapters found';
-                } else if (message.toLowerCase().includes('premium')) {
-                    displayMessage = 'Premium content reached';
+                status = "no-content";
+                if (message.toLowerCase().includes("no next")) {
+                    displayMessage = "No new chapters found";
+                } else if (message.toLowerCase().includes("premium")) {
+                    displayMessage = "Premium content reached";
                 } else {
-                    displayMessage = 'No content available';
+                    displayMessage = "No content available";
                 }
             }
             
@@ -578,7 +578,7 @@ export class QueueManager {
     }
 
     // Handle bulk grab completion (called by bulk grab manager)
-    handleBulkGrabComplete(tabId, success, message = '', isError = false, chaptersDownloaded = 0, isManualStop = false) {
+    handleBulkGrabComplete(tabId, success, message = "", isError = false, chaptersDownloaded = 0, isManualStop = false) {
         const storyId = this.tabToStoryMap.get(tabId);
         if (storyId) {
             console.log(`Bulk grab completed for tab ${tabId}, story ${storyId}: ${chaptersDownloaded} chapters downloaded, message: ${message}`);
@@ -589,23 +589,23 @@ export class QueueManager {
             let displayMessage = message;
             
             if (isError) {
-                status = 'error';
+                status = "error";
             } else if (isManualStop) {
-                status = 'cancelled';
+                status = "cancelled";
             } else if (chaptersDownloaded > 0) {
                 // Downloaded chapters - this is success, regardless of how/why it stopped
-                status = 'success';
-                displayMessage = `Downloaded ${chaptersDownloaded} chapter${chaptersDownloaded === 1 ? '' : 's'} - ${message}`;
+                status = "success";
+                displayMessage = `Downloaded ${chaptersDownloaded} chapter${chaptersDownloaded === 1 ? "" : "s"} - ${message}`;
             } else {
                 // No chapters downloaded - this is no-content
-                status = 'no-content';
+                status = "no-content";
                 displayMessage = message; // Show the actual reason (abort message, etc.)
             }
             
             this.markStoryCompleted(storyId, status, displayMessage);
             
             // Auto-close tab for completed queue stories (both success and no-content)
-            if (status === 'success' || status === 'no-content') {
+            if (status === "success" || status === "no-content") {
                 console.log(`Auto-closing tab ${tabId} for completed queue story (${status})`);
                 chrome.tabs.remove(tabId).catch(() => {
                     // Ignore errors if tab is already closed
@@ -644,7 +644,7 @@ export class QueueManager {
         // Set up global alarm listener only once
         if (!QueueManager.alarmListenerSet) {
             chrome.alarms.onAlarm.addListener((alarm) => {
-                if (alarm.name.startsWith('queue-processing-') && QueueManager.currentInstance) {
+                if (alarm.name.startsWith("queue-processing-") && QueueManager.currentInstance) {
                     console.log(`Processing alarm: ${alarm.name}`);
                     QueueManager.currentInstance.processNextInQueue();
                 }

@@ -176,19 +176,19 @@ document.addEventListener("DOMContentLoaded", async function() {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.target === "popup") {
             switch (message.type) {
-            case "bulkGrabStatus":
-                updateStatus(message.status, message.progress);
-                break;
-            case "bulkGrabComplete":
-                updateUIForBulkGrabbing(false);
-                updateStatus("Completed!", 100);
-                // Don't auto-hide - let user manually clear with × button
-                break;
-            case "bulkGrabStopped":
-                updateUIForBulkGrabbing(false);
-                updateStatus("Stopped", 0);
-                // Don't auto-hide - let user manually clear with × button
-                break;
+                case "bulkGrabStatus":
+                    updateStatus(message.status, message.progress);
+                    break;
+                case "bulkGrabComplete":
+                    updateUIForBulkGrabbing(false);
+                    updateStatus("Completed!", 100);
+                    // Don't auto-hide - let user manually clear with × button
+                    break;
+                case "bulkGrabStopped":
+                    updateUIForBulkGrabbing(false);
+                    updateStatus("Stopped", 0);
+                    // Don't auto-hide - let user manually clear with × button
+                    break;
             }
         }
     });

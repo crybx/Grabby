@@ -211,7 +211,7 @@ async function ridiTranslate() {
 // specifically for Peach Tea Agency
 async function peachTeaClickNextChapterLink() {
     // First, ensure the "All on one page?" button is clicked to show the Next chapter link
-    if (typeof GrabActions !== 'undefined' && GrabActions.peachTeaClickAllOnOnePageButton) {
+    if (typeof GrabActions !== "undefined" && GrabActions.peachTeaClickAllOnOnePageButton) {
         console.log("Calling peachTeaClickAllOnOnePageButton from postGrab to ensure Next chapter link is visible");
         await GrabActions.peachTeaClickAllOnOnePageButton(false);
     }
@@ -301,7 +301,7 @@ function clickLinkContaining(text, options = {}) {
         }
     }
     
-    const textDescription = Array.isArray(text) ? `any of [${text.join(', ')}]` : `"${text}"`;
+    const textDescription = Array.isArray(text) ? `any of [${text.join(", ")}]` : `"${text}"`;
     if (abortIfNotFound) {
         return { abort: true, reason: `No valid element found with text: ${textDescription}` };
     }
@@ -500,13 +500,13 @@ function pressSpace() {
 }
 
 async function ridiNext() {
-    let unownedEpisodeButtons = document.querySelectorAll('.checkout_contents_wrapper button');
+    let unownedEpisodeButtons = document.querySelectorAll(".checkout_contents_wrapper button");
     let unownedText = [
         "view next episode",
         "watch the next episode",
         "watch the nextepisode",
         "다음화 보기"
-    ]
+    ];
     for (let button of unownedEpisodeButtons) {
         const buttonText = button.textContent.trim().toLowerCase();
         if (unownedText.some(t => buttonText.includes(t))) {
@@ -517,7 +517,7 @@ async function ridiNext() {
 
     // wait to let popup load
     await new Promise(r => setTimeout(r, 3100));
-    let checkoutButtons = document.querySelectorAll('.checkout_buttons button');
+    let checkoutButtons = document.querySelectorAll(".checkout_buttons button");
 
     let paidText = [
         "pay and watch right away",
@@ -530,11 +530,11 @@ async function ridiNext() {
         "view for free",
         "무료로 보기",
         "watch for free"
-    ]
+    ];
     
     // No check button found, so look for real checkout buttons
     for (let button of checkoutButtons) {
-        const buttonText = button.textContent?.trim()?.toLowerCase() || '';
+        const buttonText = button.textContent?.trim()?.toLowerCase() || "";
         if (freeText.some(t => buttonText.includes(t))) {
             button.click();
             // wait for page to load

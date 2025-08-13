@@ -313,10 +313,10 @@ const utils = (function() {
 
     function isElementWhiteSpace(element) {
         switch (element.nodeType) {
-        case Node.TEXT_NODE:
-            return isStringWhiteSpace(element.textContent);
-        case Node.COMMENT_NODE:
-            return true;
+            case Node.TEXT_NODE:
+                return isStringWhiteSpace(element.textContent);
+            case Node.COMMENT_NODE:
+                return true;
         }
         if ((element.tagName === "IMG") || (element.tagName === "image")) {
             return false;

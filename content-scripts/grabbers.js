@@ -574,7 +574,7 @@ async function grabPeachTeaAgency() {
         });
         
         // Create a snapshot of current content to compare
-        const currentContentSnapshot = divsFromThisLoop.map(d => d.textContent).join('|');
+        const currentContentSnapshot = divsFromThisLoop.map(d => d.textContent).join("|");
 
         // Check if the content has changed from last iteration
         if (currentContentSnapshot === lastContentSnapshot && i > 0) {
@@ -599,7 +599,7 @@ async function grabPeachTeaAgency() {
         
         window.scrollBy({
             top: window.innerHeight * 0.75,
-            behavior: 'smooth'
+            behavior: "smooth"
         });
         
         // Wait for content to load
@@ -609,8 +609,8 @@ async function grabPeachTeaAgency() {
     
     // First, remove items with no textContent and "Scroll down to continue reading" prompts
     let filteredDivs = collectedDivs.filter(item => {
-        return item.textContent !== '' && 
-               item.textContent !== 'Scroll down to continue reading';
+        return item.textContent !== "" && 
+               item.textContent !== "Scroll down to continue reading";
     });
     // Now remove duplicates that overlap between loops only
     let finalDivs = [];
@@ -684,7 +684,7 @@ async function grabPeachTeaAgency() {
     allContentDivs.forEach(contentDiv => {
         contentDiv.querySelectorAll("*").forEach(element => {
             utils.replaceSemanticInlineStylesWithTags(element, true);
-            util.removeAttributes(element, ["data-reader-disable"])
+            util.removeAttributes(element, ["data-reader-disable"]);
             // If tag is div, replace with p
             if (element.tagName === "DIV") {
                 const pElement = dom.createElement("p");

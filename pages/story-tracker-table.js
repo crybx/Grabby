@@ -318,34 +318,34 @@ class StoryTrackerTable {
             let aValue, bValue;
 
             switch (this.sortColumn) {
-            case "title":
-                aValue = a.title.toLowerCase();
-                bValue = b.title.toLowerCase();
-                break;
-            case "domain":
-                aValue = this.extractDomain(a.mainStoryUrl);
-                bValue = this.extractDomain(b.mainStoryUrl);
-                break;
-            case "lastChapter":
-                aValue = a.lastChapterTitle || a.lastChapterUrl || "";
-                bValue = b.lastChapterTitle || b.lastChapterUrl || "";
-                aValue = aValue.toLowerCase();
-                bValue = bValue.toLowerCase();
-                break;
-            case "tags":
-                aValue = (a.tags || []).join(", ").toLowerCase();
-                bValue = (b.tags || []).join(", ").toLowerCase();
-                break;
-            case "dateLastGrabbed":
-                aValue = new Date(a.dateLastGrabbed || 0);
-                bValue = new Date(b.dateLastGrabbed || 0);
-                break;
-            case "dateLastChecked":
-                aValue = new Date(a.dateLastChecked || 0);
-                bValue = new Date(b.dateLastChecked || 0);
-                break;
-            default:
-                return 0;
+                case "title":
+                    aValue = a.title.toLowerCase();
+                    bValue = b.title.toLowerCase();
+                    break;
+                case "domain":
+                    aValue = this.extractDomain(a.mainStoryUrl);
+                    bValue = this.extractDomain(b.mainStoryUrl);
+                    break;
+                case "lastChapter":
+                    aValue = a.lastChapterTitle || a.lastChapterUrl || "";
+                    bValue = b.lastChapterTitle || b.lastChapterUrl || "";
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                    break;
+                case "tags":
+                    aValue = (a.tags || []).join(", ").toLowerCase();
+                    bValue = (b.tags || []).join(", ").toLowerCase();
+                    break;
+                case "dateLastGrabbed":
+                    aValue = new Date(a.dateLastGrabbed || 0);
+                    bValue = new Date(b.dateLastGrabbed || 0);
+                    break;
+                case "dateLastChecked":
+                    aValue = new Date(a.dateLastChecked || 0);
+                    bValue = new Date(b.dateLastChecked || 0);
+                    break;
+                default:
+                    return 0;
             }
 
             if (aValue < bValue) return this.sortDirection === "asc" ? -1 : 1;
@@ -741,8 +741,8 @@ class StoryTrackerTable {
         document.getElementById("story-form").reset();
         
         // Hide date fields for add mode
-        const editOnlyElements = document.querySelectorAll('.edit-only');
-        editOnlyElements.forEach(el => el.style.display = 'none');
+        const editOnlyElements = document.querySelectorAll(".edit-only");
+        editOnlyElements.forEach(el => el.style.display = "none");
         
         document.getElementById("story-modal").style.display = "flex";
     }
@@ -762,28 +762,28 @@ class StoryTrackerTable {
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
         
         // Show and populate date fields for edit mode
-        const editOnlyElements = document.querySelectorAll('.edit-only');
-        editOnlyElements.forEach(el => el.style.display = 'block');
+        const editOnlyElements = document.querySelectorAll(".edit-only");
+        editOnlyElements.forEach(el => el.style.display = "block");
         
         // Convert dates to datetime-local format if they exist
         if (story.dateLastGrabbed) {
             const date = new Date(story.dateLastGrabbed);
             // Convert to local time for datetime-local input
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const minutes = String(date.getMinutes()).padStart(2, "0");
             document.getElementById("date-last-grabbed").value = `${year}-${month}-${day}T${hours}:${minutes}`;
         }
         if (story.dateLastChecked) {
             const date = new Date(story.dateLastChecked);
             // Convert to local time for datetime-local input
             const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            const hours = String(date.getHours()).padStart(2, "0");
+            const minutes = String(date.getMinutes()).padStart(2, "0");
             document.getElementById("date-last-checked").value = `${year}-${month}-${day}T${hours}:${minutes}`;
         }
         
@@ -795,8 +795,8 @@ class StoryTrackerTable {
         document.getElementById("story-form").reset();
         
         // Hide date fields when closing modal
-        const editOnlyElements = document.querySelectorAll('.edit-only');
-        editOnlyElements.forEach(el => el.style.display = 'none');
+        const editOnlyElements = document.querySelectorAll(".edit-only");
+        editOnlyElements.forEach(el => el.style.display = "none");
     }
 
     async handleStoryFormSubmit() {
@@ -1477,24 +1477,24 @@ class StoryTrackerTable {
             // Apply appropriate status class
             if (story.status) {
                 switch (story.status) {
-                case "success":
-                    storyElement.classList.add("completed");
-                    break;
-                case "error":
-                    storyElement.classList.add("error");
-                    break;
-                case "no-content":
-                    storyElement.classList.add("no-content");
-                    break;
-                case "cancelled":
-                    storyElement.classList.add("cancelled");
-                    break;
-                case "processing":
-                    storyElement.classList.add("processing");
-                    break;
-                case "starting":
-                    storyElement.classList.add("processing"); // Use processing style for starting
-                    break;
+                    case "success":
+                        storyElement.classList.add("completed");
+                        break;
+                    case "error":
+                        storyElement.classList.add("error");
+                        break;
+                    case "no-content":
+                        storyElement.classList.add("no-content");
+                        break;
+                    case "cancelled":
+                        storyElement.classList.add("cancelled");
+                        break;
+                    case "processing":
+                        storyElement.classList.add("processing");
+                        break;
+                    case "starting":
+                        storyElement.classList.add("processing"); // Use processing style for starting
+                        break;
                 }
             } else {
                 // For queued stories without status
@@ -1511,29 +1511,30 @@ class StoryTrackerTable {
             
             if (story.status) {
                 switch (story.status) {
-                case "success":
-                    statusElement.textContent = story.message || "Completed successfully";
-                    break;
-                case "error":
-                    statusElement.textContent = story.message || "Error occurred";
-                    break;
-                case "no-content":
-                    statusElement.textContent = story.message || "No content available";
-                    break;
-                case "cancelled":
-                    statusElement.textContent = "Cancelled";
-                    break;
-                case "processing":
-                case "starting":
-                    // Show domain info for processing items
-                    let statusText = "";
-                    if (story.lastChapterUrl) {
-                        statusText = this.extractDomain(story.lastChapterUrl);
-                    } else {
-                        statusText = story.status === "starting" ? "Starting..." : "Processing...";
+                    case "success":
+                        statusElement.textContent = story.message || "Completed successfully";
+                        break;
+                    case "error":
+                        statusElement.textContent = story.message || "Error occurred";
+                        break;
+                    case "no-content":
+                        statusElement.textContent = story.message || "No content available";
+                        break;
+                    case "cancelled":
+                        statusElement.textContent = "Cancelled";
+                        break;
+                    case "processing":
+                    case "starting": {
+                        // Show domain info for processing items
+                        let statusText = "";
+                        if (story.lastChapterUrl) {
+                            statusText = this.extractDomain(story.lastChapterUrl);
+                        } else {
+                            statusText = story.status === "starting" ? "Starting..." : "Processing...";
+                        }
+                        statusElement.textContent = statusText;
+                        break;
                     }
-                    statusElement.textContent = statusText;
-                    break;
                 }
             } else {
                 // For queued items, show domain

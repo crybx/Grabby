@@ -20,7 +20,7 @@ class SecondlifetranslationsParser extends Parser {
             node.classList.remove("jmbl");
         }
 
-        let junkSpans = content.querySelectorAll(".jmbl-ent, .jmbl-disclaimer")
+        let junkSpans = content.querySelectorAll(".jmbl-ent, .jmbl-disclaimer");
         util.removeElements(junkSpans);
     }
 

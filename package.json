@@ -3,8 +3,8 @@
   "version": "0.0.0.1",
   "description": "Make reading stories online easier. Save chapters as clean, readable files and track reading progress across ongoing stories.",
   "scripts": {
-    "lint": "eslint *.js",
-    "lint:fix": "eslint *.js --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "build": "node build.js",
     "postinstall-zip": "copyfiles -V -u 1 node_modules/@zip.js/zip.js/dist/zip-no-worker.min.js epub",
     "postinstall-dompurify": "copyfiles -V -u 1 node_modules/dompurify/dist/purify.min.js epub",

@@ -1,4 +1,9 @@
 module.exports = {
+    "ignorePatterns": [
+        "epub/@zip.js/**",
+        "epub/dompurify/**",
+        "dist/**"
+    ],
     "env": {
         "browser": true,
         "es6": true,
@@ -12,7 +17,8 @@ module.exports = {
     "rules": {
         "indent": [
             "error",
-            4
+            4,
+            { "SwitchCase": 1 }
         ],
         "linebreak-style": "off",
         "no-extra-semi": [
