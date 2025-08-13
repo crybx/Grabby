@@ -29,6 +29,7 @@ export class ScriptInjector {
             "content-scripts/grab-actions.js",
             "content-scripts/grabbers.js",
             "website-configs.js",
+            "parser-registry.js",
             "content-scripts/grabber-core.js"
         ];
 
@@ -67,6 +68,7 @@ export class ScriptInjector {
                 "story-tracker": ["StoryTracker"], // Object from story-tracker.js
                 "grab-actions": ["GrabActions"], // Object from grab-actions.js
                 "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
+                "parser-registry": ["PARSER_REGISTRY"], // Object from parser-registry.js
                 "grabber-core": ["GrabbyCore"] // Object from grabber-core.js
             };
 
@@ -135,5 +137,71 @@ export class ScriptInjector {
         }
 
         return tabId;
+    }
+
+    // Inject WebToEpub dependencies (util.js + parser-adapter.js)
+    async injectWebToEpubDependencies(tabId) {
+        try {
+            // Check if already injected
+            const infraCheck = await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                func: () => ({
+                    Parser: typeof Parser !== "undefined",
+                    parserFactory: typeof parserFactory !== "undefined",
+                    util: typeof util !== "undefined"
+                })
+            });
+            
+            if (!infraCheck[0].result.Parser) {
+                // WebToEpub dependencies for on-demand injection
+                const webToEpubDependencies = [
+                    "epub/js/Util.js",                      // WebToEpub utilities (note capital U)
+                    "content-scripts/parser-adapter.js"     // Minimal infrastructure
+                ];
+                
+                // Inject dependencies in order
+                for (const script of webToEpubDependencies) {
+                    await chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        files: [script]
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Error in injectWebToEpubDependencies:", error);
+            throw error;
+        }
+    }
+
+    // Inject specific WebToEpub parser
+    async injectWebToEpubParser(tabId, parserFile) {
+        try {
+            // Check if this parser file was already injected by checking for a parser from that file
+            const checkResult = await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                func: (filename) => {
+                    // Check if parserFactory has any parsers registered (indicating injection already happened)
+                    return typeof parserFactory !== "undefined" && 
+                           parserFactory.parsers && 
+                           parserFactory.parsers.size > 0;
+                },
+                args: [parserFile]
+            });
+            
+            if (checkResult[0].result) {
+                console.log(`Parser file ${parserFile} already injected, skipping`);
+                return;
+            }
+            
+            // Inject the parser file
+            await chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                files: [`epub/js/parsers/${parserFile}`]
+            });
+            
+        } catch (error) {
+            console.error("Error in injectWebToEpubParser:", error);
+            throw error;
+        }
     }
 }

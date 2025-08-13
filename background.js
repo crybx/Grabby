@@ -226,6 +226,27 @@ async function performAutoGrabSequence(tabId, storyInfo) {
     }
 }
 
+// Handle WebToEpub parser injection requests
+async function handleInjectWebToEpubParser(message, sender) {
+    try {
+        const tabId = await scriptInjector.getTabId(message, sender);
+        if (!tabId) {
+            return { success: false, error: "No tab ID available for parser injection" };
+        }
+        
+        // 1. Inject WebToEpub dependencies (util.js + parser-adapter.js)
+        await scriptInjector.injectWebToEpubDependencies(tabId);
+        
+        // 2. Inject the specific WebToEpub parser
+        await scriptInjector.injectWebToEpubParser(tabId, message.parserInfo.file);
+        
+        return { success: true };
+        
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 // Basic filtering and error checking on messages before dispatching
 async function handleMessages(message, sender, sendResponse) {
     // Return early if this message isn't meant for the background script
@@ -238,7 +259,7 @@ async function handleMessages(message, sender, sendResponse) {
             await downloadHandler.downloadAsFile(message.title, message.blobUrl, message.cleanup);
             break;
         case "showError":
-        // You could implement a notification system here
+            // You could implement a notification system here
             console.log("ERROR: " + message.message);
             break;
         case "grabContent":
@@ -354,6 +375,10 @@ async function handleMessages(message, sender, sendResponse) {
             return true; // Keep message channel open for async response
         case "clearCompletedQueue":
             queueManager.clearCompletedQueue();
+            break;
+        case "injectWebToEpubParser":
+            handleInjectWebToEpubParser(message, sender)
+                .catch(error => console.error("Error in handleInjectWebToEpubParser:", error));
             break;
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);

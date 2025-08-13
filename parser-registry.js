@@ -552,7 +552,5 @@ const PARSER_REGISTRY = {
     "zirusmusings.net": { parserClass: "ZirusMusingsParser", file: "ZirusMusingsParser.js" }
 };
 
-// Export for use in modules
-if (typeof module !== "undefined" && module.exports) {
-    module.exports = PARSER_REGISTRY;
-}
+// Make PARSER_REGISTRY available globally for content script injection
+window.PARSER_REGISTRY = PARSER_REGISTRY;

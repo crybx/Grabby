@@ -619,6 +619,3 @@ const utils = (function() {
         cipherSubstitution: cipherSubstitution
     };
 })();
-
-// Create an alias so both 'utils' and 'util' can be used
-const util = utils;

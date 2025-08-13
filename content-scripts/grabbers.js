@@ -684,7 +684,7 @@ async function grabPeachTeaAgency() {
     allContentDivs.forEach(contentDiv => {
         contentDiv.querySelectorAll("*").forEach(element => {
             utils.replaceSemanticInlineStylesWithTags(element, true);
-            util.removeAttributes(element, ["data-reader-disable"]);
+            utils.removeAttributes(element, ["data-reader-disable"]);
             // If tag is div, replace with p
             if (element.tagName === "DIV") {
                 const pElement = dom.createElement("p");

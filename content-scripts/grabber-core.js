@@ -1,5 +1,69 @@
 // Website configurations are now in website-configs.js
 
+/**
+ * Try to use a WebToEpub parser for the given URL
+ * @param {string} url - The URL to check for parser support
+ * @returns {Promise<{title: string, content: string}|null>} - Parser result or null if no parser found
+ */
+async function tryWebToEpubParser(url) {
+    try {
+        // Use the globally available PARSER_REGISTRY (injected via content script)
+        const domain = new URL(url).hostname;
+        const parserInfo = PARSER_REGISTRY[domain];
+        if (!parserInfo) {
+            return null;
+        }
+        
+        console.log(`Found WebToEpub parser for ${domain}: ${parserInfo.parserClass}`);
+        
+        // Request background script to inject WebToEpub infrastructure and parser
+        chrome.runtime.sendMessage({
+            target: "background",
+            type: "injectWebToEpubParser",
+            parserInfo: parserInfo
+        });
+        
+        // Wait a bit for injection to complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        
+        // Use parserFactory to get the parser instance
+        // This avoids the need to resolve class names since parserFactory has the constructors
+        let parser = null;
+        try {
+            if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
+                parser = parserFactory.fetchByUrl(window.location.href);
+            }
+        } catch (e) {
+            console.log("Error using parserFactory:", e);
+        }
+        
+        if (!parser) {
+            console.log("Parser not found via parserFactory, waiting longer...");
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            try {
+                if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
+                    parser = parserFactory.fetchByUrl(window.location.href);
+                }
+            } catch (e) {
+                console.log("Error using parserFactory after wait:", e);
+            }
+            
+            if (!parser) {
+                throw new Error(`Parser for ${window.location.href} not available after injection`);
+            }
+        }
+        
+        // Execute the parser instance directly
+        return parser.extractGrabbyFormat(document);
+    } catch (error) {
+        console.error("Error trying WebToEpub parser:", error);
+        return null;
+    }
+}
+
+
 function getTitleFromFirstHeading(content) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, "text/html");
@@ -79,9 +143,18 @@ async function grabFromWebsite(isBulkGrab = false) {
                 }
                 filename = extractTitle(content, config.useFirstHeadingTitle);
             } else {
-                content = grabStandard()();
-                filename = extractTitle(content, false);
-                console.log("This website is not specifically supported: ", url);
+                // Check if WebToEpub parser exists for this domain
+                const epubParserResult = await tryWebToEpubParser(url);
+                
+                if (epubParserResult) {
+                    content = epubParserResult.content;
+                    filename = epubParserResult.title;
+                    console.log("Used WebToEpub parser for:", url);
+                } else {
+                    content = grabStandard()();
+                    filename = extractTitle(content, false);
+                    console.log("This website is not specifically supported: ", url);
+                }
             }
 
             // append domain name to the filename for easier search
