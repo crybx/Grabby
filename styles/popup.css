@@ -278,3 +278,20 @@ p {
     width: 0%;
     transition: width 0.3s ease;
 }
+
+/* Settings styles for popup */
+.setting-item {
+    margin-bottom: 12px;
+}
+
+.setting-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.setting-label input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}

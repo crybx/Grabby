@@ -46,6 +46,22 @@ document.addEventListener("DOMContentLoaded", async function() {
     const statusDisplay = document.getElementById("bulk-status");
     const statusText = document.getElementById("status-text");
     const progressFill = document.getElementById("progress-fill");
+    const popupShowFloatingButtonCheckbox = document.getElementById("popup-show-floating-button");
+    
+    // Load and save floating button setting
+    if (popupShowFloatingButtonCheckbox) {
+        // Load current setting
+        chrome.storage.sync.get(["showFloatingButton"], function(result) {
+            popupShowFloatingButtonCheckbox.checked = result.showFloatingButton !== false; // Default to true
+        });
+
+        // Save setting when changed
+        popupShowFloatingButtonCheckbox.addEventListener("change", function() {
+            chrome.storage.sync.set({
+                showFloatingButton: this.checked
+            });
+        });
+    }
     
     // Add click handler for the grab button
     if (grabButton) {
