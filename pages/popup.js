@@ -2,8 +2,6 @@
 // Currently it's minimal but can be expanded as settings needs grow
 
 document.addEventListener("DOMContentLoaded", async function() {
-    console.log("Grabby popup opened");
-    
     // Check if current tab supports bulk grabbing
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     let supportsAutoNav = false;

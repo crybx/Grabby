@@ -30,7 +30,6 @@ async function saveStory(story) {
     try {
         const key = getStoryKey(story.id);
         await chrome.storage.local.set({ [key]: story });
-        console.log(`Story saved: ${story.title}`);
         return true;
     } catch (error) {
         console.error("Error saving story:", error);
@@ -55,7 +54,6 @@ async function deleteStory(storyId) {
     try {
         const key = getStoryKey(storyId);
         await chrome.storage.local.remove(key);
-        console.log(`Story deleted: ${storyId}`);
         return true;
     } catch (error) {
         console.error("Error deleting story:", error);
@@ -201,12 +199,9 @@ async function updateLastCheckStatus(chapterUrl, status, storyId = null) {
     // If storyId is provided (from queue context), use it directly
     let story;
     if (storyId) {
-        console.log(`Using provided storyId: ${storyId} for status update: ${chapterUrl}`);
         story = await getStory(storyId);
-        console.log("Found story by ID:", story ? story.title : "NOT FOUND");
     } else {
         story = await findStoryByChapterUrl(chapterUrl);
-        console.log("Found story by URL:", story ? story.title : "NOT FOUND");
     }
     
     if (story) {
@@ -216,11 +211,9 @@ async function updateLastCheckStatus(chapterUrl, status, storyId = null) {
         
         // Save just this story
         await saveStory(story);
-        console.log(`Updated last check status for story: ${story.title} - Status: ${status}`);
         return story;
     }
     
-    console.log(`Could not find story to update last check status. URL: ${chapterUrl}, storyId: ${storyId}`);
     return null;
 }
 
@@ -231,21 +224,15 @@ async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null
     // If storyId is provided (from queue context), use it directly
     let story;
     if (storyId) {
-        console.log(`Using provided storyId: ${storyId} for chapter: ${chapterUrl}`);
         story = await getStory(storyId);
-        console.log("Found story by ID:", story ? story.title : "NOT FOUND");
     } else {
         // Fall back to URL matching for non-queue grabs
-        console.log(`Falling back to URL matching for chapter: ${chapterUrl}`);
         story = await findStoryByChapterUrl(chapterUrl);
-        console.log("Found story by URL:", story ? story.title : "NOT FOUND");
     }
     
     if (story) {
         // Check if this is the same chapter as before (potential loop detection)
         if (story.lastChapterUrl === chapterUrl) {
-            console.log(`Duplicate chapter detected for "${story.title}": ${chapterUrl}`);
-            
             // Update story tracker status and send stop grabbing message
             const duplicateMessage = "Duplicate chapter detected - stopping to prevent loop";
             await updateLastCheckStatus(chapterUrl, duplicateMessage);
@@ -273,7 +260,6 @@ async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null
         
         // Save just this story
         await saveStory(story);
-        console.log(`Updated last chapter for story: ${story.title}`);
         return story;
     }
     

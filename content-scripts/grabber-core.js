@@ -13,9 +13,7 @@ async function tryWebToEpubParser(url) {
         if (!parserInfo) {
             return null;
         }
-        
-        console.log(`Found WebToEpub parser for ${domain}: ${parserInfo.parserClass}`);
-        
+
         // Request background script to inject WebToEpub infrastructure and parser
         chrome.runtime.sendMessage({
             target: "background",
@@ -30,24 +28,14 @@ async function tryWebToEpubParser(url) {
         // Use parserFactory to get the parser instance
         // This avoids the need to resolve class names since parserFactory has the constructors
         let parser = null;
-        try {
-            if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
-                parser = parserFactory.fetchByUrl(window.location.href);
-            }
-        } catch (e) {
-            console.log("Error using parserFactory:", e);
+        if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
+            parser = parserFactory.fetchByUrl(window.location.href);
         }
         
         if (!parser) {
-            console.log("Parser not found via parserFactory, waiting longer...");
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            try {
-                if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
-                    parser = parserFactory.fetchByUrl(window.location.href);
-                }
-            } catch (e) {
-                console.log("Error using parserFactory after wait:", e);
+            if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
+                parser = parserFactory.fetchByUrl(window.location.href);
             }
             
             if (!parser) {
@@ -124,8 +112,6 @@ async function grabFromWebsite(isBulkGrab = false) {
                         
                         // Check if preGrab returned an abort signal
                         if (preGrabResult && preGrabResult.abort) {
-                            console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
-                            
                             handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
                             
                             return null; // Abort the grab
@@ -149,11 +135,9 @@ async function grabFromWebsite(isBulkGrab = false) {
                 if (epubParserResult) {
                     content = epubParserResult.content;
                     filename = epubParserResult.title;
-                    console.log("Used WebToEpub parser for:", url);
                 } else {
                     content = grabStandard()();
                     filename = extractTitle(content, false);
-                    console.log("This website is not specifically supported: ", url);
                 }
             }
 
@@ -185,14 +169,11 @@ async function grabFromWebsite(isBulkGrab = false) {
                     
                     // Check if postGrab returned an abort signal
                     if (postGrabResult && postGrabResult.abort) {
-                        console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
-                        
                         handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
                         
                         // If invalidateGrab is true, return null to invalidate this grab
                         // Otherwise, just stop future grabs but keep this one
                         if (postGrabResult.invalidateGrab) {
-                            console.log("Post-grab requested invalidation - discarding current grab");
                             return null;
                         }
                         

@@ -1,13 +1,11 @@
 // Function to scroll to bottom of page (useful for infinite scroll sites)
 function scrollToBottom() {
     window.scrollTo(0, document.body.scrollHeight);
-    console.log("Scrolled to bottom of page");
 }
 
 // Function to scroll to top of page
 function scrollToTop() {
     window.scrollTo(0, 0);
-    console.log("Scrolled to top of page");
 }
 
 // Function to wait for an element to appear (useful for dynamic content)
@@ -42,7 +40,6 @@ function removeOverlays(selectors = [".modal", ".overlay", ".popup", "[role=\"di
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
             element.remove();
-            console.log(`Removed overlay element: ${selector}`);
         });
     });
 }
@@ -53,7 +50,6 @@ function expandContent(selectors = [".read-more", ".expand", ".show-more"]) {
         const buttons = document.querySelectorAll(selector);
         buttons.forEach(button => {
             button.click();
-            console.log(`Clicked expand button: ${selector}`);
         });
     });
 }
@@ -70,7 +66,6 @@ function disableAnimations() {
         }
     `;
     document.head.appendChild(style);
-    console.log("Disabled page animations");
 }
 
 // Function to load all images (useful for sites with lazy loading)
@@ -84,7 +79,6 @@ function loadAllImages() {
             img.src = img.dataset.lazy;
         }
     });
-    console.log(`Triggered loading of ${images.length} lazy images`);
 }
 
 // Peach Tea Agency specific: Click "All on one page?" button if it exists
@@ -138,7 +132,6 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
-            console.log("checking text ", text);
             if (premiumIndicators.some(indicator => text.includes(indicator))) {
                 console.log(`Premium content detected: "${text}" - aborting grab`);
                 return { abort: true, reason: `Premium content detected: ${text}`, invalidateGrab: true };
@@ -212,7 +205,6 @@ async function ridiTranslate() {
 async function peachTeaClickNextChapterLink() {
     // First, ensure the "All on one page?" button is clicked to show the Next chapter link
     if (typeof GrabActions !== "undefined" && GrabActions.peachTeaClickAllOnOnePageButton) {
-        console.log("Calling peachTeaClickAllOnOnePageButton from postGrab to ensure Next chapter link is visible");
         await GrabActions.peachTeaClickAllOnOnePageButton(false);
     }
     
@@ -233,13 +225,9 @@ async function peachTeaClickNextChapterLink() {
                 } else {
                     console.log("Skipped \"Next chapter\" link with position: absolute");
                 }
-            } else {
-                console.log("Skipped \"Next chapter\" link with honeypotButton class");
             }
         }
     }
-    
-    console.log("No valid \"Next chapter\" link found");
 }
 
 // Generic function to click a link containing specific text or texts
@@ -264,7 +252,6 @@ function clickLinkContaining(text, options = {}) {
     const textArray = Array.isArray(text) ? text : [text];
     
     const elements = document.querySelectorAll(selector);
-    console.log(elements);
     
     for (const element of elements) {
         const elementText = element.textContent.trim();
@@ -277,7 +264,6 @@ function clickLinkContaining(text, options = {}) {
         if (textMatches) {
             // Check excluded classes
             if (excludeClasses.some(cls => element.classList.contains(cls))) {
-                console.log(`Skipped element with excluded class: ${element.className}`);
                 continue;
             }
             
@@ -285,11 +271,9 @@ function clickLinkContaining(text, options = {}) {
             const styles = window.getComputedStyle(element);
             const hasExcludedStyle = Object.entries(excludeStyles).some(([prop, value]) => styles[prop] === value);
             if (hasExcludedStyle) {
-                console.log(`Skipped element with excluded style: ${Object.entries(excludeStyles)}`);
                 continue;
             }
             
-            console.log(`Found valid element with text "${elementText}", navigating to:`, element.href);
             // Use window.location.href to ensure navigation happens in same tab
             if (element.href) {
                 window.location.href = element.href;
@@ -305,7 +289,6 @@ function clickLinkContaining(text, options = {}) {
     if (abortIfNotFound) {
         return { abort: true, reason: `No valid element found with text: ${textDescription}` };
     }
-    console.log(`No valid element found with text: ${textDescription}`);
     return false;
 }
 
@@ -330,7 +313,6 @@ function clickPreviousChapterLink() {
         }
     }
     
-    console.log("No valid previous chapter link found");
     return false;
 }
 
@@ -342,8 +324,7 @@ function clickNextPageLink() {
             return true;
         }
     }
-    
-    console.log("No valid next page link found");
+
     return false;
 }
 
@@ -361,12 +342,10 @@ function bookmarkPage() {
         const button = document.querySelector(selector);
         if (button) {
             button.click();
-            console.log(`Bookmarked page using: ${selector}`);
             return true;
         }
     }
     
-    console.log("No bookmark button found");
     return false;
 }
 
@@ -384,7 +363,6 @@ function closeNotifications() {
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
             element.click();
-            console.log(`Closed notification: ${selector}`);
         });
     });
 }
@@ -429,8 +407,6 @@ function simulateKeyPress(key, options = {}) {
     // Dispatch the events
     target.dispatchEvent(keydownEvent);
     target.dispatchEvent(keyupEvent);
-    
-    console.log(`Simulated key press: ${key}`);
 }
 
 // Helper function to get the code for a key
@@ -478,25 +454,21 @@ function getKeyCodeNumber(key) {
 // Convenience function to simulate right arrow key (for next chapter navigation)
 function pressRightArrow() {
     simulateKeyPress("ArrowRight");
-    console.log("Pressed right arrow key for next chapter");
 }
 
 // Convenience function to simulate left arrow key (for previous chapter navigation)
 function pressLeftArrow() {
     simulateKeyPress("ArrowLeft");
-    console.log("Pressed left arrow key for previous chapter");
 }
 
 // Function to simulate Enter key press
 function pressEnter() {
     simulateKeyPress("Enter");
-    console.log("Pressed Enter key");
 }
 
 // Function to simulate Space key press (often used for next page)
 function pressSpace() {
     simulateKeyPress("Space");
-    console.log("Pressed Space key");
 }
 
 async function ridiNext() {

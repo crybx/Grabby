@@ -36,8 +36,6 @@ export class QueueManager {
         this.processingByDomain.clear();
         this.activeTabDomainProcessing = null;
 
-        console.log(`Starting queue processing for ${stories.length} stories`);
-
         // Categorize stories by domain and activeTab requirement
         const storiesByDomain = new Map();
         const activeTabStories = [];
@@ -108,8 +106,6 @@ export class QueueManager {
         if (!this.isActive) {
             throw new Error("No active queue to add stories to");
         }
-
-        console.log(`Adding ${stories.length} stories to existing queue`);
 
         // Categorize stories by domain and activeTab requirement  
         const storiesByDomain = new Map();
@@ -242,8 +238,6 @@ export class QueueManager {
         });
 
         try {
-            console.log(`Starting auto-nav and grabbing for story: ${story.title} (domain: ${story.domain}, activeTab: ${story.needsActiveTab})`);
-            
             // Use existing handleAutoGrab function
             await this.handleAutoGrab({
                 storyId: story.id,
@@ -267,7 +261,6 @@ export class QueueManager {
     // Schedule next queue processing
     scheduleNextQueueProcess() {
         if (this.queue.length === 0 || this.isPaused) {
-            console.log(`Not scheduling queue process: queue=${this.queue.length}, paused=${this.isPaused}`);
             return;
         }
 
@@ -278,7 +271,6 @@ export class QueueManager {
         const delayText = this.queueDelayMinutes < 1 
             ? `${this.queueDelayMinutes * 60} seconds`
             : `${this.queueDelayMinutes} minutes`;
-        console.log(`Scheduled next queue process in ${delayText}: ${alarmName}`);
     }
 
     // Process next story in queue
@@ -314,8 +306,6 @@ export class QueueManager {
         if (nextStory) {
             // Remove from queue
             this.queue.splice(nextStoryIndex, 1);
-            
-            console.log(`Processing queued story: ${nextStory.title} (domain: ${nextStory.domain})`);
             await this.startStoryAutoGrab(nextStory);
         }
 
@@ -367,7 +357,6 @@ export class QueueManager {
                 
                 if (hasActiveTabReady) {
                     // Process activeTab stories immediately without delay
-                    console.log("Processing activeTab story immediately");
                     setTimeout(() => this.processNextInQueue(), 100); // Small delay just to let completion finish
                 } else {
                     // Normal scheduling for background stories
@@ -379,7 +368,6 @@ export class QueueManager {
 
     // Complete the queue
     completeQueue() {
-        console.log("Queue processing completed");
         this.isActive = false;
         this.isCompleted = true;
         
@@ -400,7 +388,6 @@ export class QueueManager {
         if (!this.isActive) return;
         
         this.isPaused = true;
-        console.log("Queue processing paused");
         
         // Clear scheduled alarms
         chrome.alarms.getAll((alarms) => {
@@ -419,7 +406,6 @@ export class QueueManager {
         if (!this.isActive || !this.isPaused) return;
         
         this.isPaused = false;
-        console.log("Queue processing resumed");
         
         // Restart queue processing if needed
         if (this.queue.length > 0) {
@@ -432,9 +418,7 @@ export class QueueManager {
     // Cancel queue processing
     cancelQueue() {
         if (!this.isActive) return;
-        
-        console.log("Queue processing cancelled");
-        
+
         // Clear alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
@@ -449,7 +433,6 @@ export class QueueManager {
             // Find the tab for this story and stop its bulk grab
             const tabId = this.getTabIdForStory(storyId);
             if (tabId) {
-                console.log(`Stopping bulk grab for tab ${tabId} (story: ${story.title})`);
                 // Send message to background to stop the bulk grab
                 chrome.runtime.sendMessage({
                     target: "background",
@@ -501,7 +484,6 @@ export class QueueManager {
             this.isCompleted = false;
             this.currentQueueId = null;
             this.completed.clear();
-            console.log("Cleared completed queue status");
         }
     }
 
@@ -581,7 +563,6 @@ export class QueueManager {
     handleBulkGrabComplete(tabId, success, message = "", isError = false, chaptersDownloaded = 0, isManualStop = false) {
         const storyId = this.tabToStoryMap.get(tabId);
         if (storyId) {
-            console.log(`Bulk grab completed for tab ${tabId}, story ${storyId}: ${chaptersDownloaded} chapters downloaded, message: ${message}`);
             this.tabToStoryMap.delete(tabId);
             
             // Determine the appropriate status based on what actually happened
@@ -606,7 +587,6 @@ export class QueueManager {
             
             // Auto-close tab for completed queue stories (both success and no-content)
             if (status === "success" || status === "no-content") {
-                console.log(`Auto-closing tab ${tabId} for completed queue story (${status})`);
                 chrome.tabs.remove(tabId).catch(() => {
                     // Ignore errors if tab is already closed
                 });
@@ -617,7 +597,6 @@ export class QueueManager {
     // Register tab-to-story mapping when auto-nav and grabbing starts
     registerStoryTab(storyId, tabId) {
         this.tabToStoryMap.set(tabId, storyId);
-        console.log(`Registered tab ${tabId} for story ${storyId}`);
     }
 
     // Get tab ID for a story (reverse lookup)
@@ -645,7 +624,6 @@ export class QueueManager {
         if (!QueueManager.alarmListenerSet) {
             chrome.alarms.onAlarm.addListener((alarm) => {
                 if (alarm.name.startsWith("queue-processing-") && QueueManager.currentInstance) {
-                    console.log(`Processing alarm: ${alarm.name}`);
                     QueueManager.currentInstance.processNextInQueue();
                 }
             });

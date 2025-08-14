@@ -15,8 +15,6 @@ export class DownloadHandler {
         // replace comma with nothing
         fileName = fileName.split(",").join("");
         fileName = fileName + ".html";
-        console.log(fileName);
-
         let options = {
             url: blobUrl,
             filename: fileName,
@@ -24,6 +22,5 @@ export class DownloadHandler {
         };
 
         const downloadId = await chrome.downloads.download(options, cleanup);
-        console.log(`Download started with ID ${downloadId}`);
     }
 }

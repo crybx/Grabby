@@ -166,7 +166,6 @@ export class BulkGrabManager {
         // Check if this tab already has a running bulk grab
         const existingState = await this.loadBulkGrabState(tabId);
         if (existingState && existingState.isRunning) {
-            console.log(`Bulk grab already running for tab ${tabId}`);
             return;
         }
         
@@ -201,9 +200,7 @@ export class BulkGrabManager {
         if (!state || !state.isRunning) {
             return;
         }
-        
-        console.log(`Stopping bulk grab for tab ${tabId}: ${reason}`);
-        
+
         // Update story tracker with stopped status
         try {
             if (this.scriptInjector) {
@@ -250,7 +247,6 @@ export class BulkGrabManager {
         const state = await this.loadBulkGrabState(tabId);
         
         if (!state || !state.isRunning || state.shouldStop) {
-            console.log(`Bulk grab stopped or not running for tab ${tabId}`);
             await this.clearBulkGrabState(tabId);
             return;
         }
@@ -258,7 +254,6 @@ export class BulkGrabManager {
         // Check if we're done
         if (state.currentPage >= state.totalPages) {
             const duration = Math.round((Date.now() - state.startTime) / 1000);
-            console.log(`Bulk grab completed for tab ${tabId}: ${state.totalPages} pages in ${duration}s`);
             
             // Update story tracker with completion status
             try {
@@ -292,7 +287,6 @@ export class BulkGrabManager {
         const attemptNumber = state.currentPage + 1;
         const progress = Math.round((attemptNumber / state.totalPages) * 100);
         
-        console.log(`Bulk grab tab ${tabId}: page ${attemptNumber} of ${state.totalPages}`);
         this.sendStatusToPopup(`Grabbing page ${attemptNumber} of ${state.totalPages}`, progress);
         
         try {
@@ -381,14 +375,12 @@ export class BulkGrabManager {
         // Check if this is a bulk grab alarm (format: bulkGrabNextPage_<tabId>)
         if (alarm.name.startsWith("bulkGrabNextPage_")) {
             const tabId = parseInt(alarm.name.split("_")[1]);
-            console.log(`Bulk grab alarm triggered for tab ${tabId}`);
             void this.performNextBulkGrab(tabId);
         }
     }
 
     // Clean up bulk grab state when tabs are closed
     async cleanupTab(tabId) {
-        console.log(`Tab ${tabId} closed, cleaning up bulk grab state`);
         await this.removeBulkGrabState(tabId);
     }
 }

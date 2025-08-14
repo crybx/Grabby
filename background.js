@@ -4,7 +4,7 @@ import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
 import { QueueManager } from "./modules/queue-manager.js";
 import "./website-configs.js";
-// WEBSITE_CONFIGS and related functions are now available via globalThis
+// WEBSITE_CONFIGS and related functions are available via globalThis
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
@@ -62,9 +62,7 @@ async function handleAutoGrab(message) {
             url: message.lastChapterUrl,
             active: shouldBeActive
         });
-        
-        console.log(`Opened tab ${tab.id} for ${message.storyTitle}`);
-        
+
         // Register tab with queue manager if story has an ID
         if (message.storyId) {
             queueManager.registerStoryTab(message.storyId, tab.id);
@@ -91,8 +89,6 @@ async function handleAutoGrab(message) {
 // Perform the auto-nav and grabbing sequence: postGrab -> check URL change -> start bulk grab
 async function performAutoGrabSequence(tabId, storyInfo) {
     try {
-        console.log(`Performing auto-nav and grabbing sequence for tab ${tabId}: ${storyInfo.storyTitle}`);
-        
         // Get the current URL before post-grab action
         const initialTab = await chrome.tabs.get(tabId);
         const initialUrl = initialTab.url;
@@ -115,7 +111,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     if (typeof resolvedConfig.postGrab === "function") {
                         try {
                             await resolvedConfig.postGrab();
-                            console.log("PostGrab action executed for auto-nav");
 
                             // Return delay from website-config
                             const delay = config.autoNav?.defaultDelay || 10; // fallback to 10 seconds if not found
@@ -132,7 +127,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
 
         // Get the delay from the script result, with fallback
         const delayMs = configResult[0]?.result || 10000;
-        console.log(`Delay from website-config: ${delayMs}ms`);
 
         // Wait additional time for navigation to complete after postGrab finishes
         setTimeout(async () => {
@@ -160,7 +154,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     const autoNavConfig = configResult[0]?.result;
                     
                     if (!autoNavConfig || !autoNavConfig.enabled) {
-                        console.log(`No auto-nav config found for ${storyInfo.storyTitle} - closing tab`);
                         chrome.tabs.remove(tabId);
                         // DEBUG: Comment out the line above to keep tabs open for auto-nav debugging
                         return;
@@ -171,7 +164,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     // Start bulk grab on this tab
                     await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId, storyInfo.storyId);
-                    console.log(`Started bulk grab for ${storyInfo.storyTitle}: ${defaultCount} chapters, ${defaultDelay}s delay`);
                     
                     // Update story tracker with bulk grab start status
                     await scriptInjector.injectScriptsSequentially(tabId);
@@ -291,7 +283,6 @@ async function handleMessages(message, sender, sendResponse) {
                     url: message.url,
                     active: false
                 });
-                console.log("Opened background tab:", message.url);
             } catch (error) {
                 console.error("Failed to open background tab:", error);
             }
@@ -317,7 +308,6 @@ async function handleMessages(message, sender, sendResponse) {
                     },
                     args: [message.url, message.status]
                 });
-                console.log("ERROR: " + message.status);
             }
         
             // Stop the grabbing process with the reason

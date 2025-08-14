@@ -86,7 +86,6 @@ export class ScriptInjector {
             const scriptExists = checkResult[0].result;
 
             if (scriptExists) {
-                console.log(`Script ${scripts[index]} appears to be already loaded, skipping`);
                 // Skip to the next script
                 return injectSequentially(index + 1);
             }
@@ -189,7 +188,6 @@ export class ScriptInjector {
             });
             
             if (checkResult[0].result) {
-                console.log(`Parser file ${parserFile} already injected, skipping`);
                 return;
             }
             
