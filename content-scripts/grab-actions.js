@@ -107,32 +107,34 @@ async function peachTeaClickAllOnOnePageButton(duplicateCheck = true) {
 }
 
 // Function to check for premium/locked content and abort if found
-async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = true) {
+async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = true, premiumText = null) {
     // Check for duplicates first unless disabled
     if (duplicateCheck) {
         const duplicateResult = await checkForDuplicateChapter();
         if (duplicateResult.abort) return duplicateResult;
     }
-    
-    const premiumIndicators = [
-        "Advanced Chapter",
-        "Premium Content",
-        "Locked Chapter",
-        "Purchase Required",
-        "Subscription Required",
-        "VIP Content",
-        "Paid Content",
-        "Please Login or Register First",
-        "Login to buy access to the advanced chapters.",
-        "This is a premium chapter",
-        "Secret Pavilion"
-    ];
+
+    if (!premiumText) {
+        premiumText = [
+            "Advanced Chapter",
+            "Premium Content",
+            "Locked Chapter",
+            "Purchase Required",
+            "Subscription Required",
+            "VIP Content",
+            "Paid Content",
+            "Please Login or Register First",
+            "Login to buy access to the advanced chapters.",
+            "This is a premium chapter",
+            "🔒"
+        ];
+    }
     
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
-            if (premiumIndicators.some(indicator => text.includes(indicator))) {
+            if (premiumText.some(indicator => text.includes(indicator))) {
                 console.log(`Premium content detected: "${text}" - aborting grab`);
                 return { abort: true, reason: `Premium content detected: ${text}`, invalidateGrab: true };
             }
@@ -152,10 +154,8 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
     
     const notFoundIndicators = [
         "We Couldn't Find This Page",
-        "We Couldn't Find This Page",
         "Page Not Found",
-        "404 Error",
-        "404 Not Found",
+        "404",
         "This page does not exist",
         "The page you requested could not be found"
     ];

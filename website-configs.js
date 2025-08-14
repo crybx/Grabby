@@ -65,13 +65,6 @@ const WEBSITE_CONFIGS = {
         "joara.com": { grabber: "grabJoara" },
         "karistudio.com": { grabber: "grabKaristudio" },
         "lightnovelworld.co": { grabber: { fn: "grabStandard", args: ["#chapter-container", ".chapter-title"] } },
-        "lilyonthevalley.com": {
-            grabber: "grabLilyonthevalley",
-            useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForPremiumContent",
-            postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
-        },
         "maplesantl.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
@@ -149,11 +142,25 @@ const WEBSITE_CONFIGS = {
         fictioneerSites: {
             domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz",
                 "floraegarden.com",
-                "novelib.com", "springofromance.com", "smeraldogarden.com",
-                "talesinthevalley.com"],
+                "novelib.com", "springofromance.com", "smeraldogarden.com"],
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h1, h2, h3, .mycred-sell-this-wrapper"]] },
+            postGrab: "GrabActions.pressRightArrow",
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
+        fictioneerValleySites: {
+            domains: ["lilyonthevalley.com", "talesinthevalley.com"],
+            grabber: "grabLilyonthevalley",
+            useFirstHeadingTitle: true,
+            preGrab: {
+                fn: "GrabActions.checkForPremiumContent",
+                args: [
+                    ["h1, h2, h3, .mycred-sell-this-wrapper"],
+                    true,
+                    ["Secret Pavilion", "Hidden Pavilion"]
+                ]
+            },
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
