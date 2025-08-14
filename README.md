@@ -14,10 +14,10 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 - **Story tracking** - Track your reading progress across ongoing web serials and stories
 - **Bulk grabbing** - Download entire stories or selected chapter ranges automatically
 - **Queue management** - Process multiple stories simultaneously with pause/resume controls
-- **Smart extraction** - Custom extraction logic for 50+ fiction and novel sites
-- **Cleans output** - Automatically removes ads, navigation, and other clutter
-- **Structured file naming** - Consistent naming pattern with chapter numbers and story titles for easy searching and identification
-- **Epub creation** - Embedded [WebToEpub-Codex](https://github.com/crybx/WebToEpub-Codex) for converting web stories to epub format with enhanced features
+- **Site-specific extraction** - Custom logic for 50+ sites, plus WebToEpub parser fallback for 500+ additional sites
+- **Content cleaning** - Removes ads, navigation, and other clutter
+- **File naming** - Consistent naming pattern with chapter numbers and story titles
+- **Epub creation** - Embedded [WebToEpub-Codex](https://github.com/crybx/WebToEpub-Codex) for converting web stories to epub format
 
 ## Installation
 
@@ -60,33 +60,39 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
    - Parse and extract content from 200+ supported websites
    - Customize metadata, cover images, and formatting
    - Generate epub files for e-readers
-   - Access enhanced features from the WebToEpub-Codex fork
+   - Access WebToEpub-Codex fork features
 
 *Note: Bulk grabbing and automatic new chapter checking require site-specific configuration. (More details below.)
 These features are available for sites with navigation support. Single-page grabbing works on any webpage.
 
 ## Compatibility
 
-**Grabby works on any webpage** - even local files opened in your browser. While 
-it includes custom extraction logic for 50+ sites for better results on those sites,
-Grabby will attempt to extract and clean content from any page you're viewing.
+**Grabby works on any webpage** - even local files opened in your browser. It uses a multi-tiered extraction approach:
 
-### Sites with Custom Support
+### Sites with Custom Support (50+ sites)
+Grabby includes custom extraction logic for specific sites:
 - Fiction platforms (Webnovel, Tapas, Syosetu, etc.)
 - Fan fiction sites (AO3, FanFiction.com, etc.)
 - Fan translation sites
 - Various web serial hosts and blogs (WordPress)
 - See [website-configs.js](website-configs.js) for the full list.
 
+### WebToEpub Parser Fallback (500+ additional sites)
+When no custom support exists, Grabby uses [WebToEpub's](https://github.com/dteviot/WebToEpub) parser library for additional sites including:
+- Light novel sites (NovelUpdates, ReadLightNovel, etc.)
+- International web novel platforms
+- Blog and content hosting platforms
+- Community-maintained parsers for niche sites
+
 ### Sites with Bulk Grab & Auto-Check Support require automatic navigation configuration
 For sites with navigation support, look for ones with `autoNav: { enabled: true }` in their configuration.
 
 ### Universal Extraction
-For any other webpage, Grabby does its best to extract the main text while removing ads, navigation, and other clutter. This works for:
+For other webpages, Grabby extracts the main text while removing ads and navigation. This works for:
 - News articles and blog posts
 - Documentation and wikis
 - Local HTML files (useful for grabbing Chrome's automatic Google Translate translations)
-- Pretty much any text-heavy webpage
+- Most text-heavy webpages
 
 ## Privacy & Security
 
@@ -109,8 +115,8 @@ Grabby requests these Chrome permissions:
 - **scripting** - To inject content extraction scripts
 - **storage** - To save your story tracking data and extension settings
 - **tabs** - To manage tab operations for bulk grabbing and epub creation
-- **unlimitedStorage** - For large epub files and extensive story tracking data
-- **webRequest** - To monitor and modify network requests for enhanced content extraction (epub creation)
+- **unlimitedStorage** - For large epub files and story tracking data
+- **webRequest** - To monitor and modify network requests for content extraction (epub creation)
 
 ## Development
 
