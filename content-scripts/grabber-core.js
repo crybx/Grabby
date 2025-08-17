@@ -8,7 +8,11 @@
 async function tryWebToEpubParser(url) {
     try {
         // Use the globally available PARSER_REGISTRY (injected via content script)
-        const domain = new URL(url).hostname;
+        let domain = new URL(url).hostname;
+        // Strip www. prefix to match registry entries
+        if (domain.startsWith('www.')) {
+            domain = domain.substring(4);
+        }
         const parserInfo = PARSER_REGISTRY[domain];
         if (!parserInfo) {
             return null;
