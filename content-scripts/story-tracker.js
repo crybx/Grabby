@@ -232,7 +232,11 @@ async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null
     
     if (story) {
         // Check if this is the same chapter as before (potential loop detection)
-        if (story.lastChapterUrl === chapterUrl) {
+        // Normalize URLs for comparison to handle /# variations
+        const normalizedCurrent = normalizeUrlForComparison(chapterUrl);
+        const normalizedLast = normalizeUrlForComparison(story.lastChapterUrl);
+        
+        if (normalizedLast === normalizedCurrent) {
             // Update story tracker status and send stop grabbing message
             const duplicateMessage = "Duplicate chapter detected - stopping to prevent loop";
             await updateLastCheckStatus(chapterUrl, duplicateMessage);
@@ -266,10 +270,27 @@ async function updateLastChapter(chapterUrl, chapterTitle = null, storyId = null
     return null;
 }
 
+// Normalize URL by removing trailing /# patterns for comparison
+function normalizeUrlForComparison(url) {
+    if (!url) return url;
+    // Remove trailing slash followed by empty hash, or just empty hash
+    // This handles: /# or # at the end, but preserves meaningful fragments like #chapter2
+    let normalized = url.replace(/\/?#$/, "");
+    // Also remove trailing slash for consistent comparison
+    normalized = normalized.replace(/\/$/, "");
+    return normalized;
+}
+
 // Check if current URL is a duplicate of last chapter (for pre-grab detection)
 async function isDuplicateChapter(chapterUrl) {
     const story = await findStoryByChapterUrl(chapterUrl);
-    return story && story.lastChapterUrl === chapterUrl;
+    if (!story || !story.lastChapterUrl) return false;
+    
+    // Normalize both URLs for comparison
+    const normalizedCurrent = normalizeUrlForComparison(chapterUrl);
+    const normalizedLast = normalizeUrlForComparison(story.lastChapterUrl);
+    
+    return normalizedCurrent === normalizedLast;
 }
 
 // Export functions to window for global access
@@ -284,5 +305,6 @@ window.StoryTracker = {
     cleanTitle,
     updateLastCheckStatus,
     updateLastChapter,
-    isDuplicateChapter
+    isDuplicateChapter,
+    normalizeUrlForComparison
 };
