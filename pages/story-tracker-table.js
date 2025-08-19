@@ -1309,8 +1309,6 @@ class StoryTrackerTable {
                 return;
             }
 
-            console.log(actionDescription + ":", response);
-            
             // Show the queue progress section
             this.showQueueProgress();
             
