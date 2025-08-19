@@ -418,9 +418,10 @@ class ImageCollector {
                 if (dataOrigFileUrl != null) {
                     return this.findImageFileUrlUsingDataOrigFileUrl(imageInfo);
                 }
-                let baseUri = xhr.responseXML.baseURI;
-                let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
-                ErrorLog.log(errorMsg);
+                // stop image res warning
+                //let baseUri = xhr.responseXML.baseURI;
+                //let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
+                //ErrorLog.log(errorMsg);
                 temp = imageInfo.sourceUrl;
             }
             temp = ImageCollector.removeSizeParamsFromWordPressQuery(temp);
