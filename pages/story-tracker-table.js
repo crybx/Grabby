@@ -34,14 +34,6 @@ class StoryTrackerTable {
         }
     }
 
-    async saveStory(story) {
-        return await StoryTracker.saveStory(story);
-    }
-
-    async deleteStoryFromStorage(storyId) {
-        return await StoryTracker.deleteStory(storyId);
-    }
-
     setupEventListeners() {
         // Filter input
         document.getElementById("filter-input").addEventListener("input", (e) => {
@@ -838,7 +830,7 @@ class StoryTrackerTable {
         };
 
         this.stories.push(story);
-        await this.saveStory(story);
+        await StoryTracker.saveStory(story);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -888,7 +880,7 @@ class StoryTrackerTable {
 
         this.stories[storyIndex] = updatedStory;
 
-        await this.saveStory(this.stories[storyIndex]);
+        await StoryTracker.saveStory(this.stories[storyIndex]);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -904,7 +896,7 @@ class StoryTrackerTable {
         this.stories = this.stories.filter(s => s.id !== id);
         this.selectedStories.delete(id);
         
-        await this.deleteStoryFromStorage(id);
+        await StoryTracker.deleteStory(id);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -984,7 +976,7 @@ class StoryTrackerTable {
             if (importedCount > 0) {
                 // Save each imported story individually
                 for (const story of this.stories.slice(-importedCount)) {
-                    await this.saveStory(story);
+                    await StoryTracker.saveStory(story);
                 }
                 this.populateDomainFilter();
                 this.applyFilters();
@@ -1117,7 +1109,7 @@ class StoryTrackerTable {
 
                 // Add to local array and save individually
                 this.stories.push(storyData);
-                await this.saveStory(storyData);
+                await StoryTracker.saveStory(storyData);
                 existingUrls.add(storyData.mainStoryUrl);
                 importedCount++;
             }
@@ -1211,7 +1203,7 @@ class StoryTrackerTable {
             // Update story if changes were made
             if (storyUpdated) {
                 story.tags = newTags;
-                await this.saveStory(story);
+                await StoryTracker.saveStory(story);
                 
                 // Update the story in the local array
                 const storyIndex = this.stories.findIndex(s => s.id === story.id);
