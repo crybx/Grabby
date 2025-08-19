@@ -28,6 +28,11 @@ async function getAllStories() {
 // Save individual story
 async function saveStory(story) {
     try {
+        // Generate ID if not present
+        if (!story.id) {
+            story.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+        
         const key = getStoryKey(story.id);
         await chrome.storage.local.set({ [key]: story });
         return true;

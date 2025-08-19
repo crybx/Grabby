@@ -818,7 +818,6 @@ class StoryTrackerTable {
             secondaryUrlMatchesInput.split(",").map(url => url.trim()).filter(url => url) : [];
 
         const story = {
-            id: Date.now().toString(36) + Math.random().toString(36).substr(2),
             title,
             mainStoryUrl: mainUrl,
             lastChapterUrl: lastChapterUrl || "",
@@ -957,7 +956,6 @@ class StoryTrackerTable {
                 }
 
                 const story = {
-                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
                     title: link.title,
                     mainStoryUrl: link.url,
                     lastChapterUrl: "",
@@ -1100,11 +1098,6 @@ class StoryTrackerTable {
                 if (existingUrls.has(storyData.mainStoryUrl)) {
                     totalSkipped++;
                     continue;
-                }
-
-                // Ensure the story has an ID
-                if (!storyData.id) {
-                    storyData.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
                 }
 
                 // Add to local array and save individually

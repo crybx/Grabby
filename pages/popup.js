@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     // Get UI elements
     const grabButton = document.getElementById("grab-button");
     const storyTrackerButton = document.getElementById("story-tracker-button");
+    const addToTrackerButton = document.getElementById("add-to-tracker-button");
     const optionsButton = document.getElementById("options-button");
     const supportButton = document.getElementById("support-button");
     const epubButton = document.getElementById("epub-button");
@@ -82,6 +83,44 @@ document.addEventListener("DOMContentLoaded", async function() {
                 url: chrome.runtime.getURL("pages/story-tracker.html")
             });
             window.close();
+        });
+    }
+    
+    // Add click handler for add to tracker button
+    if (addToTrackerButton) {
+        addToTrackerButton.addEventListener("click", async () => {
+            try {
+                // Get current tab
+                const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                
+                if (!currentTab || !currentTab.url) {
+                    alert("Unable to get current page information.");
+                    return;
+                }
+                
+                // Create story object
+                const story = {
+                    title: currentTab.title || "Untitled Story",
+                    mainStoryUrl: currentTab.url,
+                    dateAdded: new Date().toISOString(),
+                    tags: ["popup-added"] // Special tag to identify stories added via popup
+                };
+                
+                // Send message to background script to add story (fire and forget)
+                console.log("Popup: Sending addStoryToTracker message", story);
+                chrome.runtime.sendMessage({
+                    target: "background",
+                    type: "addStoryToTracker",
+                    story: story
+                });
+                
+                // Close popup immediately
+                window.close();
+                
+            } catch (error) {
+                console.error("Error adding story to tracker:", error);
+                alert("Error adding story to tracker: " + error.message);
+            }
         });
     }
     
