@@ -159,19 +159,20 @@ function cleanTitle(chapterTitle, storyTitle = null) {
         cleanedTitle = cleanedTitle.replace(storyTitleRegex, "");
     }
     
-    // Remove domain suffix
-    cleanedTitle = cleanedTitle.replace(/_[a-z0-9.-]+\.[a-z]{2,}$/i, "");
+    // Remove domain names (with or without leading underscore, with or without suffixes)
+    // This handles cases like "_ridibooks.com", "_ridibooks", "ridibooks.com", or "ridibooks"
+    cleanedTitle = cleanedTitle.replace(/[_\s]*([a-z0-9.-]+)(?:\.[a-z]{2,})?$/i, "");
     
     // Replace all separators with whitespace
     cleanedTitle = cleanedTitle.replace(/[-:–|—_!]+/g, " ");
     
-    // Remove common words
+    // Remove common words and domain names
     const wordsToRemove = [
         "chapter",
         "episode",
         "translation\\s+weaver",
         "story\\s+seedling",
-        "ridi",
+        "ridibooks",
         "maplesan\\s+translations",
         "emptymurmurs",
         "darkstar\\s+translations",
