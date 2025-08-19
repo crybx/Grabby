@@ -30,6 +30,14 @@ async function saveStory(story) {
     try {
         // Generate ID if not present
         if (!story.id) {
+            // Check if mainStoryUrl already exists
+            const existingStories = await getAllStories();
+            const duplicateStory = existingStories.find(s => s.mainStoryUrl === story.mainStoryUrl);
+            
+            if (duplicateStory) {
+                return false; // Don't save duplicate
+            }
+            
             story.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
         

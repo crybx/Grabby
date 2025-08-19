@@ -892,10 +892,9 @@ class StoryTrackerTable {
         
         if (!confirmed) return;
 
+        await StoryTracker.deleteStory(id);
         this.stories = this.stories.filter(s => s.id !== id);
         this.selectedStories.delete(id);
-        
-        await StoryTracker.deleteStory(id);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -947,44 +946,33 @@ class StoryTrackerTable {
             }
 
             let importedCount = 0;
-            const existingUrls = new Set(this.stories.map(s => s.mainStoryUrl));
+            let skippedCount = 0;
 
             for (const link of parsedLinks) {
-                // Skip if story with this URL already exists
-                if (existingUrls.has(link.url)) {
-                    continue;
-                }
-
                 const story = {
                     title: link.title,
                     mainStoryUrl: link.url,
-                    lastChapterUrl: "",
-                    lastChapterTitle: "",
-                    secondaryUrlMatches: [],
-                    tags: [],
-                    dateLastGrabbed: null,
                     dateAdded: new Date().toISOString()
                 };
 
-                this.stories.push(story);
-                existingUrls.add(link.url);
-                importedCount++;
+                const saved = await StoryTracker.saveStory(story);
+                if (saved) {
+                    this.stories.push(story);
+                    importedCount++;
+                } else {
+                    skippedCount++;
+                }
             }
 
             if (importedCount > 0) {
-                // Save each imported story individually
-                for (const story of this.stories.slice(-importedCount)) {
-                    await StoryTracker.saveStory(story);
-                }
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
                 this.hideImportModal();
                 
-                const skipped = parsedLinks.length - importedCount;
                 let message = `Successfully imported ${importedCount} new stories.`;
-                if (skipped > 0) {
-                    message += ` Skipped ${skipped} duplicates.`;
+                if (skippedCount > 0) {
+                    message += ` Skipped ${skippedCount} duplicates.`;
                 }
                 alert(message);
             } else {
@@ -1091,20 +1079,15 @@ class StoryTrackerTable {
 
             let importedCount = 0;
             let totalSkipped = 0;
-            const existingUrls = new Set(this.stories.map(s => s.mainStoryUrl));
 
             for (const storyData of allStoriesToImport) {
-                // Skip if story with this URL already exists
-                if (existingUrls.has(storyData.mainStoryUrl)) {
+                const saved = await StoryTracker.saveStory(storyData);
+                if (saved) {
+                    this.stories.push(storyData);
+                    importedCount++;
+                } else {
                     totalSkipped++;
-                    continue;
                 }
-
-                // Add to local array and save individually
-                this.stories.push(storyData);
-                await StoryTracker.saveStory(storyData);
-                existingUrls.add(storyData.mainStoryUrl);
-                importedCount++;
             }
 
             if (importedCount > 0) {
