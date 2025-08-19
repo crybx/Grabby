@@ -17,7 +17,7 @@
 //     useFirstHeadingTitle: true,
 //     runActionsOnDirectGrab: false,  // Disable pre/post actions for direct grabs (shortcut/button)
 //     preGrab: GrabActions.scrollToBottom,  // Pre-grab actions
-//     postGrab: GrabActions.clickLinkContaining("Next", { exact: true }),  // Post-grab actions
+//     postGrab: GrabActions.clickElementWithText("Next", { exact: true }),  // Post-grab actions
 //     autoNav: { enabled: true, defaultCount: 10, defaultDelay: 5, activeTab: true }  // Auto-nav config
 // }
 const WEBSITE_CONFIGS = {
@@ -29,7 +29,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabChrysanthemum",
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: {
-                fn: "GrabActions.clickLinkContaining",
+                fn: "GrabActions.clickElementWithText",
                 args: ["Next", {
                     exact: true,
                     selector: ".nav-next",
@@ -41,14 +41,14 @@ const WEBSITE_CONFIGS = {
         "stellarrealm.net": {
             grabber: { fn: "grabStandard", args: [".chapter-content"] },
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h4"]] },
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "docs.google.com": { grabber: "grabGoogleDocMobileBasic" },
         "emptymurmurs.wordpress.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
@@ -69,7 +69,7 @@ const WEBSITE_CONFIGS = {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: {
-                fn: "GrabActions.clickLinkContaining",
+                fn: "GrabActions.clickElementWithText",
                 args: [
                     ["Episode", "Next", "Chapter"],
                     { selector: ".wp-block-button:nth-child(2) a.wp-block-button__link" }
@@ -81,7 +81,7 @@ const WEBSITE_CONFIGS = {
         "novelingua.com": {
             grabber: "grabNovelingua",
             useFirstHeadingTitle: true,
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next Chapter"] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next Chapter"] },
         },
         "noveltranslation.net": { grabber: "grabNovelTranslationNet" },
         "patreon.com": { grabber: "grabPatreon" },
@@ -96,7 +96,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabReadhive",
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next"] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next"] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "reaperscans.com": { grabber: { fn: "grabStandard", args: ["#reader-container", null] } },
@@ -115,14 +115,14 @@ const WEBSITE_CONFIGS = {
         "starlightstream.net": {
             grabber: "grabStarlightStream",
             preGrab: "GrabActions.checkForPageNotFound",
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },
         "storyseedling.com": {
             grabber: "grabStorySeedling",
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["Next", { exact: true }] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "syosetu.com": { grabber: "grabSyosetu" },
@@ -177,7 +177,7 @@ const WEBSITE_CONFIGS = {
                 "mendacity.me", "wordpress.com"],
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
-            postGrab: { fn: "GrabActions.clickLinkContaining", args: ["NEXT", { abortIfNotFound: true }] },
+            postGrab: { fn: "GrabActions.clickElementWithText", args: ["NEXT", { abortIfNotFound: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         }
     }

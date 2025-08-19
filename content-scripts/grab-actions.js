@@ -34,26 +34,6 @@ function waitForElement(selector, timeout = 5000) {
     });
 }
 
-// Function to remove overlay/modal elements (useful for sites with popups)
-function removeOverlays(selectors = [".modal", ".overlay", ".popup", "[role=\"dialog\"]"]) {
-    selectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-            element.remove();
-        });
-    });
-}
-
-// Function to expand collapsed content (useful for sites that hide content behind "read more")
-function expandContent(selectors = [".read-more", ".expand", ".show-more"]) {
-    selectors.forEach(selector => {
-        const buttons = document.querySelectorAll(selector);
-        buttons.forEach(button => {
-            button.click();
-        });
-    });
-}
-
 // Function to disable page animations/transitions (useful for faster grabbing)
 function disableAnimations() {
     const style = document.createElement("style");
@@ -94,7 +74,7 @@ async function peachTeaClickAllOnOnePageButton(duplicateCheck = true) {
     
     for (const element of allElements) {
         if (element.textContent.trim() === "All on one page?") {
-            element.click();
+            clickElement(element);
             
             // Wait half a second for the page to load the full content
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -220,7 +200,7 @@ async function peachTeaClickNextChapterLink() {
                 const styles = window.getComputedStyle(link);
                 if (styles.position !== "absolute") {
                     console.log("Found valid \"Next chapter\" link, clicking:", link);
-                    link.click();
+                    clickElement(link);
                     return; // Exit after clicking the first valid link
                 } else {
                     console.log("Skipped \"Next chapter\" link with position: absolute");
@@ -230,27 +210,50 @@ async function peachTeaClickNextChapterLink() {
     }
 }
 
-// Generic function to click a link containing specific text or texts
-// Can be used as: clickLinkContaining("Next", { exact: true }) or clickLinkContaining(["Next", "Episode"])
-function clickLinkContaining(text, options = {}) {
+// Helper function to check if element should be excluded
+function isElementValid(element, excludeClasses = [], excludeStyles = {}) {
+    // Check excluded classes
+    if (excludeClasses.some(cls => element.classList.contains(cls))) {
+        return false;
+    }
+    
+    // Check excluded styles
+    const styles = window.getComputedStyle(element);
+    const hasExcludedStyle = Object.entries(excludeStyles).some(([prop, value]) => styles[prop] === value);
+    return !hasExcludedStyle;
+}
+
+// Helper function to click an element (handles both links and buttons)
+function clickElement(element) {
+    // Use window.location.href to ensure navigation happens in same tab
+    if (element.href) {
+        window.location.href = element.href;
+    } else {
+        // Fallback to click if no href (for non-link elements)
+        element.click();
+    }
+}
+
+// Function to click an element containing specific text or texts
+// Can be used as: clickElementWithText("Next", { exact: true }) or clickElementWithText(["Next", "Episode"])
+function clickElementWithText(text, options = {}) {
     // If no text provided, return a function that can be called later
     if (arguments.length === 0) {
         return function() {
-            return clickLinkContaining("Next", { exact: false });
+            return clickElementWithText("Next", { exact: false });
         };
     }
     
     const {
-        exact = false,           // Whether to match exact text or just contain
-        excludeClasses = [],     // Array of classes to exclude
-        excludeStyles = {},      // Object of CSS styles to exclude (e.g., {position: 'absolute'})
-        selector = "a",          // CSS selector for elements to check
-        abortIfNotFound = false  // Whether to abort bulk grab sequence if no element is found
+        exact = false, // Whether to match exact text or just contain
+        excludeClasses = [], // Array of classes to exclude
+        excludeStyles = {}, // Object of CSS styles to exclude (e.g., {position: 'absolute'})
+        selector = "a, button, [role=\"button\"]", // CSS selector for elements to check (default to clickable elements)
+        abortIfNotFound = false // Whether to abort bulk grab sequence if no element is found
     } = options;
     
     // Convert text to array if it's a string
     const textArray = Array.isArray(text) ? text : [text];
-    
     const elements = document.querySelectorAll(selector);
     
     for (const element of elements) {
@@ -262,26 +265,10 @@ function clickLinkContaining(text, options = {}) {
         );
         
         if (textMatches) {
-            // Check excluded classes
-            if (excludeClasses.some(cls => element.classList.contains(cls))) {
-                continue;
+            if (isElementValid(element, excludeClasses, excludeStyles)) {
+                clickElement(element);
+                return true;
             }
-            
-            // Check excluded styles
-            const styles = window.getComputedStyle(element);
-            const hasExcludedStyle = Object.entries(excludeStyles).some(([prop, value]) => styles[prop] === value);
-            if (hasExcludedStyle) {
-                continue;
-            }
-            
-            // Use window.location.href to ensure navigation happens in same tab
-            if (element.href) {
-                window.location.href = element.href;
-            } else {
-                // Fallback to click if no href (for non-link elements)
-                element.click();
-            }
-            return true;
         }
     }
     
@@ -292,23 +279,35 @@ function clickLinkContaining(text, options = {}) {
     return false;
 }
 
-// Function to click any button/link with specific text (not case-sensitive)
-function clickElementWithText(text, options = {}) {
+
+// Function to click an element by CSS selector (without requiring text matching)
+function clickElementBySelector(selector, options = {}) {
     const {
-        selector = "a, button, [role=\"button\"]",  // Default to clickable elements
-        exact = false,
-        excludeClasses = [],
-        excludeStyles = {}
+        excludeClasses = [], // Array of classes to exclude
+        excludeStyles = {}, // Object of CSS styles to exclude
+        abortIfNotFound = false // Whether to abort bulk grab sequence if no element is found
     } = options;
     
-    return clickLinkContaining(text, { selector, exact, excludeClasses, excludeStyles });
+    const elements = document.querySelectorAll(selector);
+    
+    for (const element of elements) {
+        if (isElementValid(element, excludeClasses, excludeStyles)) {
+            clickElement(element);
+            return true;
+        }
+    }
+    
+    if (abortIfNotFound) {
+        return { abort: true, reason: `No valid element found with selector: ${selector}` };
+    }
+    return false;
 }
 
 function clickPreviousChapterLink() {
     const previousTexts = ["Previous chapter", "Previous", "Prev", "← Previous", "‹ Previous"];
     
     for (const text of previousTexts) {
-        if (clickLinkContaining(text, { exact: true })) {
+        if (clickElementWithText(text, { exact: true, selector: "a" })) {
             return true;
         }
     }
@@ -320,51 +319,12 @@ function clickNextPageLink() {
     const nextTexts = ["Next chapter", "Next page", "Next", "→", "Continue", "Read more"];
     
     for (const text of nextTexts) {
-        if (clickLinkContaining(text, { exact: false })) {
+        if (clickElementWithText(text, { exact: false, selector: "a" })) {
             return true;
         }
     }
 
     return false;
-}
-
-// Function to bookmark the current page (add to favorites/reading list)
-function bookmarkPage() {
-    const bookmarkSelectors = [
-        "button[title*=\"bookmark\"]",
-        "button[title*=\"favorite\"]",
-        ".bookmark-btn",
-        ".favorite-btn",
-        ".add-to-library"
-    ];
-    
-    for (const selector of bookmarkSelectors) {
-        const button = document.querySelector(selector);
-        if (button) {
-            button.click();
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-// Function to close any notification/toast messages
-function closeNotifications() {
-    const notificationSelectors = [
-        ".notification .close",
-        ".toast .close",
-        ".alert .close",
-        "[role=\"alert\"] button",
-        ".dismiss-btn"
-    ];
-    
-    notificationSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-            element.click();
-        });
-    });
 }
 
 // Function to simulate a key press
@@ -456,21 +416,6 @@ function pressRightArrow() {
     simulateKeyPress("ArrowRight");
 }
 
-// Convenience function to simulate left arrow key (for previous chapter navigation)
-function pressLeftArrow() {
-    simulateKeyPress("ArrowLeft");
-}
-
-// Function to simulate Enter key press
-function pressEnter() {
-    simulateKeyPress("Enter");
-}
-
-// Function to simulate Space key press (often used for next page)
-function pressSpace() {
-    simulateKeyPress("Space");
-}
-
 async function ridiNext() {
     let unownedEpisodeButtons = document.querySelectorAll(".checkout_contents_wrapper button");
     let unownedText = [
@@ -482,7 +427,7 @@ async function ridiNext() {
     for (let button of unownedEpisodeButtons) {
         const buttonText = button.textContent.trim().toLowerCase();
         if (unownedText.some(t => buttonText.includes(t))) {
-            button.click();
+            clickElement(button);
         }
     }
     pressRightArrow();
@@ -508,7 +453,7 @@ async function ridiNext() {
     for (let button of checkoutButtons) {
         const buttonText = button.textContent?.trim()?.toLowerCase() || "";
         if (freeText.some(t => buttonText.includes(t))) {
-            button.click();
+            clickElement(button);
             // wait for page to load
             await new Promise(r => setTimeout(r, 3100));
             return;
@@ -524,10 +469,6 @@ window.GrabActions = {
     scrollToBottom,
     scrollToTop,
     waitForElement,
-    removeOverlays,
-    expandContent,
-    disableAnimations,
-    loadAllImages,
     peachTeaClickAllOnOnePageButton,
     checkForPremiumContent,
     checkForPageNotFound,
@@ -535,16 +476,11 @@ window.GrabActions = {
     ridiTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,
-    clickLinkContaining,
     clickElementWithText,
+    clickElementBySelector,
     clickPreviousChapterLink,
     clickNextPageLink,
-    bookmarkPage,
-    closeNotifications,
     simulateKeyPress,
     pressRightArrow,
-    pressLeftArrow,
-    pressEnter,
-    pressSpace,
     ridiNext
 };
