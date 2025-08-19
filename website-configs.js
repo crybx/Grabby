@@ -165,7 +165,7 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         madaraWpSites: {
-            domains: ["duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
+            domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
             grabber: "madaraWpTheme",
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForDuplicateChapter",
