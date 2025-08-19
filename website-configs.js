@@ -53,7 +53,18 @@ const WEBSITE_CONFIGS = {
         },
         "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
         "fenrirealm.com": { grabber: "grabFenrir" },
-        "helioscans.com": { grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] } },
+        "helioscans.com": {
+            grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },
+            preGrab: {
+                fn: "GrabActions.checkForPremiumContent",
+                args: [["div", "span", "p"], true, ["This is an early access chapter."]]
+            },
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: ["#chapter_controls_header a[href*=\"/chapter/\"]:has(img[src*=\"arrow-right.svg\"])"]
+            },
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 5 }
+        },
         "hyacinthbloom.com": {
             grabber: "grabHyacinth",
             useFirstHeadingTitle: true,
