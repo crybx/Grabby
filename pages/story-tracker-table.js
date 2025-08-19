@@ -162,11 +162,6 @@ class StoryTrackerTable {
             this.showImportModal();
         });
 
-        // JSON import modal controls
-        document.getElementById("import-json-btn").addEventListener("click", () => {
-            this.showJsonImportModal();
-        });
-
         // Export stories
         document.getElementById("export-stories-btn").addEventListener("click", () => {
             this.exportStories();
@@ -190,23 +185,18 @@ class StoryTrackerTable {
             if (e.target.id === "import-stories-modal") this.hideImportModal();
         });
 
-        // JSON import modal controls
-        document.getElementById("close-json-modal").addEventListener("click", () => {
-            this.hideJsonImportModal();
+        // Clear error when user interacts with inputs
+        document.getElementById("import-links").addEventListener("input", () => {
+            this.hideImportError();
         });
 
-        document.getElementById("cancel-json-btn").addEventListener("click", () => {
-            this.hideJsonImportModal();
+        document.getElementById("json-file").addEventListener("change", (e) => {
+            this.hideImportError();
+            this.updateClearJsonButton();
         });
-
-        document.getElementById("import-json-form").addEventListener("submit", (e) => {
-            e.preventDefault();
-            this.handleJsonImport();
-        });
-
-        // Close JSON import modal when clicking outside
-        document.getElementById("import-json-modal").addEventListener("click", (e) => {
-            if (e.target.id === "import-json-modal") this.hideJsonImportModal();
+        
+        document.getElementById("clear-json-btn").addEventListener("click", () => {
+            this.clearJsonFiles();
         });
 
         // Manage tags modal controls
@@ -910,6 +900,37 @@ class StoryTrackerTable {
     hideImportModal() {
         document.getElementById("import-stories-modal").style.display = "none";
         document.getElementById("import-stories-form").reset();
+        this.hideImportError();
+        this.updateClearJsonButton(); // Hide clear button when modal closes
+    }
+    
+    showImportError(message) {
+        const errorElement = document.getElementById("import-error");
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+    }
+    
+    hideImportError() {
+        const errorElement = document.getElementById("import-error");
+        errorElement.style.display = "none";
+    }
+    
+    updateClearJsonButton() {
+        const fileInput = document.getElementById("json-file");
+        const clearButton = document.getElementById("clear-json-btn");
+        
+        if (fileInput.files.length > 0) {
+            clearButton.style.display = "block";
+        } else {
+            clearButton.style.display = "none";
+        }
+    }
+    
+    clearJsonFiles() {
+        const fileInput = document.getElementById("json-file");
+        fileInput.value = "";
+        this.updateClearJsonButton();
+        this.hideImportError();
     }
 
     // Parse HTML links and extract href and title
@@ -926,9 +947,22 @@ class StoryTrackerTable {
 
     async handleImportStories() {
         const htmlInput = document.getElementById("import-links").value.trim();
+        const jsonFiles = document.getElementById("json-file").files;
         
-        if (!htmlInput) {
-            alert("Please paste HTML links to import.");
+        if (!htmlInput && jsonFiles.length === 0) {
+            this.showImportError("Please either paste HTML links or select JSON files to import.");
+            return;
+        }
+        
+        // If both are provided, show error
+        if (htmlInput && jsonFiles.length > 0) {
+            this.showImportError("Please use either HTML links OR JSON files, not both. Remove one to continue.");
+            return;
+        }
+        
+        // If only JSON files are provided
+        if (jsonFiles.length > 0 && !htmlInput) {
+            await this.handleJsonImport();
             return;
         }
 
@@ -1016,15 +1050,6 @@ class StoryTrackerTable {
         console.log(`Exported ${this.stories.length} stories to ${filename}`);
     }
 
-    // JSON import modal management
-    showJsonImportModal() {
-        document.getElementById("import-json-modal").style.display = "flex";
-    }
-
-    hideJsonImportModal() {
-        document.getElementById("import-json-modal").style.display = "none";
-        document.getElementById("import-json-form").reset();
-    }
 
     // Handle JSON file import (supports multiple files)
     async handleJsonImport() {
@@ -1094,7 +1119,7 @@ class StoryTrackerTable {
                 this.populateDomainFilter();
                 this.applyFilters();
                 this.renderTable();
-                this.hideJsonImportModal();
+                this.hideImportModal();
                 
                 let message = `Successfully imported ${importedCount} stories from ${total} JSON file(s).`;
                 if (totalSkipped > 0) {

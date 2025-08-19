@@ -17,7 +17,6 @@
                 <div class="header-actions">
                     <button id="add-story-btn" class="primary-btn">+ Add Story</button>
                     <button id="import-stories-btn" class="secondary-btn">Import Stories</button>
-                    <button id="import-json-btn" class="secondary-btn">Import JSON</button>
                     <button id="export-stories-btn" class="secondary-btn">Export Stories</button>
                     <button id="refresh-btn" class="secondary-btn">Refresh</button>
                 </div>
@@ -213,37 +212,28 @@
             <div class="modal-body">
                 <form id="import-stories-form">
                     <div class="form-group">
-                        <label for="import-links">HTML Links</label>
-                        <textarea id="import-links" rows="10" placeholder='Paste HTML links here, e.g.:
-<a href="https://example.com/story1">Story Title 1</a>
-<a href="https://example.com/story2">Story Title 2</a>' required></textarea>
-                        <small class="form-help">Paste a list of HTML anchor tags with story links and titles</small>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="cancel-import-btn" class="secondary-btn">Cancel</button>
-                        <button type="submit" class="primary-btn">Import Stories</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Import JSON Modal -->
-    <div id="import-json-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Import from JSON Backup</h2>
-                <button id="close-json-modal" class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="import-json-form">
-                    <div class="form-group">
                         <label for="json-file">JSON Backup Files</label>
-                        <input type="file" id="json-file" accept=".json" multiple required>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="json-file" accept=".json" multiple>
+                            <button type="button" id="clear-json-btn" class="clear-file-btn" style="display: none;" title="Clear selected files">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    <line x1="8" y1="16" x2="16" y2="8" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                        </div>
                         <small class="form-help">Select one or more JSON backup files exported from Grabby Story Tracker</small>
                     </div>
+                    <div class="form-group">
+                        <label for="import-links">HTML Links</label>
+                        <textarea id="import-links" rows="5" placeholder='Paste HTML links here, e.g.:
+<a href="https://example.com/story1">Story Title 1</a>
+<a href="https://example.com/story2">Story Title 2</a>'></textarea>
+                        <small class="form-help">Paste a list of HTML anchor tags with story links and titles</small>
+                    </div>
+                    <div id="import-error" class="form-error" style="display: none;"></div>
                     <div class="form-actions">
-                        <button type="button" id="cancel-json-btn" class="secondary-btn">Cancel</button>
+                        <button type="button" id="cancel-import-btn" class="secondary-btn">Cancel</button>
                         <button type="submit" class="primary-btn">Import Stories</button>
                     </div>
                 </form>
