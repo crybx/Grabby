@@ -63,7 +63,7 @@ const WEBSITE_CONFIGS = {
                 fn: "GrabActions.clickElementBySelector",
                 args: ["#chapter_controls_header a[href*=\"/chapter/\"]:has(img[src*=\"arrow-right.svg\"])"]
             },
-            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 5 }
+            autoNav: { enabled: true, defaultCount: 20, defaultDelay: 10 }
         },
         "hyacinthbloom.com": {
             grabber: "grabHyacinth",
@@ -125,7 +125,7 @@ const WEBSITE_CONFIGS = {
         "secondlifetranslations.com": { grabber: "grabSecondLifeTranslations" },
         "starlightstream.net": {
             grabber: "grabStarlightStream",
-            preGrab: "GrabActions.checkForPageNotFound",
+            preGrab: { fn: "GrabActions.checkForPageNotFound", args: [[".blog-post-title-font"]] },
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },

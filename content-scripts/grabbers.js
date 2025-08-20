@@ -607,10 +607,10 @@ async function grabPeachTeaAgency() {
     }
     
     
-    // First, remove items with no textContent and "Scroll down to continue reading" prompts
+    // First, remove items with no textContent and elements containing aria-label="Continue reading section"
     let filteredDivs = collectedDivs.filter(item => {
         return item.textContent !== "" && 
-               item.textContent !== "Scroll down to continue reading";
+               !item.element.querySelector('[aria-label="Continue reading section"]');
     });
     // Now remove duplicates that overlap between loops only
     let finalDivs = [];

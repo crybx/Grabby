@@ -94,23 +94,20 @@ class QidianParser extends Parser {
 
     cleanRawDom(content)
     {
-        //Remove repeating & unused metadata from document. Approximately halves body length.
-        content.querySelectorAll("i.para-comment_num, i.para-comment").forEach(i => i.remove());
-        content.querySelectorAll("div.db").forEach(i => i.removeAttribute("data-ejs"));
-        let tmptitle = this.ChacheChapterTitle.get(content.baseURI);
-        let newtitlenode = document.createElement("h1");
-        if (tmptitle == undefined || tmptitle == "[placeholder]") {
+        let tempTitle = this.ChacheChapterTitle.get(content.baseURI);
+        let newTitleNode = document.createElement("h1");
+        if (!tempTitle || tempTitle === "[placeholder]") {
             let titleEl = content.querySelector("div.chapter_content h1");
             let titleDupChapRegex = new RegExp("(\\w+[\\s\\-]+\\d+):\\s*\\1:?(.*)", "i").exec(titleEl.textContent);
             if (titleDupChapRegex && titleDupChapRegex.length > 2) {
                 let newtitleText = document.createTextNode(titleDupChapRegex[1] + titleDupChapRegex[2]);
-                newtitlenode.appendChild(newtitleText);
-                titleEl.replaceWith(newtitlenode);
+                newTitleNode.appendChild(newtitleText);
+                titleEl.replaceWith(newTitleNode);
             }
         } else {
-            let newtitleText = document.createTextNode(tmptitle);
-            newtitlenode.appendChild(newtitleText);
-            content.querySelector("div.chapter_content h1").replaceWith(newtitlenode);
+            let newtitleText = document.createTextNode(tempTitle);
+            newTitleNode.appendChild(newtitleText);
+            content.querySelector("div.chapter_content h1").replaceWith(newTitleNode);
         }
         return content;
     }
@@ -198,8 +195,19 @@ class QidianParser extends Parser {
     }
  
     removeUnwantedElementsFromContentElement(content) {
-        util.removeChildElementsMatchingSelector(content, "form.cha-score, div.cha-bts, pirate, div.cha-content div.user-links-wrap, div.tac");
+        util.removeChildElementsMatchingSelector(content, "pirate");
         this.tagAuthorNotesBySelector(content, "div.m-thou");
+        //Remove repeat & unused metadata from document. Approximately halves body length.
+        content.querySelectorAll("*").forEach(element => {
+            utils.removeClasses(element, ["db", "pr", "hover-light"]);
+            utils.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
+            utils.removeAttributesThatStartWith(element, ["data-"]);
+            utils.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment", "tac"]);
+            utils.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
+            utils.replaceSemanticInlineStylesWithTags(element, true);
+        });
+        utils.unwrapAllOfTag(content, "div");
+
         super.removeUnwantedElementsFromContentElement(content);
     }
 

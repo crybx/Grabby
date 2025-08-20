@@ -133,11 +133,12 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
     }
     
     const notFoundIndicators = [
+        "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
         "Page Not Found",
         "404",
         "This page does not exist",
-        "The page you requested could not be found"
+        "The page you requested could not be found",
     ];
     
     for (const selector of selectors) {
