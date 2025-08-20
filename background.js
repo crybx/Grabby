@@ -375,7 +375,7 @@ async function handleMessages(message, sender, sendResponse) {
             void (async () => {
                 try {
                     const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-                    if (!currentTab || currentTab.url.startsWith('chrome-extension://')) {
+                    if (!currentTab || currentTab.url.startsWith("chrome-extension://")) {
                         console.error("addStoryToTracker: Cannot use extension pages for script injection");
                         return;
                     }

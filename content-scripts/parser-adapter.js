@@ -117,7 +117,7 @@ const parserFactory = {
     fetchByUrl: function(url) {
         let hostname = new URL(url).hostname;
         // Strip www. prefix to match parser registrations
-        if (hostname.startsWith('www.')) {
+        if (hostname.startsWith("www.")) {
             hostname = hostname.substring(4);
         }
         const constructor = this.parsers.get(hostname);

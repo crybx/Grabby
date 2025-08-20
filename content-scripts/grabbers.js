@@ -610,7 +610,7 @@ async function grabPeachTeaAgency() {
     // First, remove items with no textContent and elements containing aria-label="Continue reading section"
     let filteredDivs = collectedDivs.filter(item => {
         return item.textContent !== "" && 
-               !item.element.querySelector('[aria-label="Continue reading section"]');
+               !item.element.querySelector("[aria-label=\"Continue reading section\"]");
     });
     // Now remove duplicates that overlap between loops only
     let finalDivs = [];
