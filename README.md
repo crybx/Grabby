@@ -30,7 +30,10 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 5. The Grabby icon should appear in your extensions bar
 
 ### Chrome Web Store
-*Coming soon - pending submission and review*
+
+[Grabby on the Chrome Web Store](https://chromewebstore.google.com/detail/grabby/inibchdkflhanjekaochnidojoienfbp)
+
+(The web store version will probably always be behind the latest development. Reviews for updates to the store are slow.)
 
 ## Usage
 
