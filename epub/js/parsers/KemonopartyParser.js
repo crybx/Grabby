@@ -9,28 +9,34 @@ class KemonopartyParser extends Parser {
     constructor() {
         super();
     }
-
+    
     static isKemono(dom) {
-        let baseurl = new URL(dom.baseURI);
+        let baseurl = new URL(dom.baseURI); 
         return baseurl.hostname.split(".")[0] == "kemono";
     }
 
     async getChapterUrls(dom, chapterUrlsUI) {
         let chapters = [];
         let urlsOfTocPages = await this.getUrlsOfTocPages(dom);
+        let baseUrl = new URL(dom.baseURI);
+        baseUrl.searchParams.delete("tag");
         for (let url of urlsOfTocPages) {
             await this.rateLimitDelay();
-            let json = (await HttpClient.fetchJson(url)).json;
-            json.url = url;
-            let partialList = this.extractPartialChapterList(json);
+            let json = await this.fetchJson(url);
+            let partialList = this.extractPartialChapterList(json, baseUrl);
             chapterUrlsUI.showTocProgress(partialList);
             chapters = chapters.concat(partialList);
+            if (partialList.length == 0) {
+                break;
+            }
         }
         return chapters.reverse();
     }
 
     async fetchChapter(url) {
-        let json = (await HttpClient.fetchJson(url)).json;
+        let jsonUrl = new URL(url);
+        jsonUrl.pathname = "/api/v1" + jsonUrl.pathname;
+        let json = await this.fetchJson(jsonUrl.href);
         return this.buildChapter(json, url);
     }
 
@@ -40,7 +46,7 @@ class KemonopartyParser extends Parser {
         newDoc.content.appendChild(header);
         header.textContent = json.post.title;
         let content = util.sanitize(json.post.content);
-        util.moveChildElements(content.body, newDoc.content);
+        util.moveChildElements(content.body, newDoc.content);        
         this.copyImagesIntoContent(newDoc.dom);
         this.addFileImages(json, newDoc);
         return newDoc.dom;
@@ -59,15 +65,13 @@ class KemonopartyParser extends Parser {
             urlbuilder.searchParams.delete(key);
         }
         let regex = new RegExp("/?$");
-        urlbuilder.href = urlbuilder.href.replace(`https://${baseurl.hostname}`, `https://${baseurl.hostname}/api/v1`).replace(regex, "/posts-legacy");
+        urlbuilder.href = urlbuilder.href.replace(`https://${baseurl.hostname}`, `https://${baseurl.hostname}/api/v1`).replace(regex, "/posts");
         
         for (const [key, value] of baseurl.searchParams.entries()) {
             urlbuilder.searchParams.set(key, value);
         }
         urlbuilder.searchParams.set("o", 0);
-
-        let urlbuilderjson = (await HttpClient.fetchJson(urlbuilder)).json;
-        let lastPageOffset = urlbuilderjson.props.count - (urlbuilderjson.props.count%50);
+        let lastPageOffset = await this.getLastPageOffset(dom, urlbuilder);
         let urls = [];
         for (let i = 0; i <= lastPageOffset; i += 50) {
             urlbuilder.searchParams.set("o", i);
@@ -76,17 +80,38 @@ class KemonopartyParser extends Parser {
         return urls;
     }
 
-    extractPartialChapterList(data) {
-        // get href from the dom, not the url of the page
+    async getLastPageOffset(dom, urlbuilder) {
         try {
-            let url = new URL(data.url);
-            let authorid = data.props.id;
-            let ids = data.results.map(result => result.id);
-            let titles = data.results.map(result => result.title);
-            let urls = ids.map(id => `https://${url.hostname}/api/v1/patreon/user/${authorid}/post/${id}`);
-            return urls.map((url, i) => ({
-                sourceUrl: url,
-                title: titles[i]
+            let link = [...dom.querySelectorAll("#paginator-top a")].pop();
+            let offset = new URL(link?.href)?.searchParams?.get("o");
+            return offset
+                ? parseInt(offset)
+                : 0;
+        } catch (error) {
+            let regex1 = new RegExp("/posts?.+");
+            let profile = await this.fetchJson(urlbuilder.href.replace(regex1, "/profile"));
+            return profile?.post_count;
+        }
+    }
+
+    async fetchJson(url) {
+        let options = {
+            headers: {
+                "Accept": "text/css"
+            }
+        };
+        return (await HttpClient.fetchJson(url, options)).json;
+    }
+
+    extractPartialChapterList(data, baseUrl) {
+        let buildUrl = (row) => {
+            baseUrl.pathname = `/${row.service}/user/${row.user}/post/${row.id}`;
+            return baseUrl.href;
+        };
+        try {
+            return data.map((row) => ({
+                sourceUrl: buildUrl(row),
+                title: row.title
             }));
         } catch (e) {
             return [];

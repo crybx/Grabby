@@ -3,15 +3,16 @@
 // This is for the Fictioneer WordPress theme: https://github.com/Tetrakern/fictioneer
 
 //dead urls
-parserFactory.register("blossomtranslation.com", function() { return new FictioneerParser(); });
-parserFactory.register("igniforge.com", function() { return new FictioneerParser(); });
-parserFactory.register("razentl.com", function() { return new FictioneerParser(); });
+parserFactory.register("blossomtranslation.com", () => new FictioneerParser());
+parserFactory.register("igniforge.com", () => new FictioneerParser());
+parserFactory.register("razentl.com", () => new FictioneerParser());
 //these still exist
-parserFactory.register("emberlib731.xyz", function() { return new FictioneerParser(); });
-parserFactory.register("lilyonthevalley.com", function() { return new LilyOnTheValleyParser(); });
-parserFactory.register("novelib.com", function() { return new FictioneerParser(); });
-parserFactory.register("springofromance.com", function() { return new FictioneerParser(); });
+parserFactory.register("emberlib731.xyz", () => new FictioneerParser());
+parserFactory.register("lilyonthevalley.com", () => new LilyOnTheValleyParser());
+parserFactory.register("novelib.com", () => new FictioneerParser());
 parserFactory.register("smeraldogarden.com", () => new FictioneerParser());
+parserFactory.register("springofromance.com", () => new FictioneerParser());
+parserFactory.register("talesinthevalley.com", () => new LilyOnTheValleyParser());
 
 parserFactory.registerRule(
     (url, dom) => FictioneerParser.isFictioneerTheme(dom) * 0.7,
@@ -33,13 +34,13 @@ class FictioneerParser extends Parser {
         // Put free chapters first
         [...dom.querySelectorAll(".chapter-group__list ._publish a")].map(a => chapters.push(({
             sourceUrl: a.href,
-            title: a.textContent?.trim(),
+            title: a.textContent,
             isIncludeable: true
         })));
         // Put scheduled chapters after free and don't select them
         [...dom.querySelectorAll("._future a")].map(a => chapters.push(({
             sourceUrl: a.href,
-            title: a.textContent?.trim(),
+            title: a.textContent,
             isIncludeable: false
         })));
 

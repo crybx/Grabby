@@ -4,7 +4,7 @@
 "use strict";
 
 //dead url/ parser
-parserFactory.register("fanfiction.mugglenet.com", function() { return new MuggleNetParser(); });
+parserFactory.register("fanfiction.mugglenet.com", () => new MuggleNetParser());
 
 class MuggleNetParser extends Parser {
     constructor() {
@@ -40,7 +40,7 @@ class MuggleNetParser extends Parser {
     }
 
     extractTextFromPageTitle(dom, index) {
-        let text = "Unknown";
+        let text = "<unknown>";
         let links = [...dom.querySelectorAll("div#pagetitle a")];
         if (index < links.length) {
             text = links[index].textContent.trim();

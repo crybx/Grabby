@@ -4,7 +4,7 @@
 "use strict";
 
 //dead url
-parserFactory.register("zirusmusings.com", function() { return new ZirusMusingsParser(); });
+parserFactory.register("zirusmusings.com", () => new ZirusMusingsParser());
 parserFactory.register("zirusmusings.net", () => new ZirusMusingsParser());
 
 class ZirusMusingsParser extends Parser {
@@ -23,12 +23,12 @@ class ZirusMusingsParser extends Parser {
         });
         chaps = chaps.flatMap(a => a).filter(a => a.published!=null);
         return chaps.map(a => ({
-            sourceUrl: "https://www.zirusmusings.net/series/" + a.series + "/" + a.chapter,
+            sourceUrl: "https://www.zirusmusings.net/series/" + a.series + "/" + a.chapter, 
             title: a.title,
             newArc: a.newArc
         }));
     }
-
+    
     async loadEpubMetaInfo(dom) {
         let tocHtml = (await HttpClient.wrapFetch(dom.baseURI)).responseXML;
         let nextjsraw = tocHtml.querySelector("#__NEXT_DATA__").innerHTML;

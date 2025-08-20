@@ -3,10 +3,10 @@
 */
 "use strict";
 
-parserFactory.register("www.fanfiction.net", function() { return new FanFictionParser(); });
+parserFactory.register("www.fanfiction.net", () => new FanFictionParser());
 
 // fictionpress.com has same format as fanfiction.net
-parserFactory.register("www.fictionpress.com", function() { return new FanFictionParser(); });
+parserFactory.register("www.fictionpress.com", () => new FanFictionParser());
 
 class FanFictionParser extends Parser {
     constructor() {
@@ -152,6 +152,17 @@ class FanFictionParser extends Parser {
 
     getInformationEpubItemChildNodes(dom) {
         return [...dom.querySelectorAll("div#pre_story_links, div#profile_top")];
+    }
+
+    extractSubject(dom) {
+        let tags = [...dom.querySelector("#profile_top  span.xgray").childNodes].filter(a => a.nodeName == "#text")[1].textContent;
+        let regex = new RegExp(/( - Chapters: .*)|( - Words: .*)/);
+        tags = tags.replace(regex, "").replaceAll(",", ";").replaceAll(" - ", ", ").split(",");
+        return tags.map(e => e.trim()).filter(a => a != "").join(", ");
+    }
+
+    extractDescription(dom) {
+        return dom.querySelector("#profile_top div.xcontrast_txt").textContent.trim();
     }
 
     cleanInformationNode(node) {

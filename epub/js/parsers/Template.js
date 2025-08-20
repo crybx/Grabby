@@ -25,7 +25,7 @@ parserFactory.registerRule(
 );
 */
 
-class TemplateParser extends Parser {
+class TemplateParser extends Parser { // eslint-disable-line no-unused-vars
     constructor() {
         super();
         //Optional Parameters:
@@ -88,7 +88,7 @@ class TemplateParser extends Parser {
     */
 
     // author of the story
-    // Optional, if not provided, will default to "Unknown"
+    // Optional, if not provided, will default to "<unknown>"
     /*
     extractAuthor(dom) {
         // typical implementation is find node with the author's name and return name from title

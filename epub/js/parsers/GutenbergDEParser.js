@@ -11,7 +11,7 @@
 // Use this function if site's host name is sufficient.  
 // i.e. All pages are on same site, and use same format.
 //dead url/ parser
-parserFactory.register("gutenberg.spiegel.de", function() { return new GutenbergDEParser(); });
+parserFactory.register("gutenberg.spiegel.de", () => new GutenbergDEParser());
 
 class GutenbergDEParser extends Parser {
     constructor() {
@@ -57,7 +57,7 @@ class GutenbergDEParser extends Parser {
     
 
     // author of the story
-    // Optional, if not provided, will default to "Unknown"
+    // Optional, if not provided, will default to "<unknown>"
     
     extractAuthor(dom) {
         // typical implementation is find node with the author's name and return name from title
