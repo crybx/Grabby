@@ -69,7 +69,7 @@ class DefaultParserSiteSettings {
             }
             if (!util.isNullOrEmpty(config.removeCss))
             {
-                logic.removeUnwanted = function(element) {
+                logic.removeUnwanted = (element) => {
                     // There's a "not a valid selector" coming from this line
                     // when removeCss appears to be url.
                     // Wrap this in a try catch so things don't fail.
@@ -81,7 +81,6 @@ class DefaultParserSiteSettings {
                     } catch (e) {
                         console.log("Invalid selector: " + config.removeCss);
                     }
-
                 };
             }
         }
@@ -91,7 +90,7 @@ class DefaultParserSiteSettings {
 DefaultParserSiteSettings.storageName = "DefaultParserConfigs";
 
 /** Class that handles UI for configuring the Default Parser */
-class DefaultParserUI {
+class DefaultParserUI { // eslint-disable-line no-unused-vars
     constructor() {
     }
 
@@ -147,7 +146,7 @@ class DefaultParserUI {
         }
     }
 
-    static testDefaultParser(parser) {
+    static async testDefaultParser(parser) {
         DefaultParserUI.AddConfiguration(parser);
         let hostname = DefaultParserUI.getDefaultParserHostnameInput().value;
         let config = parser.siteConfigs.getConfigForSite(hostname);
@@ -156,9 +155,9 @@ class DefaultParserUI {
             alert(UIText.Warning.warningNoChapterUrl);
             return;
         }
-        return HttpClient.wrapFetch(config.testUrl).then(function(xhr) {
+        try {
+            let xhr = await HttpClient.wrapFetch(config.testUrl);
             let webPage = { rawDom: util.sanitize(xhr.responseXML.querySelector("*")) };
-            util.setBaseTag(config.testUrl, webPage.rawDom);
             let content = parser.findContent(webPage.rawDom);
             if (content === null) {
                 let errorMsg = UIText.Error.errorContentNotFound(config.testUrl);
@@ -167,9 +166,9 @@ class DefaultParserUI {
             parser.removeUnwantedElementsFromContentElement(content);
             parser.addTitleToContent(webPage, content);
             DefaultParserUI.showResult(content);
-        }).catch(function(err) {
+        } catch (err) {
             ErrorLog.showErrorMessage(err);
-        });
+        }
     }
 
     static cleanResults() {

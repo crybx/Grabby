@@ -84,16 +84,20 @@ const util = (function() {
         newImage.setAttributeNS(xlink_ns, "xlink:href", makeRelative(href));
         newImage.setAttributeNS(null, "width", width);
         newImage.setAttributeNS(null, "height", height);
+        origin = clearIfDataUri(origin);
         if (includeImageSourceUrl) {
             let desc = doc.createElementNS(svg_ns, "desc");
             svg.appendChild(desc);
-            // Filter out data: URIs to prevent massive base64 content in SVG desc
-            let descContent = (origin && origin.startsWith("data:")) ? "" : origin;
-            desc.appendChild(document.createTextNode(descContent));
+            desc.appendChild(document.createTextNode(origin));
         } else {
             svg.appendChild(createComment(doc, origin));
         }
         return div;
+    }
+
+    function clearIfDataUri(content) {
+        // Filter out data: URIs to prevent massive base64 content
+        return (content && content.startsWith("data:")) ? "" : content;
     }
 
     // assumes we're making link from file in text directory to images/styles
@@ -175,9 +179,7 @@ const util = (function() {
     }
 
     function decodeEmail(encodedString) {
-        let extractHex = function(index) {
-            return parseInt(encodedString.slice(index, index + 2), 16);
-        };
+        let extractHex = (index) => parseInt(encodedString.slice(index, index + 2), 16);
         let key = extractHex(0);
         let email = "";
         for (let index = 2; index < encodedString.length; index += 2) {
@@ -304,10 +306,7 @@ const util = (function() {
     }
 
     function convertPreTagToPTags(dom, element, splitOn) {
-        let normalizeEol = function(s) {
-            return s.replace(/\r\n/g, "\n")
-                .replace(/\r/g, "\n");
-        };
+        let normalizeEol = (s) => s.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
         splitOn = splitOn || "\n";
         let strings = normalizeEol(element.innerText).split(splitOn);
@@ -644,10 +643,10 @@ const util = (function() {
     function normalizeUrlForCompare(url) {
         let noTrailingSlash = removeTrailingSlash(removeAnchor(url));
 
-        const protocolSeperator = "://";
-        let protocolIndex = noTrailingSlash.indexOf(protocolSeperator);
+        const protocolSeparator = "://";
+        let protocolIndex = noTrailingSlash.indexOf(protocolSeparator);
         return (protocolIndex < 0) ? noTrailingSlash
-            : noTrailingSlash.substring(protocolIndex + protocolSeperator.length);
+            : noTrailingSlash.substring(protocolIndex + protocolSeparator.length);
     }
 
     function hyperLinkToChapter(link, newArc) {
@@ -659,10 +658,7 @@ const util = (function() {
     }
 
     function createComment(doc, content) {
-        // Filter out data: URIs to prevent massive base64 content in comments
-        if (content && content.startsWith("data:")) {
-            content = "";
-        }
+        content = clearIfDataUri(content);
         // comments are not allowed to contain a double hyphen
         let escaped = content.replace(/--/g, "%2D%2D");
         return doc.createComment("  " + escaped + "  ");
@@ -943,12 +939,10 @@ const util = (function() {
     }
 
     function createChapterTab(url) {
-        return new Promise(function(resolve) {
-            chrome.tabs.create({url: url, active: false},
-                function(tab) {
-                    resolve(tab.id);
-                }
-            );
+        return new Promise((resolve) => {
+            chrome.tabs.create({url: url, active: false}, (tab) => {
+                resolve(tab.id);
+            });
         });
     }
 
@@ -1062,8 +1056,13 @@ const util = (function() {
     }
 
     function sanitize(dirty) {
+        let savedBaseURI = dirty.baseURI;
         const clean = DOMPurify.sanitize(dirty);
-        return new DOMParser().parseFromString(clean, "text/html");
+        let html = new DOMParser().parseFromString(clean, "text/html");
+        if (savedBaseURI) {
+            util.setBaseTag(savedBaseURI, html);
+        }
+        return html;
     }
 
     function sanitizeNode(dirty) {
@@ -1175,6 +1174,7 @@ const util = (function() {
         createEmptyHtmlDoc: createEmptyHtmlDoc,
         populateHead: populateHead,
         createSvgImageElement: createSvgImageElement,
+        clearIfDataUri: clearIfDataUri,
         resolveRelativeUrl: resolveRelativeUrl,
         log: log,
         extractHostName: extractHostName,

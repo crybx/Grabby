@@ -18,7 +18,7 @@ const main = (function() {
     }
 
     // details
-    let initalWebPage = null;
+    let initialWebPage = null;
     let parser = null;
     let userPreferences = null;
 
@@ -61,7 +61,7 @@ const main = (function() {
     }
 
     function setUiToDefaultState() {
-        document.getElementById("highestResolutionImageRow").hidden = true;
+        document.getElementById("highestResolutionImagesRow").hidden = true;
         document.getElementById("unSuperScriptAlternateTranslations").hidden = true;
         document.getElementById("imageSection").hidden = true;
         document.getElementById("chapterSelectionOptionsSection").hidden = false;
@@ -135,7 +135,7 @@ const main = (function() {
         main.getPackEpubButton().disabled = disabled;
         document.getElementById("downloadChaptersButton").disabled = disabled;
         document.getElementById("LibAddToLibrary").disabled = disabled;
-        
+
         // Enable/disable stop button based on processing state
         let stopBtn = document.getElementById("stopDownloadButton");
         if (stopBtn) {
@@ -162,7 +162,7 @@ const main = (function() {
         // Get all checkbox elements from the UI
         let checkboxes = document.querySelectorAll(".chapterSelectCheckbox");
         let chapters = [...parser.state.webPages.values()];
-        
+
         // Sync checkbox states to corresponding chapters in parser state
         checkboxes.forEach((checkbox, index) => {
             if (index < chapters.length) {
@@ -191,13 +191,13 @@ const main = (function() {
         ErrorLog.clearHistory();
         setProcessingButtonsState(true);
         parser.onStartCollecting();
-        
+
         // Sync current checkbox states from UI back to parser state before EPUB generation
         syncCheckboxStatesToParser();
-        
-        await parser.fetchContent().then(async function() {
+
+        await parser.fetchContent().then(async () => {
             return await packEpub(metaInfo);
-        }).then(function(content) {
+        }).then((content) => {
             // Enable button here.  If user cancels save dialog
             // the promise never returns
             setProcessingButtonsState(false);
@@ -208,7 +208,7 @@ const main = (function() {
                 return LibraryStorage.LibAddToLibrary(content, fileName, document.getElementById("startingUrlInput").value, overwriteExisting, backgroundDownload, userPreferences);
             }
             return Download.save(content, fileName, overwriteExisting, backgroundDownload);
-        }).then(function() {
+        }).then(() => {
             // Update Reading List if user has manually checked the checkbox
             if (document.getElementById("includeInReadingListCheckbox")?.checked) {
                 parser.updateReadingList();
@@ -224,7 +224,7 @@ const main = (function() {
                 ErrorLog.showLogToUser();
                 dumpErrorLogToFile();
             }
-        }).catch(function(err) {
+        }).catch((err) => {
             setProcessingButtonsState(false);
             if (util.sleepController.signal.aborted) {
                 util.sleepController = new AbortController;
@@ -274,7 +274,7 @@ const main = (function() {
             }
         } else {
             // Normal Mode: download chapters to cache
-            await ChapterCache.downloadChaptersToCache().then(function() {
+            await ChapterCache.downloadChaptersToCache().then(() => {
                 setProcessingButtonsState(false);
                 if (util.sleepController.signal.aborted) {
                     util.sleepController = new AbortController;
@@ -283,7 +283,7 @@ const main = (function() {
                 parser.updateReadingList();
                 ErrorLog.showLogToUser();
                 dumpErrorLogToFile();
-            }).catch(function(err) {
+            }).catch((err) => {
                 setProcessingButtonsState(false);
                 if (util.sleepController.signal.aborted) {
                     util.sleepController = new AbortController;
@@ -301,7 +301,7 @@ const main = (function() {
             stopBtn.disabled = true;
             stopBtn.textContent = "Stopping...";
         }
-        
+
         util.sleepController.abort();
     }
 
@@ -403,7 +403,7 @@ const main = (function() {
 
 
     async function populateControlsWithDom(url, dom) {
-        initalWebPage = dom;
+        initialWebPage = dom;
         setUiFieldToValue("startingUrlInput", url);
 
         // Check for matching library book first (but not if we're already loading/in library mode or bypassing)
@@ -429,8 +429,8 @@ const main = (function() {
         }
 
         // set the base tag, in case server did not supply it
-        util.setBaseTag(url, initalWebPage);
-        await processInitialHtml(url, initalWebPage);
+        util.setBaseTag(url, initialWebPage);
+        await processInitialHtml(url, initialWebPage);
         if (document.getElementById("autosearchmetadataCheckbox")?.checked) {
             autosearchadditionalmetadata();
         }
@@ -527,7 +527,7 @@ const main = (function() {
 
     function openTabWindow() {
         // open new tab window, passing ID of open tab with content to convert to epub as query parameter.
-        getActiveTab().then(function(tabId) {
+        getActiveTab().then((tabId) => {
             let url = chrome.runtime.getURL("epub/details.html") + "?id=";
             url += tabId;
             try {
@@ -541,8 +541,8 @@ const main = (function() {
     }
 
     function getActiveTab() {
-        return new Promise(function(resolve, reject) {
-            chrome.tabs.query({ currentWindow: true, active: true }, function(tabs) {
+        return new Promise((resolve, reject) => {
+            chrome.tabs.query({ currentWindow: true, active: true }, (tabs) => {
                 if ((tabs != null) && (0 < tabs.length)) {
                     resolve(tabs[0].id);
                 } else {
@@ -556,10 +556,10 @@ const main = (function() {
         // load page via XmlHTTPRequest
         let url = getValueFromUiField("startingUrlInput");
         getLoadAndAnalyseButton().disabled = true;
-        return HttpClient.wrapFetch(url).then(async function(xhr) {
+        return HttpClient.wrapFetch(url).then(async (xhr) => {
             await populateControlsWithDom(url, xhr.responseXML);
             getLoadAndAnalyseButton().disabled = false;
-        }).catch(function(error) {
+        }).catch((error) => {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
         });
@@ -585,7 +585,7 @@ const main = (function() {
     }
 
     function resetUI() {
-        initalWebPage = null;
+        initialWebPage = null;
         parser = null;
         let metaInfo = new EpubMetaInfo();
         metaInfo.uuid = "";
@@ -716,18 +716,18 @@ const main = (function() {
                 .map(s => [s, s.hidden])
         );
         [...sections.keys()].forEach(s => s.hidden = true);
-        
+
         // Also hide the sidebar toggle button (filter controls don't make sense in special modes)
         let sidebarButton = document.getElementById("openSidebarButton");
         let sidebarButtonWasHidden = sidebarButton ? sidebarButton.hidden : true;
         if (sidebarButton) {
             sidebarButton.hidden = true;
         }
-        
+
         sectionsToShow.forEach(sectionId => {
             document.getElementById(sectionId).hidden = false;
         });
-        
+
         return function restoreSections() {
             [...sections].forEach(s => s[0].hidden = s[1]);
             if (sidebarButton) {
@@ -830,9 +830,7 @@ const main = (function() {
         document.getElementById("libraryButton").onclick = onLibraryClick;
         document.getElementById("closeLibraryButton").onclick = onLibraryClick;
         document.getElementById("cacheOptionsButton").onclick = onCacheOptionsClick;
-        document.getElementById("ShowMoreMetadataOptionsCheckbox").addEventListener("change", function() {
-            onShowMoreMetadataOptionsClick();
-        });
+        document.getElementById("ShowMoreMetadataOptionsCheckbox").addEventListener("change", () => onShowMoreMetadataOptionsClick());
         document.getElementById("LibAddToLibrary").addEventListener("click", fetchContentAndPackEpub);
         
         // Setup library book indicator event handlers
@@ -867,26 +865,26 @@ const main = (function() {
     // Additional metadata
     function autosearchadditionalmetadata() {
         setMetadataButtonsState(true);
-        let titleName = getValueFromUiField("titleInput");
-        let url = "https://www.novelupdates.com/series-finder/?sf=1&sh=" + titleName;
+        let titlename = getValueFromUiField("titleInput");
+        let url = "https://www.novelupdates.com/series-finder/?sf=1&sh=" + titlename;
         if (getValueFromUiField("subjectInput") == null) {
-            autosearchnovelupdates(url, titleName);
+            autosearchnovelupdates(url, titlename);
         }
         setMetadataButtonsState(false);
     }
 
-    function autosearchnovelupdates(url, titelname) {
-        return HttpClient.wrapFetch(url).then(function(xhr) {
-            findnovelupdatesurl(url, xhr.responseXML, titelname);
-        }).catch(function(error) {
+    function autosearchnovelupdates(url, titlename) {
+        return HttpClient.wrapFetch(url).then((xhr) => {
+            findnovelupdatesurl(url, xhr.responseXML, titlename);
+        }).catch((error) => {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
         });
     }
 
-    function findnovelupdatesurl(url, dom, titelname) {
+    function findnovelupdatesurl(url, dom, titlename) {
         try {
-            let searchurl = [...dom.querySelectorAll("a")].filter(a => a.textContent == titelname)[0];
+            let searchurl = [...dom.querySelectorAll("a")].filter(a => a.textContent == titlename)[0];
             setUiFieldToValue("metadataUrlInput", searchurl.href);
             url = getValueFromUiField("metadataUrlInput");
             if (url.includes("novelupdates.com") == true) {
@@ -900,9 +898,9 @@ const main = (function() {
     function onLoadMetadataButtonClick() {
         setMetadataButtonsState(true);
         let url = getValueFromUiField("metadataUrlInput");
-        return HttpClient.wrapFetch(url).then(function(xhr) {
+        return HttpClient.wrapFetch(url).then((xhr) => {
             populateMetadataAddWithDom(url, xhr.responseXML);
-        }).catch(function(error) {
+        }).catch((error) => {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
         });
@@ -946,7 +944,7 @@ const main = (function() {
     }
 
     // actions to do when window opened
-    window.onload = function() {
+    window.onload = () => {
         userPreferences = UserPreferences.readFromLocalStorage();
         if (isRunningInTabMode()) {
             ErrorLog.SuppressErrorLog = false;

@@ -31,11 +31,6 @@ class EpubItem {
         return "xhtml" + util.zeroPad(this.index);
     }
 
-    // Returns sourceUrl suitable for metadata (filters out data: URIs)
-    getSourceUrlForMetadata() {
-        return this.sourceUrl && this.sourceUrl.startsWith("data:") ? "" : this.sourceUrl;
-    }
-
     getMediaType() {
         return "application/xhtml+xml";
     }
@@ -127,7 +122,7 @@ class EpubItem {
 //==============================================================
 // Construct an Epub item from source where each chapter 
 // was a separate HTML file.
-class ChapterEpubItem extends EpubItem {
+class ChapterEpubItem extends EpubItem { // eslint-disable-line no-unused-vars
     constructor(chapter, content, index) {
         super(chapter.sourceUrl);
         super.setIndex(index);
@@ -167,7 +162,7 @@ class ChapterEpubItem extends EpubItem {
     height: "full size" image height 
     width: "full size" image width
 */
-class ImageInfo extends EpubItem {
+class ImageInfo extends EpubItem { // eslint-disable-line no-unused-vars
     constructor(wrappingUrl, index, sourceUrl, dataOrigFileUrl) {
         super(sourceUrl);
         super.index = index;

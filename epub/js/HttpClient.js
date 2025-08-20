@@ -55,7 +55,7 @@ class FetchErrorHandler {
         } else {
             msg = new Error(new Error(this.makeFailCanRetryMessage(url, response.status)));
         }
-        return new Promise(function(resolve, reject) {
+        return new Promise((resolve, reject) => {
             if (wrapOptions.retry.HTTP === 403) {
                 msg.openurl = response.url;
                 msg.blockurl = url;
@@ -120,7 +120,7 @@ class FetchErrorHandler {
 }
 FetchErrorHandler.rateLimitedHosts = new Set();
 
-class FetchImageErrorHandler extends FetchErrorHandler {
+class FetchImageErrorHandler extends FetchErrorHandler { // eslint-disable-line no-unused-vars
     constructor(parentPageUrl) {
         super();
         this.parentPageUrl = parentPageUrl;
@@ -271,7 +271,8 @@ class HttpClient {
             }));
         } catch {
             // Probably running browser that doesn't support partitionKey, e.g. Kiwi
-        } 
+            console.log("failed to set cookie");
+        }
     }
 }
 

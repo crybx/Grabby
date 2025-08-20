@@ -849,7 +849,7 @@ class LibraryUI {
             document.getElementById("startingUrlInput").value = items[LibGetURL];
             //document.getElementById("libinvisbutton").click();
             // load page via XmlHTTPRequest
-            main.onLoadAndAnalyseButtonClick().then(function() {
+            main.onLoadAndAnalyseButtonClick().then(() => {
                 if (document.getElementById("includeInReadingListCheckbox").checked != true) {
                     document.getElementById("includeInReadingListCheckbox").click();
                 }

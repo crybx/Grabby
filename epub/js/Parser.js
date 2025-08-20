@@ -6,7 +6,7 @@
 /**
  * For sites that have multiple chapters per web page, this can minimize HTTP calls
  */
-class FetchCache {
+class FetchCache { // eslint-disable-line no-unused-vars
     constructor() {
         this.path = null;
         this.dom = null;
@@ -143,7 +143,7 @@ class Parser {
                 console.error("Failed to cache chapter:", e)
             );
         }
-        
+
         return content;
     }
 
@@ -161,11 +161,11 @@ class Parser {
                 img.setAttribute("src", newSrc);
             }
         }
-        
+
         this.imageCollector.findImagesUsedInDocument(content);
         this.imageCollector.replaceImageTags(content);
         util.makeHyperlinksRelative(webPage.rawDom ? webPage.rawDom.baseURI : webPage.sourceUrl, content);
-        
+
         return content;
     }
 
@@ -174,7 +174,7 @@ class Parser {
         if (webPage.isCachedContent) {
             return;
         }
-        
+
         let title = this.findChapterTitle(webPage.rawDom, webPage);
         if (title != null) {
             if (title instanceof HTMLElement) {
@@ -272,7 +272,7 @@ class Parser {
         } catch (e) {
             // Ignore cache read errors, fall back to normal processing
         }
-        
+
         let content;
         if (cachedContent) {
             content = cachedContent;
@@ -282,7 +282,7 @@ class Parser {
             content = this.convertRawDomToContent(webPage);
             content = this.processImagesAndLinks(webPage, content);
         }
-        
+
         let items = [];
         if (content != null) {
             items.push(new ChapterEpubItem(webPage, content, epubItemIndex));
@@ -409,8 +409,8 @@ class Parser {
     }
 
     makeSaveAsFileNameWithoutExtension(title, useFullTitle) {
-        let maxFiileNameLength = useFullTitle ? 512 : 20;
-        let fileName = (title == null)  ? "web" : util.safeForFileName(title, maxFiileNameLength);
+        let maxFileNameLength = useFullTitle ? 512 : 20;
+        let fileName = (title == null)  ? "web" : util.safeForFileName(title, maxFileNameLength);
         if (util.isStringWhiteSpace(fileName)) {
             // title is probably not English, so just use it as is
             fileName = title;
@@ -434,7 +434,7 @@ class Parser {
         try {
             // Check if this is an update to an existing library book by looking for library chapters
             // that already exist in a book (have isInBook === true)
-            let hasExistingLibraryChapters = [...this.state.webPages.values()].some(chapter => 
+            let hasExistingLibraryChapters = [...this.state.webPages.values()].some(chapter =>
                 chapter.isInBook === true || chapter.source === "library-only"
             );
             isLibraryBookUpdate = hasExistingLibraryChapters;
@@ -508,13 +508,14 @@ class Parser {
         let chapterUrlsUI = new ChapterUrlsUI(this);
         this.userPreferences.setReadingListCheckbox(url);
 
-        // returns promise, because may need to fetch additional pages to find list of chapters
-        await this.getChapterUrls(firstPageDom, chapterUrlsUI).then(async (chapters) => {
+        try {
+            let chapters = await this.getChapterUrls(firstPageDom, chapterUrlsUI);
             if (this.userPreferences.chaptersPageInChapterList.value) {
                 chapters = this.addFirstPageUrlToWebPages(url, firstPageDom, chapters);
             }
             chapters = this.cleanWebPageUrls(chapters);
-            this.userPreferences.readingList.deselectOldChapters(url, chapters);
+            chapters?.forEach(chapter => chapter.title = chapter.title?.trim());
+            await this.userPreferences.readingList.deselectOldChapters(url, chapters);
             chapterUrlsUI.populateChapterUrlsTable(chapters);
             if (0 < chapters.length) {
                 if (chapters[0].sourceUrl === url) {
@@ -525,9 +526,9 @@ class Parser {
             }
             this.state.setPagesToFetch(chapters);
             chapterUrlsUI.connectButtonHandlers();
-        }).catch((err) => {
+        } catch (err) {
             ErrorLog.showErrorMessage(err);
-        });
+        }
     }
 
     cleanWebPageUrls(webPages) {
@@ -630,25 +631,25 @@ class Parser {
 
     async fetchWebPageContent(webPage) {
         let pageParser = webPage.parser;
-        
+
         // Check cache first (checks persistent or session storage based on settings)
         {
             try {
                 let cachedContent = await ChapterCache.get(webPage.sourceUrl);
                 let cachedError = await ChapterCache.getChapterError(webPage.sourceUrl);
-                
+
                 if (cachedContent) {
                     // Skip the delay for cached content
                     ChapterUrlsUI.showChapterStatus(webPage.row, ChapterUrlsUI.CHAPTER_STATUS_DOWNLOADING, webPage.sourceUrl, webPage.title);
-                    
+
                     // Create a mock DOM with cached content
                     let cachedDom = Parser.makeEmptyDocForContent(webPage.sourceUrl);
                     cachedDom.content.parentNode.replaceChild(cachedContent, cachedDom.content);
-                    
+
                     webPage.rawDom = cachedDom.dom;
                     webPage.isCachedContent = true; // Mark as cached to skip title processing
                     delete webPage.error;
-                    
+
                     // The content is already processed, so we just need to handle images
                     return pageParser.fetchImagesUsedInDocument(cachedContent, webPage);
                 } else if (cachedError) {
@@ -663,13 +664,14 @@ class Parser {
                 // Continue with normal fetch if cache read fails
             }
         }
-        
+
         // Only apply rate limit delay for actual web fetches
         ChapterUrlsUI.showChapterStatus(webPage.row, ChapterUrlsUI.CHAPTER_STATUS_SLEEPING, webPage.sourceUrl, webPage.title);
         await this.rateLimitDelay();
         ChapterUrlsUI.showChapterStatus(webPage.row, ChapterUrlsUI.CHAPTER_STATUS_DOWNLOADING, webPage.sourceUrl, webPage.title);
-        
-        return pageParser.fetchChapter(webPage.sourceUrl).then((webPageDom) => {
+
+        try {
+            let webPageDom = await pageParser.fetchChapter(webPage.sourceUrl);
             delete webPage.error;
             webPage.rawDom = webPageDom;
             pageParser.preprocessRawDom(webPageDom);
@@ -680,26 +682,26 @@ class Parser {
                 throw new Error(errorMsg);
             }
             return pageParser.fetchImagesUsedInDocument(content, webPage);
-        }).catch(async (error) => {
+        } catch (error) {
             // Always cache the error and update UI regardless of skipChaptersThatFailFetch setting
             webPage.error = error;
-            
+
             try {
                 await ChapterCache.storeChapterError(webPage.sourceUrl, error.message);
                 // Update UI to show error state
                 let row = ChapterUrlsUI.findRowBySourceUrl(webPage.sourceUrl);
                 if (row) {
                     ChapterUrlsUI.setChapterStatusVisuals(
-                        row, 
-                        ChapterUrlsUI.CHAPTER_STATUS_ERROR, 
-                        webPage.sourceUrl, 
+                        row,
+                        ChapterUrlsUI.CHAPTER_STATUS_ERROR,
+                        webPage.sourceUrl,
                         webPage.title
                     );
                 }
             } catch (cacheError) {
                 console.log("Failed to cache error:", cacheError);
             }
-            
+
             // The preference only controls whether to continue or halt the operation
             if (this.userPreferences.skipChaptersThatFailFetch.value) {
                 // Log error and continue with other chapters
@@ -708,36 +710,33 @@ class Parser {
                 webPage.isIncludeable = false;
                 throw error; // Halt collecting chapters (error is logged by higher level handler)
             }
-        }); 
+        }
     }
 
-    fetchImagesUsedInDocument(content, webPage) {
+    async fetchImagesUsedInDocument(content, webPage) {
         let contentForImageCollection;
-        
+
         // For cached content, don't apply cleanup again - it was already processed
         if (webPage.isCachedContent) {
             contentForImageCollection = content;
         } else {
-            // For fresh content, clone and apply cleanup to ensure we only collect 
+            // For fresh content, clone and apply cleanup to ensure we only collect
             // images that will actually be in the final content.
             // Working on a clone because some parsers break if processed multiple times.
             contentForImageCollection = content.cloneNode(true);
             this.customRawDomToContentStep(webPage, contentForImageCollection);
             this.removeUnwantedElementsFromContentElement(contentForImageCollection);
         }
-        
-        return this.imageCollector.preprocessImageTags(contentForImageCollection, webPage.sourceUrl)
-            .then((revisedContent) => {
-                this.imageCollector.findImagesUsedInDocument(revisedContent);
-                return this.imageCollector.fetchImages(() => { }, webPage.sourceUrl);
-            }).then(() => {
-                this.updateLoadState(webPage);
-            });
+
+        let revisedContent = await this.imageCollector.preprocessImageTags(contentForImageCollection, webPage.sourceUrl);
+        this.imageCollector.findImagesUsedInDocument(revisedContent);
+        await this.imageCollector.fetchImages(() => { }, webPage.sourceUrl);
+        this.updateLoadState(webPage);
     }
 
     /**
     * default implementation
-    * derivied classes override if need to do something to fetched DOM before
+    * derived classes override if need to do something to fetched DOM before
     * normal processing steps
     */
     preprocessRawDom(webPageDom) { // eslint-disable-line no-unused-vars

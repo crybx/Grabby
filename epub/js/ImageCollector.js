@@ -6,7 +6,7 @@
 
 /** class that handles image tags 
  * urlIndex - track URLs associated with an ImageInfo
- * bitmapIndex - hashes of the image bitmaps, to allow us to elminate duplicate images
+ * bitmapIndex - hashes of the image bitmaps, to allow us to eliminate duplicate images
  * imagesToFetch - images that need to be fetched from internet
  * imagesToPack - images to pack into epub
 */
@@ -157,7 +157,6 @@ class ImageCollector {
     /*
     *  Hook point for Baka-Tsuki to select image to fetch
     */
-    // noinspection JSUnusedGlobalSymbols
     selectImageUrlFromHtmlImagesPage(html) {  // eslint-disable-line no-unused-vars
         return null;
     }
@@ -297,7 +296,7 @@ class ImageCollector {
     }
 
     getImageDimensions(imageInfo) {
-        return new Promise(function(resolve, reject) { // eslint-disable-line no-unused-vars
+        return new Promise((resolve, reject) => { // eslint-disable-line no-unused-vars
             let img = new Image();
             let options = {type: imageInfo.mediaType};
             let blob = new Blob([new Uint8Array(imageInfo.arraybuffer)], options);
@@ -321,13 +320,12 @@ class ImageCollector {
     }
 
     runCompression(imageInfo, img) {
-        var that = this;
-        return new Promise(function(resolve, reject) {
-            if (that.userPreferences.compressImages.value)
+        return new Promise((resolve, reject) => {
+            if (this.userPreferences.compressImages.value)
             {
                 let c = document.createElement("canvas");
                 let ctx = c.getContext("2d");
-                let maxResolution = that.userPreferences.compressImagesMaxResolution.value;
+                let maxResolution = this.userPreferences.compressImagesMaxResolution.value;
                 if (imageInfo.height > maxResolution || imageInfo.width > maxResolution)
                 {
                     if (imageInfo.height > imageInfo.width)
@@ -418,10 +416,11 @@ class ImageCollector {
                 if (dataOrigFileUrl != null) {
                     return this.findImageFileUrlUsingDataOrigFileUrl(imageInfo);
                 }
-                // stop image res warning
-                //let baseUri = xhr.responseXML.baseURI;
-                //let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
-                //ErrorLog.log(errorMsg);
+                // TODO: make disabling this error a user preference?
+                // I see this error almost every time and I don't want to.
+                // let baseUri = xhr.responseXML.baseURI;
+                // let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
+                // ErrorLog.log(errorMsg);
                 temp = imageInfo.sourceUrl;
             }
             temp = ImageCollector.removeSizeParamsFromWordPressQuery(temp);
@@ -492,7 +491,7 @@ class ImageCollector {
     *  Base version tells user there's a problem
     */
     selectImageUrlFromImagePage(dom) {
-        // try mediawiki format
+        // try MediaWiki format
         let div = dom.querySelector("div.fullMedia");
         if (div !== null) {
             let link = div.querySelector("a");
@@ -549,7 +548,7 @@ class ImageCollector {
 
 //==============================================================
 
-class VariableSizeImageCollector extends ImageCollector {
+class VariableSizeImageCollector extends ImageCollector { // eslint-disable-line no-unused-vars
     constructor() {
         super();
     }

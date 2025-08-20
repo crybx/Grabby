@@ -35,11 +35,13 @@ class ReadingList {
         return this.epubs.get(url);
     }
 
-    deselectOldChapters(url, chapterList) {
+    async deselectOldChapters(url, chapterList) {
         let oldUrl = this.epubs.get(url);
         if (oldUrl != null) {
+            let foundLastURL = false;
             for (let i = 0; i < chapterList.length; ++i) {
                 if (oldUrl === chapterList[i].sourceUrl) {
+                    foundLastURL = true;
                     for (let j = 0; j <= i; ++j) {
                         chapterList[j].isIncludeable = false;
                         chapterList[j].previousDownload = true;

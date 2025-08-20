@@ -94,14 +94,14 @@ class StringUserPreference extends UserPreference {
 }
 
 /** The collection of all preferences for user  */
-class UserPreferences {
+class UserPreferences { // eslint-disable-line no-unused-vars
     constructor() {
         this.preferences = [];
         this.observers = [];
         this.readingList = new ReadingList();
 
         // Initialize all preferences explicitly for IDE support
-        // (autocomplete, type inference, no more unresolved variable warnings)
+        // (autocomplete, type inference, no unresolved variable warnings)
         this.removeDuplicateImages = this.addPreference("removeDuplicateImages", "removeDuplicateImages", false);
         this.includeImageSourceUrl = this.addPreference("includeImageSourceUrl", "includeImageSourceUrlCheckboxInput", true);
         this.highestResolutionImages = this.addPreference("highestResolutionImages", "highestResolutionImagesCheckboxInput", true);
@@ -361,7 +361,7 @@ class UserPreferences {
             event.target.value = null;
             try {
                 let json = JSON.parse(content);
-                this.loadOpionsFromJson(json);
+                this.loadOptionsFromJson(json);
                 this.loadDefaultParserFromJson(json);
                 this.loadReadingListFromJson(json);
                 populateControls();
@@ -372,7 +372,7 @@ class UserPreferences {
         reader.readAsText(file);
     }
 
-    loadOpionsFromJson(json) {
+    loadOptionsFromJson(json) {
         for (let p of this.preferences) {
             let val = json[p.storageName];
             if (val !== undefined && (p.value !== val)) {
