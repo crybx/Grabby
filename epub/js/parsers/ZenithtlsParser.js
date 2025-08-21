@@ -58,6 +58,10 @@ class ZenithtlsParser extends Parser {
     
     async fetchChapter(url) {
         let dom = (await HttpClient.wrapFetch(url)).responseXML;
+        // title should be the content of <meta name="description" content="Read Chapter 75: A Deserted Island on Land (5) of I've Become The Antidepressant of The Mad Dragon online.">
+        // minus "Read " at the start
+        let title = dom.querySelector("meta[name='description']")?.content;
+        title = title?.replace("Read ", "");
         let startString = "self.__next_f.push(";
         let scriptElement = [...dom.querySelectorAll("script")].map(a => a.textContent).filter(s => s.includes(startString));
         let json = [];
@@ -83,13 +87,13 @@ class ZenithtlsParser extends Parser {
             json[longestindex].title = "";
             for (let jsonentry of json) {
                 try {
-                    json[longestindex].title = jsonentry.chapter.title.trim();
+                    json[longestindex].title = title; //jsonentry.chapter.title.trim();
                 } catch (error) {
                     //set title
                 }
             }
         }
-        return this.buildChapter(json[longestindex], url);
+        return this.buildChapter(json[longestindex], url, title);
     }
 
     parseNextjsHydration(nextjs) {
@@ -111,12 +115,12 @@ class ZenithtlsParser extends Parser {
         return json;
     }
 
-    buildChapter(json, url) {
+    buildChapter(json, url, titleText) {
         let newDoc = Parser.makeEmptyDocForContent(url);
         let title = newDoc.dom.createElement("h1");
         let br = newDoc.dom.createElement("br");
         if (json.webtoepubformat == "backslash") {
-            title.textContent = json.title;
+            title.textContent = titleText || json.title;
             newDoc.content.appendChild(title);
             let text = json[json[0]];
             text = text.replaceAll("\n\n", "\n");
@@ -131,7 +135,7 @@ class ZenithtlsParser extends Parser {
                 newDoc.content.appendChild(br);
             }
         } else {
-            title.textContent = json.chapter.title;
+            title.textContent = titleText || json.chapter.title;
             newDoc.content.appendChild(title);
             let textleaves = json.chapter.content.root.children.filter(a => a.direction!=null);
             for (let element of textleaves) {
