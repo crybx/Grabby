@@ -52,7 +52,12 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
-        "fenrirealm.com": { grabber: "grabFenrir" },
+        "fenrirealm.com": { 
+            grabber: "grabFenrir",
+            preGrab: { fn: "GrabActions.checkForUrlText", args: [["auth/login"]] },
+            postGrab: "GrabActions.pressRightArrow",
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
         "helioscans.com": {
             grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },
             preGrab: {

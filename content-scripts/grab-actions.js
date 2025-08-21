@@ -124,6 +124,32 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
     return { abort: false };
 }
 
+// Function to check if URL contains certain text and abort if found
+async function checkForUrlText(urlText = [], duplicateCheck = true) {
+    // Check for duplicates first unless disabled
+    if (duplicateCheck) {
+        const duplicateResult = await checkForDuplicateChapter();
+        if (duplicateResult.abort) return duplicateResult;
+    }
+
+    if (!Array.isArray(urlText) || urlText.length === 0) {
+        console.log("No URL text patterns provided for checking");
+        return { abort: false };
+    }
+    
+    const currentUrl = window.location.href.toLowerCase();
+    
+    for (const textToCheck of urlText) {
+        const searchText = textToCheck.toLowerCase();
+        if (currentUrl.includes(searchText)) {
+            console.log(`URL contains restricted text: "${textToCheck}" - aborting grab`);
+            return { abort: true, reason: `URL contains restricted text: "${textToCheck}"`, invalidateGrab: true };
+        }
+    }
+    
+    return { abort: false };
+}
+
 // Function to check for page not found errors and abort if found
 async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"], duplicateCheck = true) {
     // Check for duplicates first unless disabled
@@ -472,6 +498,7 @@ window.GrabActions = {
     waitForElement,
     peachTeaClickAllOnOnePageButton,
     checkForPremiumContent,
+    checkForUrlText,
     checkForPageNotFound,
     checkForDuplicateChapter,
     ridiTranslate,
