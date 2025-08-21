@@ -123,7 +123,9 @@ const WEBSITE_CONFIGS = {
             preGrab: "GrabActions.ridiTranslate",
             postGrab: "GrabActions.ridiNext",
             // postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 2, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 1, defaultDelay: 15, activeTab: true }
+            // autoNav with ridiNext fails to grab any if it navs to more than one page. not sure why yet
+            // pressRightArrow works but doesn't handle the watch for free buttons
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
         "publang.com": { grabber: "grabPublang", useFirstHeadingTitle: true },
