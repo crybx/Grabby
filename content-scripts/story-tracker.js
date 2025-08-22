@@ -160,48 +160,24 @@ async function findStoryByChapterUrl(chapterUrl) {
     });
 }
 
-// Clean chapter title by removing story title and domain suffix
+// Clean chapter title by keeping only numbers, punctuation, and spaces
 function cleanTitle(chapterTitle, storyTitle = null) {
     if (!chapterTitle) return chapterTitle;
     
-    let cleanedTitle = chapterTitle;
+    // Remove all letters and periods (keep only numbers, punctuation, and spaces)
+    let cleanedTitle = chapterTitle.replace(/[a-zA-Z]/g, "");
     
-    // Remove story title from anywhere in the string if it exists
-    if (storyTitle) {
-        const storyTitleRegex = new RegExp(storyTitle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
-        cleanedTitle = cleanedTitle.replace(storyTitleRegex, "");
-    }
-    
-    // Remove domain names (with or without leading underscore, with or without suffixes)
-    // This handles cases like "_ridibooks.com", "_ridibooks", "ridibooks.com", or "ridibooks"
-    cleanedTitle = cleanedTitle.replace(/[_\s]*([a-z0-9.-]+)(?:\.[a-z]{2,})?$/i, "");
-    
-    // Replace all separators with whitespace
-    cleanedTitle = cleanedTitle.replace(/[-:–|—_!]+/g, " ");
-    
-    // Remove common words and domain names
-    const wordsToRemove = [
-        "chapter",
-        "episode",
-        "translation\\s+weaver",
-        "story\\s+seedling",
-        "ridibooks",
-        "maplesan\\s+translations",
-        "emptymurmurs",
-        "darkstar\\s+translations",
-        "✿ dusk blossoms ✿"
-    ];
-
-    cleanedTitle = cleanedTitle.replace(
-        new RegExp(`\\b(${wordsToRemove.join("|")})\\b`, "gi"),
-        ""
-    );
-
-    // Collapse multiple whitespace to single space
+    // Collapse multiple spaces to single space
     cleanedTitle = cleanedTitle.replace(/\s+/g, " ");
     
     // Remove leading/trailing whitespace
     cleanedTitle = cleanedTitle.trim();
+    
+    // Trim any non-numbers from the start position
+    cleanedTitle = cleanedTitle.replace(/^[^0-9]+/, "");
+    
+    // Trim any non-numbers from the end, but allow ) and ] to remain
+    cleanedTitle = cleanedTitle.replace(/[^0-9)\]]+$/, "");
     
     return cleanedTitle || chapterTitle;
 }

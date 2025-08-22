@@ -6,8 +6,8 @@ export class DownloadHandler {
         let illegalWindowsFileNameRegex = /[<>:"#!/\\|?*]/g;
         fileName = fileName.replace(illegalWindowsFileNameRegex, "");
 
-        // remove 'Ridi' from the filename
-        fileName = fileName.replace(" - Ridi", "");
+        // remove 'Ridibooks' from the filename
+        fileName = fileName.replace(" - Ridibooks", "");
         // remove any other whitespace
         fileName = fileName.replace(/\s/g, "_");
         // replace . with _ in the filename
