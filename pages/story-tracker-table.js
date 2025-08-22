@@ -103,6 +103,10 @@ class StoryTrackerTable {
             this.handleAutoGrabNewChapters();
         });
 
+        document.getElementById("delete-selected-btn").addEventListener("click", () => {
+            this.deleteSelectedStories();
+        });
+
         // Sort headers
         document.querySelectorAll(".sortable").forEach(header => {
             header.addEventListener("click", () => {
@@ -605,9 +609,11 @@ class StoryTrackerTable {
         const openMainBtn = document.getElementById("open-main-stories-btn");
         const grabChaptersBtn = document.getElementById("grab-chapters-btn");
         const manageTagsBtn = document.getElementById("manage-tags-btn");
+        const deleteSelectedBtn = document.getElementById("delete-selected-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
         manageTagsBtn.disabled = count === 0;
+        deleteSelectedBtn.disabled = count === 0;
         
         // Check if queue is active to handle Auto Grab button specially
         const queueProgress = document.getElementById("queue-progress");
@@ -685,6 +691,41 @@ class StoryTrackerTable {
                 active: false
             });
         });
+    }
+
+    async deleteSelectedStories() {
+        const selectedCount = this.selectedStories.size;
+        
+        if (selectedCount === 0) {
+            alert("No stories selected.");
+            return;
+        }
+
+        const confirmMessage = selectedCount === 1 
+            ? "Are you sure you want to delete the selected story?"
+            : `Are you sure you want to delete ${selectedCount} selected stories?`;
+        
+        const confirmed = confirm(confirmMessage);
+        if (!confirmed) return;
+
+        // Delete each selected story
+        for (const storyId of this.selectedStories) {
+            await StoryTracker.deleteStory(storyId);
+            this.stories = this.stories.filter(s => s.id !== storyId);
+        }
+
+        // Clear selection after deletion
+        this.selectedStories.clear();
+        
+        // Update UI
+        this.populateDomainFilter();
+        this.applyFilters();
+        this.renderTable();
+        
+        const successMessage = selectedCount === 1 
+            ? "1 story deleted successfully."
+            : `${selectedCount} stories deleted successfully.`;
+        console.log(successMessage);
     }
 
     // Format date for display
@@ -1025,10 +1066,32 @@ class StoryTrackerTable {
             return;
         }
 
+        let storiesToExport = this.stories;
+        let exportType = "all";
+
+        // If stories are selected, offer choice to export selected or all
+        if (this.selectedStories.size > 0) {
+            const selectedCount = this.selectedStories.size;
+            const totalCount = this.stories.length;
+            
+            const exportChoice = confirm(
+                `You have ${selectedCount} stories selected.\n\n` +
+                `Click OK to export only the selected stories.\n` +
+                `Click Cancel to export all ${totalCount} stories.`
+            );
+            
+            if (exportChoice) {
+                // User chose to export selected stories only
+                storiesToExport = this.stories.filter(s => this.selectedStories.has(s.id));
+                exportType = "selected";
+            }
+        }
+
         const exportData = {
             exportDate: new Date().toISOString(),
-            storiesCount: this.stories.length,
-            stories: this.stories
+            storiesCount: storiesToExport.length,
+            exportType: exportType,
+            stories: storiesToExport
         };
 
         const jsonString = JSON.stringify(exportData, null, 2);
@@ -1038,7 +1101,10 @@ class StoryTrackerTable {
         const now = new Date();
         const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD format
         const currentTime = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS format
-        const filename = `grabby-stories-backup_${currentDate}_${currentTime}.json`;
+        
+        // Add indicator to filename if exporting selected stories
+        const selectionIndicator = exportType === "selected" ? "_selected" : "";
+        const filename = `grabby-stories-backup${selectionIndicator}_${currentDate}_${currentTime}.json`;
 
         const a = document.createElement("a");
         a.href = url;
@@ -1049,7 +1115,10 @@ class StoryTrackerTable {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        console.log(`Exported ${this.stories.length} stories to ${filename}`);
+        const exportMessage = exportType === "selected" 
+            ? `Exported ${storiesToExport.length} selected stories to ${filename}`
+            : `Exported all ${storiesToExport.length} stories to ${filename}`;
+        console.log(exportMessage);
     }
 
 
