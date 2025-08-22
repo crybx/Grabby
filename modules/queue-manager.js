@@ -348,8 +348,7 @@ export class QueueManager {
                 this.completeQueue();
             } else if (this.queue.length > 0) {
                 // Always try to restart queue processing when a story completes
-                console.log(`Story completed, restarting queue processing. Queue: ${this.queue.length}, Processing: ${this.processing.size}`);
-                
+
                 // Check if there's an activeTab story ready to process immediately
                 const hasActiveTabReady = this.queue.some(story => 
                     story.needsActiveTab && this.activeTabDomainProcessing === null

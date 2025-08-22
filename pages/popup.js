@@ -107,7 +107,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                 };
                 
                 // Send message to background script to add story (fire and forget)
-                console.log("Popup: Sending addStoryToTracker message", story);
                 chrome.runtime.sendMessage({
                     target: "background",
                     type: "addStoryToTracker",

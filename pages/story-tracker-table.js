@@ -1139,11 +1139,6 @@ class StoryTrackerTable {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-
-        const exportMessage = exportType === "selected" 
-            ? `Exported ${storiesToExport.length} selected stories to ${filename}`
-            : `Exported all ${storiesToExport.length} stories to ${filename}`;
-        console.log(exportMessage);
     }
 
 
