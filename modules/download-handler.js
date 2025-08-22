@@ -14,6 +14,8 @@ export class DownloadHandler {
         fileName = fileName.replace(/\./g, "_");
         // replace comma with nothing
         fileName = fileName.split(",").join("");
+        // collapse multiple consecutive underscores to single underscore
+        fileName = fileName.replace(/_+/g, "_");
         fileName = fileName + ".html";
         let options = {
             url: blobUrl,
