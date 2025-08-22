@@ -1060,7 +1060,7 @@ class StoryTrackerTable {
     }
 
     // Export stories as JSON
-    exportStories() {
+    async exportStories() {
         if (this.stories.length === 0) {
             alert("No stories to export.");
             return;
@@ -1087,12 +1087,28 @@ class StoryTrackerTable {
             }
         }
 
+        // Get username if set
+        let username = "";
+        try {
+            const result = await chrome.storage.local.get(['exportUsername']);
+            if (result.exportUsername) {
+                username = result.exportUsername;
+            }
+        } catch (error) {
+            console.log("Could not get username for export:", error);
+        }
+
         const exportData = {
             exportDate: new Date().toISOString(),
             storiesCount: storiesToExport.length,
             exportType: exportType,
             stories: storiesToExport
         };
+        
+        // Only add exportedBy field if username is set
+        if (username) {
+            exportData.exportedBy = username;
+        }
 
         const jsonString = JSON.stringify(exportData, null, 2);
         const blob = new Blob([jsonString], { type: "application/json" });
@@ -1102,9 +1118,18 @@ class StoryTrackerTable {
         const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD format
         const currentTime = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS format
         
-        // Add indicator to filename if exporting selected stories
+        // Build filename parts
         const selectionIndicator = exportType === "selected" ? "_selected" : "";
-        const filename = `grabby-stories-backup${selectionIndicator}_${currentDate}_${currentTime}.json`;
+        let filename;
+        
+        if (username) {
+            // Sanitize username for filename (remove special characters)
+            const safeUsername = username.replace(/[^a-zA-Z0-9-_]/g, "");
+            filename = `grabby-stories${selectionIndicator}_${currentDate}_${currentTime}_${safeUsername}.json`;
+        } else {
+            // No username, don't append anything
+            filename = `grabby-stories${selectionIndicator}_${currentDate}_${currentTime}.json`;
+        }
 
         const a = document.createElement("a");
         a.href = url;

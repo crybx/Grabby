@@ -218,3 +218,21 @@ footer {
     margin-left: 32px;
     margin-bottom: 0;
 }
+
+.text-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
