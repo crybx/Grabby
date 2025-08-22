@@ -1076,7 +1076,7 @@ class StoryTrackerTable {
             
             const exportChoice = confirm(
                 `You have ${selectedCount} stories selected.\n\n` +
-                `Click OK to export only the selected stories.\n` +
+                "Click OK to export only the selected stories.\n" +
                 `Click Cancel to export all ${totalCount} stories.`
             );
             
@@ -1090,7 +1090,7 @@ class StoryTrackerTable {
         // Get username if set
         let username = "";
         try {
-            const result = await chrome.storage.local.get(['exportUsername']);
+            const result = await chrome.storage.local.get(["exportUsername"]);
             if (result.exportUsername) {
                 username = result.exportUsername;
             }
