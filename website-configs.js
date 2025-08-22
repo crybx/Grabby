@@ -45,7 +45,7 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "docs.google.com": { grabber: "grabGoogleDocMobileBasic" },
-        "emptymurmurs.wordpress.com": {
+        "emptymurmurs.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
             preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: { fn: "GrabActions.clickElementWithText", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
