@@ -1035,8 +1035,10 @@ class StoryTrackerTable {
         const blob = new Blob([jsonString], { type: "application/json" });
         const url = URL.createObjectURL(blob);
 
-        const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
-        const filename = `grabby-stories-backup-${currentDate}.json`;
+        const now = new Date();
+        const currentDate = now.toISOString().split("T")[0]; // YYYY-MM-DD format
+        const currentTime = now.toTimeString().split(" ")[0].replace(/:/g, "-"); // HH-MM-SS format
+        const filename = `grabby-stories-backup_${currentDate}_${currentTime}.json`;
 
         const a = document.createElement("a");
         a.href = url;
