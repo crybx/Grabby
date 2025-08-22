@@ -257,12 +257,14 @@ h1 {
 }
 
 .danger-btn {
-    background-color: #ea4335;
-    color: white;
+    background-color: #fff;
+    color: #d73a49;
+    border: 1px solid #fddede;
 }
 
 .danger-btn:hover {
-    background-color: #d33b2c;
+    background-color: #fef2f2;
+    border-color: #fdbcbc;
 }
 
 /* Empty State */
