@@ -5,7 +5,7 @@ const path = require("path");
 let zipjs;
 
 const DIST_DIR = "dist";
-const ZIP_NAME = "grabby-extension.zip";
+let ZIP_NAME = "grabby-extension.zip"; // Default, will be updated with version
 
 // Files and directories to exclude from the package
 const EXCLUDE_PATTERNS = [
@@ -81,6 +81,10 @@ if (fs.existsSync("package.json")) {
     const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
     manifest.version = pkg.version;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    
+    // Update ZIP filename to include version
+    ZIP_NAME = `grabby-${pkg.version}.zip`;
+    
     console.log(`Updated version to ${pkg.version}`);
 }
 
