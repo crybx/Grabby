@@ -11,6 +11,10 @@ class StoryTrackerTable {
         this.tagFilter = ""; // Active tag filter
         this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
         this.filterDebounceTimer = null; // Timer for debouncing filter input
+        
+        // Pagination settings
+        this.currentPage = 1;
+        this.storiesPerPage = 100;
 
         this.init();
     }
@@ -171,6 +175,24 @@ class StoryTrackerTable {
         document.getElementById("active-tag-name").addEventListener("click", () => {
             this.clearTagFilter();
         });
+        
+        // Pagination controls
+        document.getElementById("first-page-btn").addEventListener("click", () => {
+            this.goToPage(1);
+        });
+        
+        document.getElementById("prev-page-btn").addEventListener("click", () => {
+            this.goToPage(this.currentPage - 1);
+        });
+        
+        document.getElementById("next-page-btn").addEventListener("click", () => {
+            this.goToPage(this.currentPage + 1);
+        });
+        
+        document.getElementById("last-page-btn").addEventListener("click", () => {
+            const totalPages = Math.ceil(this.filteredStories.length / this.storiesPerPage);
+            this.goToPage(totalPages);
+        });
 
         // Import modal controls
         document.getElementById("import-stories-btn").addEventListener("click", () => {
@@ -243,9 +265,10 @@ class StoryTrackerTable {
                 (story.lastChapterTitle && story.lastChapterTitle.toLowerCase().includes(this.filterText)) ||
                 (story.tags && story.tags.some(tag => tag.toLowerCase().includes(this.filterText)));
 
-            // Domain filter
+            // Domain filter - strip "(Active Tab)" suffix for comparison
             const domain = story.domain || this.extractDomain(story.mainStoryUrl);
-            const matchesDomain = !this.domainFilter || domain === this.domainFilter;
+            const filterDomain = this.domainFilter.replace(" (Active Tab)", "");
+            const matchesDomain = !this.domainFilter || domain === filterDomain;
 
             // Tag filter
             const matchesTag = !this.tagFilter || 
@@ -255,6 +278,9 @@ class StoryTrackerTable {
         });
 
         this.applySorting();
+        
+        // Reset to first page when filters change
+        this.currentPage = 1;
         
         // Reset last clicked index when filters change
         this.lastClickedStoryIndex = -1;
@@ -448,9 +474,14 @@ class StoryTrackerTable {
 
             tbody.innerHTML = "";
 
+            // Calculate pagination
+            const startIndex = (this.currentPage - 1) * this.storiesPerPage;
+            const endIndex = startIndex + this.storiesPerPage;
+            const pageStories = this.filteredStories.slice(startIndex, endIndex);
+
             // Use DocumentFragment for batch DOM insertion
             const fragment = document.createDocumentFragment();
-            this.filteredStories.forEach(story => {
+            pageStories.forEach(story => {
                 const row = this.createTableRow(story);
                 fragment.appendChild(row);
             });
@@ -459,6 +490,7 @@ class StoryTrackerTable {
             this.updateSelectionUI();
             this.updateSortIndicators();
             this.updateTotalCount();
+            this.updatePaginationControls();
         });
     }
 
@@ -537,13 +569,13 @@ class StoryTrackerTable {
     handleStorySelection(storyId, isSelected, event = null) {
         const currentStoryIndex = this.filteredStories.findIndex(s => s.id === storyId);
         
-        // Handle shift+click for range selection
+        // Handle shift+click for range selection (works across pages)
         if (event && event.shiftKey && this.lastClickedStoryIndex !== -1 && currentStoryIndex !== -1) {
             // Determine the range
             const startIndex = Math.min(this.lastClickedStoryIndex, currentStoryIndex);
             const endIndex = Math.max(this.lastClickedStoryIndex, currentStoryIndex);
             
-            // Select/deselect all stories in the range
+            // Select/deselect all stories in the range (even those not on current page)
             for (let i = startIndex; i <= endIndex; i++) {
                 const story = this.filteredStories[i];
                 if (story) {
@@ -553,7 +585,7 @@ class StoryTrackerTable {
                         this.selectedStories.delete(story.id);
                     }
                     
-                    // Update the checkbox in the DOM immediately
+                    // Update the checkbox in the DOM if it's visible on current page
                     const checkbox = document.querySelector(`input[data-story-id="${story.id}"]`);
                     if (checkbox) {
                         checkbox.checked = isSelected;
@@ -578,11 +610,26 @@ class StoryTrackerTable {
     }
 
     handleSelectAll(isChecked) {
+        // Update the visual checkboxes on current page
         const checkboxes = document.querySelectorAll(".story-checkbox");
         checkboxes.forEach(checkbox => {
             checkbox.checked = isChecked;
-            this.handleStorySelection(checkbox.dataset.storyId, isChecked);
         });
+        
+        // But actually select/deselect ALL filtered stories (across all pages)
+        if (isChecked) {
+            // Add all filtered stories to selection
+            this.filteredStories.forEach(story => {
+                this.selectedStories.add(story.id);
+            });
+        } else {
+            // Remove all filtered stories from selection
+            this.filteredStories.forEach(story => {
+                this.selectedStories.delete(story.id);
+            });
+        }
+        
+        this.updateSelectionUI();
         
         // Reset last clicked index since this is a bulk operation
         this.lastClickedStoryIndex = -1;
@@ -613,13 +660,14 @@ class StoryTrackerTable {
         document.getElementById("selection-count").textContent = `${count} selected`;
         
         const selectAllCheckbox = document.getElementById("select-all-checkbox");
-        const visibleStoryIds = this.filteredStories.map(s => s.id);
-        const visibleSelected = visibleStoryIds.filter(id => this.selectedStories.has(id));
+        // Check against ALL filtered stories, not just current page
+        const allFilteredIds = this.filteredStories.map(s => s.id);
+        const allFilteredSelected = allFilteredIds.filter(id => this.selectedStories.has(id));
         
-        if (visibleSelected.length === 0) {
+        if (allFilteredSelected.length === 0) {
             selectAllCheckbox.checked = false;
             selectAllCheckbox.indeterminate = false;
-        } else if (visibleSelected.length === visibleStoryIds.length) {
+        } else if (allFilteredSelected.length === allFilteredIds.length) {
             selectAllCheckbox.checked = true;
             selectAllCheckbox.indeterminate = false;
         } else {
@@ -671,6 +719,101 @@ class StoryTrackerTable {
         }
         
         document.getElementById("total-stories-count").textContent = countText;
+    }
+
+    updatePaginationControls() {
+        const totalPages = Math.ceil(this.filteredStories.length / this.storiesPerPage);
+        const paginationControls = document.getElementById("pagination-controls");
+        
+        // Show/hide pagination controls
+        if (totalPages <= 1) {
+            paginationControls.style.display = "none";
+            return;
+        }
+        
+        paginationControls.style.display = "flex";
+        
+        // Update info text
+        const startIndex = (this.currentPage - 1) * this.storiesPerPage + 1;
+        const endIndex = Math.min(this.currentPage * this.storiesPerPage, this.filteredStories.length);
+        document.getElementById("pagination-info-text").textContent = 
+            `Showing ${startIndex}-${endIndex} of ${this.filteredStories.length} stories`;
+        
+        // Update button states
+        document.getElementById("first-page-btn").disabled = this.currentPage === 1;
+        document.getElementById("prev-page-btn").disabled = this.currentPage === 1;
+        document.getElementById("next-page-btn").disabled = this.currentPage === totalPages;
+        document.getElementById("last-page-btn").disabled = this.currentPage === totalPages;
+        
+        // Generate page numbers
+        this.renderPageNumbers(totalPages);
+    }
+    
+    renderPageNumbers(totalPages) {
+        const pageNumbersContainer = document.getElementById("page-numbers");
+        pageNumbersContainer.innerHTML = "";
+        
+        // Show max 7 page numbers with ellipsis
+        const maxVisible = 7;
+        const halfVisible = Math.floor(maxVisible / 2);
+        
+        let startPage = Math.max(1, this.currentPage - halfVisible);
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        
+        // Adjust start if we're near the end
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+        
+        // First page and ellipsis
+        if (startPage > 1) {
+            this.addPageNumber(1);
+            if (startPage > 2) {
+                const ellipsis = document.createElement("span");
+                ellipsis.className = "page-ellipsis";
+                ellipsis.textContent = "...";
+                pageNumbersContainer.appendChild(ellipsis);
+            }
+        }
+        
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            this.addPageNumber(i);
+        }
+        
+        // Last page and ellipsis
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement("span");
+                ellipsis.className = "page-ellipsis";
+                ellipsis.textContent = "...";
+                pageNumbersContainer.appendChild(ellipsis);
+            }
+            this.addPageNumber(totalPages);
+        }
+    }
+    
+    addPageNumber(pageNum) {
+        const pageNumbersContainer = document.getElementById("page-numbers");
+        const pageBtn = document.createElement("button");
+        pageBtn.className = "page-number";
+        pageBtn.textContent = pageNum;
+        
+        if (pageNum === this.currentPage) {
+            pageBtn.classList.add("active");
+        } else {
+            pageBtn.addEventListener("click", () => this.goToPage(pageNum));
+        }
+        
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+    
+    goToPage(pageNum) {
+        const totalPages = Math.ceil(this.filteredStories.length / this.storiesPerPage);
+        if (pageNum < 1 || pageNum > totalPages) return;
+        
+        this.currentPage = pageNum;
+        this.renderTable();
     }
 
     async openLastChapters() {
