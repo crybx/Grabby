@@ -10,6 +10,7 @@ class StoryTrackerTable {
         this.domainFilter = "";
         this.tagFilter = ""; // Active tag filter
         this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
+        this.filterDebounceTimer = null; // Timer for debouncing filter input
 
         this.init();
     }
@@ -35,11 +36,21 @@ class StoryTrackerTable {
     }
 
     setupEventListeners() {
-        // Filter input
+        // Filter input with debouncing
         document.getElementById("filter-input").addEventListener("input", (e) => {
-            this.filterText = e.target.value.toLowerCase();
-            this.applyFilters();
-            this.renderTable();
+            const newFilterText = e.target.value.toLowerCase();
+            
+            // Clear existing timer
+            if (this.filterDebounceTimer) {
+                clearTimeout(this.filterDebounceTimer);
+            }
+            
+            // Set new timer for 200ms delay
+            this.filterDebounceTimer = setTimeout(() => {
+                this.filterText = newFilterText;
+                this.applyFilters();
+                this.renderTable();
+            }, 200);
         });
 
         // Queue control event listeners
