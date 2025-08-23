@@ -168,6 +168,7 @@ Note: Grabber functions are accessed via script injection by the service worker 
 
 - **[Project Structure](project-structure.md)** - Detailed breakdown of the codebase organization
 - **[GitHub Actions](github-actions.md)** - Automated workflows for builds and releases
+- **[Extension ID](extension-id.md)** - Information about the development extension ID
 
 ## Troubleshooting
 
