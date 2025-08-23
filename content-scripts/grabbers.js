@@ -42,6 +42,7 @@ function grabRidi() {
 function grabPublang() {
     const iframe = document.querySelector("iframe");
     const srcdoc = iframe.getAttribute("srcdoc");
+    let bookTitle = document.querySelector("h4.page-title span")?.textContent || "";
 
     let temp = document.createElement("div");
     temp.innerHTML = srcdoc;
@@ -49,6 +50,7 @@ function grabPublang() {
         utils.removeTags(element, ["LINK", "BASE", "META"]);
 
         if (element.tagName === "TITLE") {
+            element.textContent = bookTitle + " " + element.textContent;
             const hElement = document.createElement("H1");
             utils.replaceTag(element, hElement);
         }

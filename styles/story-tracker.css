@@ -628,6 +628,76 @@ h1 {
     color: #dc3545;
 }
 
+/* Pagination Controls */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    margin-top: -1px;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-buttons button {
+    padding: 6px 12px;
+    min-width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+.page-number {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.page-number:hover:not(.active) {
+    background: #f5f5f5;
+    border-color: #2196F3;
+}
+
+.page-number.active {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+    font-weight: 600;
+}
+
+.page-ellipsis {
+    padding: 6px 8px;
+    color: #999;
+}
+
 /* Modal Styles */
 .modal {
     position: fixed;
