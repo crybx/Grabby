@@ -18,6 +18,13 @@ class UserPreference {
 
     writeToLocalStorage() {
         window.localStorage.setItem(this.storageName, this.value);
+        
+        // Fire-and-forget sync to chrome.storage.sync
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+            chrome.storage.sync.set({ [this.storageName]: this.value }).catch(() => {
+                // Silently ignore sync errors
+            });
+        }
     }
 }
 
@@ -201,7 +208,50 @@ class UserPreferences { // eslint-disable-line no-unused-vars
             p.readFromLocalStorage();
         }
         newPreferences.readingList.readFromLocalStorage();
+        
+        // Check chrome.storage.sync for newer values (fire-and-forget)
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+            newPreferences.checkSyncStorage();
+        }
+        
         return newPreferences;
+    }
+    
+    checkSyncStorage() {
+        // Asynchronously check if sync storage has newer values
+        // This won't block the UI initialization
+        const storageKeys = this.preferences.map(p => p.storageName);
+        // Note: readingList is not synced
+        
+        chrome.storage.sync.get(storageKeys, (items) => {
+            if (chrome.runtime.lastError) {
+                // Silently ignore errors
+                return;
+            }
+            
+            let hasUpdates = false;
+            
+            // Check each preference for updates from sync
+            for (let p of this.preferences) {
+                if (items[p.storageName] !== undefined) {
+                    const syncValue = items[p.storageName];
+                    const localValue = window.localStorage.getItem(p.storageName);
+                    
+                    // If sync has a different value, update local
+                    if (syncValue !== localValue) {
+                        window.localStorage.setItem(p.storageName, syncValue);
+                        p.value = syncValue;
+                        hasUpdates = true;
+                    }
+                }
+            }
+            
+            // If we got updates from sync, update the UI
+            if (hasUpdates) {
+                this.writeToUi();
+                this.notifyObserversOfChange();
+            }
+        });
     }
 
     writeToLocalStorage() {
