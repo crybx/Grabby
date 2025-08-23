@@ -312,11 +312,28 @@ function clickElementBySelector(selector, options = {}) {
     const {
         excludeClasses = [], // Array of classes to exclude
         excludeStyles = {}, // Object of CSS styles to exclude
-        abortIfNotFound = false // Whether to abort bulk grab sequence if no element is found
+        abortIfNotFound = false, // Whether to abort bulk grab sequence if no element is found
+        index = null // Index of element to click (0-based), if null clicks first valid element
     } = options;
     
     const elements = document.querySelectorAll(selector);
     
+    // If index is specified, try to click that specific element
+    if (index !== null) {
+        if (index >= 0 && index < elements.length) {
+            const element = elements[index];
+            if (isElementValid(element, excludeClasses, excludeStyles)) {
+                clickElement(element);
+                return true;
+            }
+        }
+        if (abortIfNotFound) {
+            return { abort: true, reason: `Element at index ${index} not found or invalid with selector: ${selector}` };
+        }
+        return false;
+    }
+    
+    // Default behavior: click first valid element
     for (const element of elements) {
         if (isElementValid(element, excludeClasses, excludeStyles)) {
             clickElement(element);

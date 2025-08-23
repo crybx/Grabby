@@ -128,7 +128,15 @@ const WEBSITE_CONFIGS = {
             // pressRightArrow works but doesn't handle the watch for free buttons
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
-        "publang.com": { grabber: "grabPublang", useFirstHeadingTitle: true },
+        "publang.com": { 
+            grabber: "grabPublang", 
+            useFirstHeadingTitle: true,
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: ["button.page-link.cursor-pointer", { index: 1 }]
+            },
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 5 }
+        },
         "secondlifetranslations.com": { grabber: "grabSecondLifeTranslations" },
         "starlightstream.net": {
             grabber: "grabStarlightStream",
