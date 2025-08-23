@@ -428,32 +428,38 @@ class StoryTrackerTable {
     }
 
     renderTable() {
-        const tbody = document.getElementById("stories-tbody");
-        const emptyState = document.getElementById("no-stories");
-        const tableContainer = document.querySelector(".table-container");
-        const tableControls = document.querySelector(".table-controls");
+        // Use requestAnimationFrame to optimize rendering
+        requestAnimationFrame(() => {
+            const tbody = document.getElementById("stories-tbody");
+            const emptyState = document.getElementById("no-stories");
+            const tableContainer = document.querySelector(".table-container");
+            const tableControls = document.querySelector(".table-controls");
 
-        if (this.stories.length === 0) {
-            emptyState.style.display = "block";
-            tableContainer.style.display = "none";
-            tableControls.style.display = "none";
-            return;
-        }
+            if (this.stories.length === 0) {
+                emptyState.style.display = "block";
+                tableContainer.style.display = "none";
+                tableControls.style.display = "none";
+                return;
+            }
 
-        emptyState.style.display = "none";
-        tableContainer.style.display = "block";
-        tableControls.style.display = "flex";
+            emptyState.style.display = "none";
+            tableContainer.style.display = "block";
+            tableControls.style.display = "flex";
 
-        tbody.innerHTML = "";
+            tbody.innerHTML = "";
 
-        this.filteredStories.forEach(story => {
-            const row = this.createTableRow(story);
-            tbody.appendChild(row);
+            // Use DocumentFragment for batch DOM insertion
+            const fragment = document.createDocumentFragment();
+            this.filteredStories.forEach(story => {
+                const row = this.createTableRow(story);
+                fragment.appendChild(row);
+            });
+            tbody.appendChild(fragment);
+
+            this.updateSelectionUI();
+            this.updateSortIndicators();
+            this.updateTotalCount();
         });
-
-        this.updateSelectionUI();
-        this.updateSortIndicators();
-        this.updateTotalCount();
     }
 
     createTableRow(story) {
