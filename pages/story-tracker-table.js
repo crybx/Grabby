@@ -244,7 +244,7 @@ class StoryTrackerTable {
                 (story.tags && story.tags.some(tag => tag.toLowerCase().includes(this.filterText)));
 
             // Domain filter
-            const domain = this.extractDomain(story.mainStoryUrl);
+            const domain = story.domain || this.extractDomain(story.mainStoryUrl);
             const matchesDomain = !this.domainFilter || domain === this.domainFilter;
 
             // Tag filter
@@ -320,8 +320,8 @@ class StoryTrackerTable {
                     bValue = b.title.toLowerCase();
                     break;
                 case "domain":
-                    aValue = this.extractDomain(a.mainStoryUrl);
-                    bValue = this.extractDomain(b.mainStoryUrl);
+                    aValue = a.domain || this.extractDomain(a.mainStoryUrl);
+                    bValue = b.domain || this.extractDomain(b.mainStoryUrl);
                     break;
                 case "lastChapter":
                     aValue = a.lastChapterTitle || a.lastChapterUrl || "";
@@ -379,7 +379,25 @@ class StoryTrackerTable {
     }
 
     populateDomainFilter() {
-        const domains = [...new Set(this.stories.map(story => this.extractDomain(story.mainStoryUrl)))];
+        // Get unique domains using stored field or fallback
+        const uniqueDomains = [...new Set(this.stories.map(story => 
+            story.domain || this.extractDomain(story.mainStoryUrl)
+        ))];
+        
+        // Add Active Tab suffix where needed (check once per unique domain)
+        const domains = uniqueDomains.map(domain => {
+            try {
+                // Check if this domain requires active tab
+                const config = findMatchingConfig(domain);
+                if (config?.autoNav?.activeTab === true) {
+                    return `${domain} (Active Tab)`;
+                }
+            } catch {
+                // If error getting config, just return domain
+            }
+            return domain;
+        });
+        
         domains.sort();
 
         const select = document.getElementById("domain-filter");
@@ -403,19 +421,7 @@ class StoryTrackerTable {
 
     extractDomain(url) {
         try {
-            const hostname = new URL(url).hostname;
-            
-            // Check if this domain requires active tab
-            try {
-                const config = findMatchingConfig(url);
-                if (config?.autoNav?.activeTab === true) {
-                    return hostname + " (Active Tab)";
-                }
-            } catch (e) {
-                // If error getting config, just return hostname
-            }
-            
-            return hostname;
+            return new URL(url).hostname;
         } catch {
             return "unknown";
         }
@@ -454,7 +460,7 @@ class StoryTrackerTable {
         const row = document.createElement("tr");
         row.dataset.storyId = story.id;
 
-        const domain = this.extractDomain(story.mainStoryUrl);
+        const domain = story.domain || this.extractDomain(story.mainStoryUrl);
         const lastChapterDisplay = story.lastChapterUrl 
             ? `<a href="${story.lastChapterUrl}" target="_blank" class="chapter-link">${story.lastChapterTitle || "Last Chapter"}</a>`
             : "<span class=\"no-chapter\">None</span>";
@@ -862,6 +868,7 @@ class StoryTrackerTable {
         const story = {
             title,
             mainStoryUrl: mainUrl,
+            domain: this.extractDomain(mainUrl),
             lastChapterUrl: lastChapterUrl || "",
             lastChapterTitle: lastChapterTitle || "",
             secondaryUrlMatches,
@@ -905,6 +912,7 @@ class StoryTrackerTable {
             ...this.stories[storyIndex],
             title,
             mainStoryUrl: mainUrl,
+            domain: this.extractDomain(mainUrl),
             lastChapterUrl,
             lastChapterTitle,
             secondaryUrlMatches,
@@ -1038,6 +1046,7 @@ class StoryTrackerTable {
                 const story = {
                     title: link.title,
                     mainStoryUrl: link.url,
+                    domain: this.extractDomain(link.url),
                     dateAdded: new Date().toISOString()
                 };
 
@@ -1208,6 +1217,11 @@ class StoryTrackerTable {
             let totalSkipped = 0;
 
             for (const storyData of allStoriesToImport) {
+                // Ensure domain field exists for imported stories
+                if (!storyData.domain && storyData.mainStoryUrl) {
+                    storyData.domain = this.extractDomain(storyData.mainStoryUrl);
+                }
+                
                 const saved = await StoryTracker.saveStory(storyData);
                 if (saved) {
                     this.stories.push(storyData);
@@ -1621,7 +1635,7 @@ class StoryTrackerTable {
                         // Show domain info for processing items
                         let statusText = "";
                         if (story.lastChapterUrl) {
-                            statusText = this.extractDomain(story.lastChapterUrl);
+                            statusText = story.domain || this.extractDomain(story.lastChapterUrl);
                         } else {
                             statusText = story.status === "starting" ? "Starting..." : "Processing...";
                         }
@@ -1633,7 +1647,7 @@ class StoryTrackerTable {
                 // For queued items, show domain
                 let statusText = "";
                 if (story.lastChapterUrl) {
-                    statusText = this.extractDomain(story.lastChapterUrl);
+                    statusText = story.domain || this.extractDomain(story.lastChapterUrl);
                 } else {
                     statusText = "Queued";
                 }
