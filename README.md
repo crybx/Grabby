@@ -21,19 +21,36 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 
 ## Installation
 
-### From Source (Current Method)
+### Development Build
 
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right corner
-4. Click "Load unpacked" and select the repository folder
-5. The Grabby icon should appear in your extensions bar
+For users comfortable with developer mode who want the latest features and bug fixes:
+
+**Latest Development Release**: https://github.com/crybx/Grabby/releases/tag/latest-dev
+
+1. Download the ZIP file from the latest-dev release
+2. Extract the ZIP file to a folder
+3. Open Chrome and navigate to `chrome://extensions/`
+4. Enable "Developer mode" in the top right corner
+5. Click "Load unpacked" and select the extracted folder
 
 ### Chrome Web Store
 
+For users who prefer automatic updates and standard installation:
+
 [Grabby on the Chrome Web Store](https://chromewebstore.google.com/detail/grabby/inibchdkflhanjekaochnidojoienfbp)
 
-(The web store version will probably always be behind the latest development. Reviews for updates to the store are slow.)
+Easiest installation with automatic updates, but may be behind on bug fixes due to store review process (reviews can take up to a week).
+
+### From Source
+
+For developers or those who want to modify the extension:
+
+1. Clone this repository: `git clone https://github.com/crybx/Grabby.git`
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode" in the top right corner
+4. Click "Load unpacked" and select the repository folder
+
+**Note**: The development build and source versions will have different extension IDs than the store version, so they can be installed alongside each other.
 
 ## Usage
 
@@ -48,31 +65,31 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 1. Click the Grabby icon and select "Open Story Tracker"
 2. Add stories you want to track
 3. Your reading progress updates automatically when you grab chapters
-4. Use the queue system to check multiple stories for new chapters*
+4. Use the queue system to check multiple stories for new chapters (if autoNav is supported for the sites)
 
 ### Bulk Grabbing
 1. Navigate to any chapter of a story
 2. Click "Start Bulk Grab" from the extension popup
 3. Choose how many chapters to grab
-4. Grabby will automatically navigate and download chapters*
+4. Grabby will automatically navigate and download chapters (if autoNav is supported for the site)
 
 ### Epub Creation
 1. Navigate to any webpage or story you want to convert
 2. Click "Create Epub" from the extension popup
 3. Use the embedded WebToEpub-Codex interface to:
-   - Parse and extract content from 200+ supported websites
+   - Parse and extract content from supported websites
    - Customize metadata, cover images, and formatting
    - Generate epub files for e-readers
    - Access WebToEpub-Codex fork features
 
 *Note: Bulk grabbing and automatic new chapter checking require site-specific configuration. (More details below.)
-These features are available for sites with navigation support. Single-page grabbing works on any webpage.
+These features are available for sites with navigation support. Single-page grabbing works on any webpage and epub creation does not require navigation support.
 
-## Compatibility
+## Supported Sites
 
 **Grabby works on any webpage** - even local files opened in your browser. It uses a multi-tiered extraction approach:
 
-### Sites with Custom Support (50+ sites)
+### Sites with Custom Support
 Grabby includes custom extraction logic for specific sites:
 - Fiction platforms (Webnovel, Tapas, Syosetu, etc.)
 - Fan fiction sites (AO3, FanFiction.com, etc.)
@@ -80,17 +97,13 @@ Grabby includes custom extraction logic for specific sites:
 - Various web serial hosts and blogs (WordPress)
 - See [website-configs.js](website-configs.js) for the full list.
 
-### WebToEpub Parser Fallback (500+ additional sites)
-When no custom support exists, Grabby uses [WebToEpub's](https://github.com/dteviot/WebToEpub) parser library for additional sites including:
-- Light novel sites (NovelUpdates, ReadLightNovel, etc.)
-- International web novel platforms
-- Blog and content hosting platforms
-- Community-maintained parsers for niche sites
+### WebToEpub Parser Fallback
+When no custom support exists, Grabby uses [WebToEpub's](https://github.com/dteviot/WebToEpub) parser library for additional sites including community-maintained parsers for both popular and niche sites.
 
 ### Sites with Bulk Grab & Auto-Check Support require automatic navigation configuration
 For sites with navigation support, look for ones with `autoNav: { enabled: true }` in their configuration.
 
-### Universal Extraction
+### General Extraction
 For other webpages, Grabby extracts the main text while removing ads and navigation. This works for:
 - News articles and blog posts
 - Documentation and wikis

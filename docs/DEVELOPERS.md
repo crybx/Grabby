@@ -129,8 +129,12 @@ To debug story tracking:
    ```js
    "newsite.com": {
        grabber: "grabNewSite",
-       // Optional: Add actions for content processing
-       actions: ["GrabActions.methodName"]
+       // Optional: Add pre/post grab actions
+       preGrab: "GrabActions.methodName",
+       postGrab: { 
+           fn: "GrabActions.clickElementWithText", 
+           args: ["Next", { exact: true }] 
+       }
    }
    ```
 
@@ -160,43 +164,10 @@ Note: Grabber functions are accessed via script injection by the service worker 
   - Session Storage: Temporary bulk grab states
   - Local Storage: Persistent story tracking data
 
-## Project Structure
+## Additional Documentation
 
-```
-grabby/
-├── manifest.json              # Extension configuration
-├── background.js              # Main service worker coordinator
-├── website-configs.js         # Centralized site configurations
-├── modules/                   # Background script modules (ES6 modules)
-│   ├── script-injector.js     # Script injection handling
-│   ├── bulk-grab-manager.js   # Bulk operations management
-│   ├── queue-manager.js       # Multi-story queue processing
-│   └── download-handler.js    # File download management
-├── content-scripts/           # Scripts injected into web pages
-│   ├── grabber-core.js        # Main extraction logic
-│   ├── grabbers.js            # Site-specific grabber functions
-│   ├── utils.js               # DOM cleaning utilities
-│   ├── grab-actions.js        # Content processing hooks
-│   ├── grabby-button.js       # Floating clipboard button
-│   └── story-tracker.js       # Story tracking injection
-├── popup.html                 # Extension popup UI
-├── popup.js                   # Popup logic
-├── story-tracker.html         # Story tracking management page
-├── story-tracker-table.js     # Story tracker UI logic
-├── styles/                    # Site-specific and UI styles
-│   ├── grabby.css             # Global extension styles
-│   ├── popup.css              # Popup UI styles
-│   ├── story-tracker.css      # Story tracker styles
-│   └── [site-specific].css   # Various site-specific styles
-├── images/                    # Extension assets
-├── package.json               # Dependencies and scripts
-├── jsconfig.json              # IDE JavaScript configuration
-├── .eslintrc.js               # Code style rules
-├── LICENSE.md                 # GNU GPL v3 License
-├── README.md                  # User documentation
-└── docs/
-    └── DEVELOPERS.md          # This development guide
-```
+- **[Project Structure](project-structure.md)** - Detailed breakdown of the codebase organization
+- **[GitHub Actions](github-actions.md)** - Automated workflows for builds and releases
 
 ## Troubleshooting
 

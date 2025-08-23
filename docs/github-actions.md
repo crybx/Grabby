@@ -1,10 +1,10 @@
 # GitHub Actions Workflows
 
-This directory contains automated workflows for the Grabby extension.
+This document describes the automated workflows for the Grabby extension located in `.github/workflows/`.
 
 ## Workflows
 
-### 1. Development Build (`development-build.yml`)
+### 1. Development Build (`.github/workflows/development-build.yml`)
 - **Trigger**: Automatically runs on every push to main branch
 - **Purpose**: Creates/updates a single "Latest Development Release"
 - **Actions**:
@@ -13,7 +13,7 @@ This directory contains automated workflows for the Grabby extension.
   - Creates/updates the `latest-dev` release
   - Uploads the built ZIP file
 
-### 2. Release (`release.yml`)
+### 2. Release (`.github/workflows/release.yml`)
 - **Trigger**: Manual dispatch only (workflow_dispatch)
 - **Purpose**: Creates new release versions
 - **Actions**:
