@@ -1,0 +1,172 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      release_notes:
+        description: 'Release notes (markdown supported)'
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+        cache: 'npm'
+    
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run lint
+      run: npm run lint
+    
+    - name: Get current version (to be released)
+      id: current_version
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        echo "Releasing version: $CURRENT_VERSION"
+    
+    - name: Calculate next version (for development)
+      id: next_version
+      run: |
+        # Parse current version (3-part semantic versioning)
+        IFS='.' read -r major minor patch <<< "${{ steps.current_version.outputs.version }}"
+        
+        # Remove any non-numeric characters (like alpha, beta suffixes)
+        major=$(echo "$major" | sed 's/[^0-9]//g')
+        minor=$(echo "$minor" | sed 's/[^0-9]//g') 
+        patch=$(echo "$patch" | sed 's/[^0-9]//g')
+        
+        # Bump based on release type for NEXT development version
+        case "${{ github.event.inputs.release_type }}" in
+          major)
+            major=$((major + 1))
+            minor=0
+            patch=0
+            ;;
+          minor)
+            minor=$((minor + 1))
+            patch=0
+            ;;
+          patch)
+            patch=$((patch + 1))
+            ;;
+        esac
+        
+        NEXT_VERSION="$major.$minor.$patch"
+        echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+        echo "Next development version will be: $NEXT_VERSION"
+    
+    - name: Build extension (with current version)
+      run: npm run build
+    
+    - name: Get previous release tag
+      id: prev_version
+      run: |
+        # Get the latest release tag (the new one hasn't been created yet)
+        PREV_TAG=$(git tag -l 'release-*' | sort -V | tail -1)
+        
+        if [ -n "$PREV_TAG" ]; then
+          echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+          echo "Previous release tag: $PREV_TAG"
+        else
+          echo "ERROR: No previous release tags found"
+          exit 1
+        fi
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-${{ steps.current_version.outputs.version }}
+        release_name: Release ${{ steps.current_version.outputs.version }}
+        body: |
+          ### Installation:
+          
+          **Chrome Web Store:** [Install Grabby](https://chromewebstore.google.com/detail/grabby/inibchdkflhanjekaochnidojoienfbp)
+          
+          **Chrome Manual Installation:**
+          1. Download the `grabby-${{ steps.current_version.outputs.version }}.zip` file below
+          2. Extract the ZIP file
+          3. Open chrome://extensions/
+          4. Enable "Developer mode"
+          5. Click "Load unpacked" and select the extracted folder
+          
+          ### Release Notes:
+          ${{ github.event.inputs.release_notes }}
+          
+          **Full Changelog:** [${{ steps.prev_version.outputs.prev_tag }}...${{ steps.create_release.outputs.tag_name }}](https://github.com/crybx/Grabby/compare/${{ steps.prev_version.outputs.prev_tag }}...${{ steps.create_release.outputs.tag_name }})
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./grabby-${{ steps.current_version.outputs.version }}.zip
+        asset_name: grabby-${{ steps.current_version.outputs.version }}.zip
+        asset_content_type: application/zip
+    
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: grabby-release-${{ steps.current_version.outputs.version }}
+        path: |
+          grabby-${{ steps.current_version.outputs.version }}.zip
+          dist/
+        retention-days: 30
+    
+    - name: Bump version for next development cycle
+      run: |
+        # Update package.json
+        npm version ${{ steps.next_version.outputs.next_version }} --no-git-tag-version
+        
+        # Update manifest.json
+        node -e "
+          const fs = require('fs');
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          manifest.version = '${{ steps.next_version.outputs.next_version }}';
+          fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\\n');
+        "
+        
+        # Update version in HTML files
+        find . -name "*.html" -type f -exec sed -i "s/Grabby v${{ steps.current_version.outputs.version }}/Grabby v${{ steps.next_version.outputs.next_version }}/g" {} \;
+        find . -name "*.html" -type f -exec sed -i "s/Grabby ${{ steps.current_version.outputs.version }}/Grabby ${{ steps.next_version.outputs.next_version }}/g" {} \;
+    
+    - name: Commit version bump for development
+      run: |
+        git add package.json package-lock.json manifest.json
+        git add -A "*.html"
+        git commit -m "chore: bump version to ${{ steps.next_version.outputs.next_version }} for development"
+        git push

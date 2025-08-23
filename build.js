@@ -15,6 +15,7 @@ const EXCLUDE_PATTERNS = [
     "build.js",
     "dist",
     ".git",
+    ".github",
     ".gitignore",
     ".eslintrc.js",
     "docs",
@@ -83,7 +84,8 @@ if (fs.existsSync("package.json")) {
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     
     // Update ZIP filename to include version
-    ZIP_NAME = `grabby-${pkg.version}.zip`;
+    const buildSuffix = process.env.BUILD_SUFFIX || "";
+    ZIP_NAME = `grabby-${pkg.version}${buildSuffix}.zip`;
     
     console.log(`Updated version to ${pkg.version}`);
 }
