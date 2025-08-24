@@ -200,24 +200,6 @@ export class BulkGrabManager {
         if (!state || !state.isRunning) {
             return;
         }
-
-        // Update story tracker with stopped status
-        try {
-            if (this.scriptInjector) {
-                await this.scriptInjector.injectScriptsSequentially(tabId);
-            }
-            await chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                func: async (status, storyId) => {
-                    if (typeof StoryTracker !== "undefined") {
-                        await StoryTracker.updateLastCheckStatus(window.location.href, status, storyId);
-                    }
-                },
-                args: [reason, state.storyId]
-            });
-        } catch (error) {
-            console.warn("Could not update story tracker status:", error);
-        }
         
         await this.clearBulkGrabState(tabId);
         await this.sendStoppedToPopup(tabId);
@@ -227,9 +209,6 @@ export class BulkGrabManager {
         const chaptersDownloaded = Math.max(0, (state.currentPage || 0) - 1);
         const isError = reason.toLowerCase().includes("error");
         const isManualStop = reason.toLowerCase().includes("manually");
-        const isAbort = reason.toLowerCase().includes("abort") || 
-                       reason.toLowerCase().includes("premium") ||
-                       reason.toLowerCase().includes("no next");
         
         // Notify completion callback if available
         if (this.completionCallback) {
@@ -255,22 +234,27 @@ export class BulkGrabManager {
         if (state.currentPage >= state.totalPages) {
             const duration = Math.round((Date.now() - state.startTime) / 1000);
             
-            // Update story tracker with completion status
+            // Update story tracker with successful completion status
+            // Try to get the current URL from the tab if it exists
+            let currentUrl = null;
             try {
-                if (this.scriptInjector) {
-                    await this.scriptInjector.injectScriptsSequentially(tabId);
+                const tab = await chrome.tabs.get(tabId).catch(() => null);
+                if (tab && tab.url) {
+                    currentUrl = tab.url;
                 }
-                await chrome.scripting.executeScript({
-                    target: { tabId: tabId },
-                    func: async (status, storyId) => {
-                        if (typeof StoryTracker !== "undefined") {
-                            await StoryTracker.updateLastCheckStatus(window.location.href, status, storyId);
-                        }
-                    },
-                    args: [`Completed ${state.totalPages} chapters in ${duration}s`, state.storyId]
-                });
             } catch (error) {
-                console.warn("Could not update story tracker status:", error);
+                // Tab doesn't exist, that's ok
+            }
+
+            // Send message to background script to update story tracker
+            if (state.storyId || currentUrl) {
+                chrome.runtime.sendMessage({
+                    target: "background",
+                    type: "updateStoryCheckStatus",
+                    url: currentUrl,
+                    status: `Completed ${state.totalPages} chapters in ${duration}s`,
+                    storyId: state.storyId
+                });
             }
             
             await this.sendCompletionToPopup(tabId);

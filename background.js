@@ -282,22 +282,27 @@ async function handleMessages(message, sender, sendResponse) {
             await handleGrabContent(message, sender);
             break;
         case "updateStoryTracker": {
-            const tabId = await scriptInjector.getTabId(message, sender);
-        
-            // Check if this tab is associated with a queue story
-            const storyId = queueManager.getStoryIdForTab(tabId);
-        
-            // Inject story tracker script and update via content script
-            await scriptInjector.injectScriptsSequentially(tabId);
-            await chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                func: async (url, title, storyId) => {
-                    if (typeof StoryTracker !== "undefined") {
-                        await StoryTracker.updateLastChapter(url, title, storyId);
+            try {
+                const tabId = await scriptInjector.getTabId(message, sender);
+                
+                // Check if this tab is associated with a queue story
+                const storyId = queueManager.getStoryIdForTab(tabId);
+                
+                // Update story tracker directly via StoryManager
+                await StoryManager.updateLastChapter(message.url, message.title, storyId);
+            } catch (error) {
+                // Handle case where tab doesn't exist
+                console.log("Could not get tab ID for story tracker update, trying without storyId:", error.message);
+                
+                // Still try to update story tracker with just URL and title
+                if (message.url) {
+                    try {
+                        await StoryManager.updateLastChapter(message.url, message.title);
+                    } catch (storyError) {
+                        console.warn("Could not update story tracker:", storyError);
                     }
-                },
-                args: [message.url, message.title, storyId]
-            });
+                }
+            }
             break;
         }
         case "openBackgroundTab":
@@ -317,27 +322,24 @@ async function handleMessages(message, sender, sendResponse) {
             break;
         }
         case "stopGrabbing": {
-            const stopTabId = await scriptInjector.getTabId(message, sender);
-        
-            // Update story tracker with status and show message if provided
+            // Update story tracker with status if provided
             if (message.status && message.url) {
-            // Inject story tracker script and update via content script
-                await scriptInjector.injectScriptsSequentially(stopTabId);
-                await chrome.scripting.executeScript({
-                    target: { tabId: stopTabId },
-                    func: async (url, status) => {
-                        if (typeof StoryTracker !== "undefined") {
-                            await StoryTracker.updateLastCheckStatus(url, status);
-                        }
-                    },
-                    args: [message.url, message.status]
-                });
+                try {
+                    await StoryManager.updateLastCheckStatus(message.url, message.status);
+                } catch (error) {
+                    console.warn("Could not update story tracker status:", error);
+                }
             }
-        
-            // Stop the grabbing process with the reason
-            const reason = message.status || "Bulk grab stopped manually";
-            await bulkGrabManager.stopGrabbing(stopTabId, reason);
-        
+            
+            // Now try to stop the actual grabbing process
+            try {
+                const stopTabId = await scriptInjector.getTabId(message, sender);
+                const reason = message.status || "Bulk grab stopped manually";
+                await bulkGrabManager.stopGrabbing(stopTabId, reason);
+            } catch (error) {
+                // Handle case where tab doesn't exist or other errors
+                console.log("Could not stop grabbing - tab may be closed:", error.message);
+            }
             break;
         }
         case "getBulkGrabStatus":
@@ -402,6 +404,14 @@ async function handleMessages(message, sender, sendResponse) {
                 }
             } catch (error) {
                 console.error("addStoryToTracker: Error in background script:", error);
+            }
+            break;
+        case "updateStoryCheckStatus":
+            try {
+                await StoryManager.updateLastCheckStatus(message.url, message.status, message.storyId);
+                console.log(`Updated story tracker status: ${message.status}`);
+            } catch (error) {
+                console.warn("Could not update story tracker status:", error);
             }
             break;
         default:
