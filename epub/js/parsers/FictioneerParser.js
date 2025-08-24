@@ -121,6 +121,11 @@ class FictioneerParser extends Parser {
     getInformationEpubItemChildNodes(dom) {
         return [...dom.querySelectorAll(".story__header, .story__summary")];
     }
+
+    extractSubject(dom) {
+        let tags = ([...dom.querySelectorAll(".story__taxonomies .tag-pill")]);
+        return tags.map(t => t.textContent?.trim().toLowerCase()).join(", ");
+    }
 }
 
 class LilyOnTheValleyParser extends FictioneerParser {
