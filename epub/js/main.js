@@ -977,6 +977,20 @@ const main = (function() {
         button.textContent = isInLibraryMode ? UIText.Common.updateLibraryBook : UIText.Common.addToLibrary;
     }
 
+    /**
+     * Show a Grabby-style notification
+     * @param {string} message - The message to display
+     * @param {string} type - The notification type ('success' or 'error')
+     */
+    function showNotification(message, type = "success") {
+        const notification = document.createElement("div");
+        notification.textContent = message;
+        notification.className = `notification${type === "error" ? " error" : ""}`;
+        
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+
     return {
         getPackEpubButton: getPackEpubButton,
         onLoadAndAnalyseButtonClick: onLoadAndAnalyseButtonClick,
@@ -988,7 +1002,8 @@ const main = (function() {
         getUserPreferences: () => userPreferences,
         metaInfoFromControls: metaInfoFromControls,
         updateLibraryButtonText: updateLibraryButtonText,
-        hideAllSectionsExcept: hideAllSectionsExcept
+        hideAllSectionsExcept: hideAllSectionsExcept,
+        showNotification: showNotification
     };
 })();
 

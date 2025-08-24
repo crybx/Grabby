@@ -1532,11 +1532,11 @@ class ChapterUrlsUI {
             });
 
             // Show success message (optimistically - actual save is async)
-            alert("Story has been sent to Story Tracker!");
+            main.showNotification("Story sent to tracker!", "success");
 
         } catch (error) {
             console.error("Error adding story to tracker:", error);
-            alert("Failed to add story to tracker: " + error.message);
+            main.showNotification("Failed to add story to tracker: " + error.message, "error");
         }
     }
 
