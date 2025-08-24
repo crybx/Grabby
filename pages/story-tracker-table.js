@@ -14,7 +14,7 @@ class StoryTrackerTable {
         
         // Pagination settings
         this.currentPage = 1;
-        this.storiesPerPage = 100;
+        this.storiesPerPage = 50;
 
         this.init();
     }
@@ -192,6 +192,11 @@ class StoryTrackerTable {
         document.getElementById("last-page-btn").addEventListener("click", () => {
             const totalPages = Math.ceil(this.filteredStories.length / this.storiesPerPage);
             this.goToPage(totalPages);
+        });
+        
+        // Stories per page selector
+        document.getElementById("stories-per-page-select").addEventListener("change", (e) => {
+            this.changeStoriesPerPage(parseInt(e.target.value));
         });
 
         // Import modal controls
@@ -737,7 +742,7 @@ class StoryTrackerTable {
         const startIndex = (this.currentPage - 1) * this.storiesPerPage + 1;
         const endIndex = Math.min(this.currentPage * this.storiesPerPage, this.filteredStories.length);
         document.getElementById("pagination-info-text").textContent = 
-            `Showing ${startIndex}-${endIndex} of ${this.filteredStories.length} stories`;
+            `Showing ${startIndex}-${endIndex} of ${this.filteredStories.length}`;
         
         // Update button states
         document.getElementById("first-page-btn").disabled = this.currentPage === 1;
@@ -753,8 +758,8 @@ class StoryTrackerTable {
         const pageNumbersContainer = document.getElementById("page-numbers");
         pageNumbersContainer.innerHTML = "";
         
-        // Show max 7 page numbers with ellipsis
-        const maxVisible = 7;
+        // Show max 5 page numbers with ellipsis
+        const maxVisible = 5;
         const halfVisible = Math.floor(maxVisible / 2);
         
         let startPage = Math.max(1, this.currentPage - halfVisible);
@@ -813,6 +818,25 @@ class StoryTrackerTable {
         if (pageNum < 1 || pageNum > totalPages) return;
         
         this.currentPage = pageNum;
+        this.renderTable();
+    }
+    
+    changeStoriesPerPage(newStoriesPerPage) {
+        // Calculate what story index the user is currently looking at
+        const currentStoryIndex = (this.currentPage - 1) * this.storiesPerPage;
+        
+        // Update the stories per page
+        this.storiesPerPage = newStoriesPerPage;
+        
+        // Calculate what page the current story index should be on with the new page size
+        this.currentPage = Math.floor(currentStoryIndex / this.storiesPerPage) + 1;
+        
+        // Make sure we don't exceed total pages
+        const totalPages = Math.ceil(this.filteredStories.length / this.storiesPerPage);
+        if (this.currentPage > totalPages) {
+            this.currentPage = Math.max(1, totalPages);
+        }
+        
         this.renderTable();
     }
 

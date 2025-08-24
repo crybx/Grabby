@@ -637,17 +637,44 @@ h1 {
     background: white;
     border-top: 1px solid #e0e0e0;
     margin-top: -1px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
+
 
 .pagination-info {
     color: #666;
     font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.stories-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stories-per-page label {
+    font-size: 14px;
+    color: #666;
+}
+
+.stories-per-page select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
 }
 
 .pagination-buttons {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .pagination-buttons button {
@@ -804,6 +831,22 @@ h1 {
     gap: 12px;
     justify-content: flex-end;
     margin-top: 24px;
+}
+
+/* Center pagination controls when they start to wrap */
+@media (max-width: 992px) {
+    .pagination-controls {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .pagination-info {
+        justify-content: center;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+    }
 }
 
 /* Responsive Design */
