@@ -157,6 +157,15 @@ class StoryTrackerTable {
             this.handleDeleteStory();
         });
 
+        // "Now" buttons for datetime inputs
+        document.getElementById("set-grabbed-now-btn").addEventListener("click", () => {
+            this.setDateTimeToNow("date-last-grabbed");
+        });
+
+        document.getElementById("set-checked-now-btn").addEventListener("click", () => {
+            this.setDateTimeToNow("date-last-checked");
+        });
+
         document.getElementById("refresh-btn").addEventListener("click", () => {
             this.refresh();
         });
@@ -1010,6 +1019,19 @@ class StoryTrackerTable {
         // Hide date fields when closing modal
         const editOnlyElements = document.querySelectorAll(".edit-only");
         editOnlyElements.forEach(el => el.style.display = "none");
+    }
+
+    setDateTimeToNow(inputId) {
+        const now = new Date();
+        // Format to datetime-local format: YYYY-MM-DDTHH:mm
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        
+        const datetimeLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
+        document.getElementById(inputId).value = datetimeLocal;
     }
 
     async handleStoryFormSubmit() {
