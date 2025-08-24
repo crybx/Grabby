@@ -148,6 +148,12 @@
                         <input id="coverImageUrlInput" type="text" name="coverImageUrlInput">
                     </div>
                 </div>
+                <div class="form-field">
+                    <label class="field-label i18n" for="subjectInput">__MSG_label_Metadata_subject__</label>
+                    <div class="field-input">
+                        <textarea rows="2" cols="60" id="subjectInput" type="text" name="subjectInput"></textarea>
+                    </div>
+                </div>
                 <div class="form-field" id="passwordRow" hidden="true">
                     <label class="field-label i18n" for="passwordInput">__MSG_label_Password__</label>
                     <div class="field-input">
@@ -241,10 +247,6 @@
                 <tr>
                     <td><input id="lesstagsCheckbox" type="checkbox" name="lesstagsCheckbox" value="true"></td>
                     <td>__MSG_label_less_tags__</td>
-                </tr>
-                <tr>
-                    <td>__MSG_label_Metadata_subject__</td>
-                    <td><textarea rows="2" cols="60" id="subjectInput" type="text" name="subjectInput"></textarea></td>
                 </tr>
                 <tr>
                     <td>__MSG_label_Metadata_description__</td>
@@ -576,13 +578,13 @@
                                   <span id="downloadSelectedHtmlIcon"></span>
                                   <span>Download Selected Chapters as Individual HTML Files</span>
                                 </div>
-                                <div class="menu-item" id="exportJsonMenuItem">
-                                  <span id="exportJsonIcon"></span>
-                                  <span class="i18n">__MSG_menu_Export_Story_Details_JSON__</span>
-                                </div>
                                 <div class="menu-item" id="addToStoryTrackerMenuItem">
                                   <span id="addToStoryTrackerIcon"></span>
                                   <span>Add to Story Tracker</span>
+                                </div>
+                                <div class="menu-item" id="exportJsonMenuItem">
+                                  <span id="exportJsonIcon"></span>
+                                  <span class="i18n">__MSG_menu_Export_Story_Details_JSON__</span>
                                 </div>
                             </div>
                         </div>
