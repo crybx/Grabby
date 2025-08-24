@@ -1,8 +1,7 @@
-// Story Manager - Background script version of story-tracker.js
-// There's duplication here with content-scripts/story-tracker.js
-// Figure out later the best way to do this only in one spot.
+// Story Manager - Works in both background script and content script contexts
+// Traditional script format that can be imported or injected
 
-export class StoryManager {
+class StoryManager {
     static STORY_PREFIX = "story_";
 
     // Get story key for individual storage
@@ -288,4 +287,13 @@ export class StoryManager {
         
         return normalizedCurrent === normalizedLast;
     }
+}
+
+// Export for both browser contexts
+if (typeof window !== "undefined") {
+    // Browser/content script context
+    window.StoryManager = StoryManager;
+} else if (typeof globalThis !== "undefined") {
+    // Service worker context  
+    globalThis.StoryManager = StoryManager;
 }

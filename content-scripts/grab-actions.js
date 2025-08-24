@@ -187,9 +187,9 @@ async function checkForDuplicateChapter(duplicateCheck = true) {
         return { abort: false };
     }
     
-    if (typeof StoryTracker !== "undefined") {
+    if (typeof StoryManager !== "undefined") {
         try {
-            const isDuplicate = await StoryTracker.isDuplicateChapter(window.location.href);
+            const isDuplicate = await StoryManager.isDuplicateChapter(window.location.href);
             if (isDuplicate) {
                 console.log("Duplicate chapter detected before grabbing - aborting grab");
                 return { abort: true, reason: "Duplicate chapter - already grabbed this URL" };

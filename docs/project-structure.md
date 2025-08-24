@@ -19,6 +19,7 @@ Background script modules using ES6 module syntax:
 - **`bulk-grab-manager.js`** - Manages bulk grabbing operations
 - **`queue-manager.js`** - Processes multiple stories in queue
 - **`download-handler.js`** - Handles file downloads and naming
+- **`story-manager-module.js`** - ES6 wrapper for importing story-manager.js
 
 ## Content Scripts Directory
 
@@ -28,8 +29,8 @@ Scripts injected into web pages:
 - **`grabbers.js`** - Site-specific extraction functions
 - **`utils.js`** - DOM utilities for cleaning HTML content
 - **`grab-actions.js`** - Content processing hooks and filters
+- **`story-manager.js`** - Story tracking and management (traditional script format for injection)
 - **`grabby-button.js`** - Floating clipboard button for all pages
-- **`story-tracker.js`** - Story tracking data storage interaction
 
 ## Pages Directory
 
@@ -99,3 +100,4 @@ WebToEpub integration (embedded as a library):
 - Separation of concerns: modules, content scripts, UI pages
 - ES6 modules for background scripts
 - Traditional scripts for content injection
+- Dual-format modules: some modules use wrapper pattern (ES6 module wrapper + traditional script) for compatibility across contexts

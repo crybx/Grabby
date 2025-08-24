@@ -1,4 +1,6 @@
 // Story Tracker Table - with filtering, sorting, and selection
+import { StoryManager } from "../modules/story-manager-module.js";
+
 class StoryTrackerTable {
     constructor() {
         this.stories = [];
@@ -29,7 +31,7 @@ class StoryTrackerTable {
 
     async loadStories() {
         try {
-            this.stories = await StoryTracker.getAllStories();
+            this.stories = await StoryManager.getAllStories();
             this.applyFilters();
             this.updateTotalCount();
         } catch (error) {
@@ -909,7 +911,7 @@ class StoryTrackerTable {
 
         // Delete each selected story
         for (const storyId of this.selectedStories) {
-            await StoryTracker.deleteStory(storyId);
+            await StoryManager.deleteStory(storyId);
             this.stories = this.stories.filter(s => s.id !== storyId);
         }
 
@@ -1073,7 +1075,7 @@ class StoryTrackerTable {
         };
 
         this.stories.push(story);
-        await StoryTracker.saveStory(story);
+        await StoryManager.saveStory(story);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -1124,7 +1126,7 @@ class StoryTrackerTable {
 
         this.stories[storyIndex] = updatedStory;
 
-        await StoryTracker.saveStory(this.stories[storyIndex]);
+        await StoryManager.saveStory(this.stories[storyIndex]);
         this.populateDomainFilter();
         this.applyFilters();
         this.renderTable();
@@ -1137,7 +1139,7 @@ class StoryTrackerTable {
         
         if (!confirmed) return;
 
-        await StoryTracker.deleteStory(id);
+        await StoryManager.deleteStory(id);
         this.stories = this.stories.filter(s => s.id !== id);
         this.selectedStories.delete(id);
         this.populateDomainFilter();
@@ -1245,7 +1247,7 @@ class StoryTrackerTable {
                     dateAdded: new Date().toISOString()
                 };
 
-                const saved = await StoryTracker.saveStory(story);
+                const saved = await StoryManager.saveStory(story);
                 if (saved) {
                     this.stories.push(story);
                     importedCount++;
@@ -1417,7 +1419,7 @@ class StoryTrackerTable {
                     storyData.domain = this.extractDomain(storyData.mainStoryUrl);
                 }
                 
-                const saved = await StoryTracker.saveStory(storyData);
+                const saved = await StoryManager.saveStory(storyData);
                 if (saved) {
                     this.stories.push(storyData);
                     importedCount++;
@@ -1515,7 +1517,7 @@ class StoryTrackerTable {
             // Update story if changes were made
             if (storyUpdated) {
                 story.tags = newTags;
-                await StoryTracker.saveStory(story);
+                await StoryManager.saveStory(story);
                 
                 // Update the story in the local array
                 const storyIndex = this.stories.findIndex(s => s.id === story.id);
