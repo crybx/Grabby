@@ -1228,7 +1228,6 @@ class ChapterUrlsUI {
             headerMoreActionsIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.THREE_DOTS_VERTICAL));
         }
 
-        
         if (deleteSelectedChaptersIcon && deleteSelectedChaptersIcon.children.length === 0) {
             deleteSelectedChaptersIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.TRASH3_FILL));
         }
@@ -1270,6 +1269,12 @@ class ChapterUrlsUI {
         let exportJsonIcon = document.getElementById("exportJsonIcon");
         if (exportJsonIcon && exportJsonIcon.children.length === 0) {
             exportJsonIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.FILE_EARMARK_CHECK));
+        }
+
+        // Set up add to story tracker icon
+        let addToStoryTrackerIcon = document.getElementById("addToStoryTrackerIcon");
+        if (addToStoryTrackerIcon && addToStoryTrackerIcon.children.length === 0) {
+            addToStoryTrackerIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.FILE_EARMARK_CHECK));
         }
 
         // Set up click handler for the three dots icon
@@ -1373,6 +1378,16 @@ class ChapterUrlsUI {
             };
         }
 
+        // Set up add to story tracker handler
+        let addToStoryTrackerItem = document.getElementById("addToStoryTrackerMenuItem");
+        if (addToStoryTrackerItem) {
+            addToStoryTrackerItem.onclick = async (e) => {
+                e.stopPropagation();
+                ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
+                await ChapterUrlsUI.addToStoryTracker(chapters);
+            };
+        }
+
         // Close menu when clicking outside
         document.addEventListener("click", () => ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu));
     }
@@ -1434,39 +1449,47 @@ class ChapterUrlsUI {
     }
 
     /**
+     * Build story data from current UI state and chapters
+     */
+    static buildStoryData(chapters) {
+        // Get title and starting URL from main UI
+        let title = document.getElementById("titleInput")?.value || "Untitled Story";
+        let mainStoryUrl = document.getElementById("startingUrlInput")?.value || "";
+
+        // Get tags from subject input field, split on commas and clean up
+        let tagsInput = document.getElementById("subjectInput")?.value || "";
+        let tags = tagsInput.split(",").map(tag => tag.trim().toLowerCase()).filter(tag => tag.length > 0);
+
+        // Get selected chapters to find the last one
+        let selectedChapters = ChapterUrlsUI.getSelectedChapters(chapters);
+        let lastChapter = null;
+        if (selectedChapters.length > 0) {
+            lastChapter = selectedChapters[selectedChapters.length - 1];
+        }
+
+        const now = new Date().toISOString();
+        return {
+            title: title,
+            mainStoryUrl: mainStoryUrl,
+            lastChapterUrl: lastChapter?.sourceUrl,
+            lastChapterTitle: lastChapter?.title,
+            tags: tags,
+            dateLastGrabbed: lastChapter ? now : null,
+            dateLastChecked: lastChapter ? now : null,
+            dateAdded: now
+        };
+    }
+
+    /**
      * Export story information as JSON file
      */
     static async exportStoryAsJson(chapters) {
         try {
-            // Get title and starting URL from main UI
-            let title = document.getElementById("titleInput")?.value || "Untitled Story";
-            let mainStoryUrl = document.getElementById("startingUrlInput")?.value || "";
+            const storyData = ChapterUrlsUI.buildStoryData(chapters);
 
-            // Get selected chapters to find the last one
-            let selectedChapters = ChapterUrlsUI.getSelectedChapters(chapters);
-
-            // Get last selected chapter (fallback to last chapter in list if no selection)
-            let lastChapter = null;
-            if (selectedChapters.length > 0) {
-                lastChapter = selectedChapters[selectedChapters.length - 1];
-            } else if (chapters && chapters.length > 0) {
-                lastChapter = chapters[chapters.length - 1];
-            }
-
-            // Build JSON structure
+            // Wrap in JSON export format
             let jsonData = {
-                "stories": [
-                    {
-                        "title": title,
-                        "mainStoryUrl": mainStoryUrl,
-                        "lastChapterUrl": lastChapter?.sourceUrl || "",
-                        "lastChapterTitle": lastChapter?.title || "",
-                        "secondaryUrlMatches": [],
-                        "tags": [],
-                        "dateLastGrabbed": null,
-                        "dateAdded": new Date().toISOString()
-                    }
-                ]
+                "stories": [storyData]
             };
 
             // Create and download JSON file
@@ -1475,7 +1498,7 @@ class ChapterUrlsUI {
             let url = URL.createObjectURL(blob);
 
             // Generate filename from title
-            let filename = title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+            let filename = storyData.title.replace(/[^a-z0-9]/gi, "_").toLowerCase();
             if (filename.length === 0) filename = "story";
             filename += "_export.json";
 
@@ -1495,6 +1518,29 @@ class ChapterUrlsUI {
     }
 
     /**
+     * Add story to Story Tracker
+     */
+    static async addToStoryTracker(chapters) {
+        try {
+            const storyData = ChapterUrlsUI.buildStoryData(chapters);
+
+            // Send message to background script to add to story tracker
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "addStoryToTracker",
+                story: storyData
+            });
+
+            // Show success message (optimistically - actual save is async)
+            alert("Story has been sent to Story Tracker!");
+
+        } catch (error) {
+            console.error("Error adding story to tracker:", error);
+            alert("Failed to add story to tracker: " + error.message);
+        }
+    }
+
+    /**
      * Get selected chapters from the chapter list
      */
     static getSelectedChapters(chapters) {
@@ -1510,7 +1556,6 @@ class ChapterUrlsUI {
         
         return selected;
     }
-
 
     /**
      * Delete selected cached chapters

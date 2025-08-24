@@ -3,12 +3,36 @@ import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
 import { QueueManager } from "./modules/queue-manager.js";
+import { StoryManager } from "./modules/story-manager.js";
 import "./website-configs.js";
 // WEBSITE_CONFIGS and related functions are available via globalThis
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
 const scriptInjector = new ScriptInjector();
+
+// Helper function to show notification on active tab
+async function showNotificationOnActiveTab(message, type = "success") {
+    try {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTab && !activeTab.url.startsWith("chrome-extension://")) {
+            await chrome.scripting.executeScript({
+                target: { tabId: activeTab.id },
+                func: (msg, notificationType) => {
+                    const notification = document.createElement("div");
+                    notification.textContent = msg;
+                    notification.className = `notification${notificationType === "error" ? " error" : ""}`;
+                    
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
+                },
+                args: [message, type]
+            });
+        }
+    } catch (error) {
+        console.error("Failed to show notification:", error);
+    }
+}
 
 // Handle grab content (for direct grabs)
 async function handleGrabContent(message, sender) {
@@ -370,44 +394,16 @@ async function handleMessages(message, sender, sendResponse) {
             handleInjectWebToEpubParser(message, sender)
                 .catch(error => console.error("Error in handleInjectWebToEpubParser:", error));
             break;
-        case "addStoryToTracker": {
-            // Fire and forget - don't wait for response
-            void (async () => {
-                try {
-                    const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-                    if (!currentTab || currentTab.url.startsWith("chrome-extension://")) {
-                        console.error("addStoryToTracker: Cannot use extension pages for script injection");
-                        return;
-                    }
-                    
-                    // Inject story tracker script and save via content script
-                    await scriptInjector.injectScriptsSequentially(currentTab.id);
-                    await chrome.scripting.executeScript({
-                        target: { tabId: currentTab.id },
-                        func: async (story) => {
-                            if (typeof StoryTracker !== "undefined") {
-                                await StoryTracker.saveStory(story);
-                                
-                                // Show notification same as grabber-core.js
-                                const notification = document.createElement("div");
-                                notification.textContent = "Story added!";
-                                notification.classList.add("notification");
-                                document.body.appendChild(notification);
-                                
-                                setTimeout(() => {
-                                    notification.remove();
-                                }, 3000);
-                            }
-                        },
-                        args: [message.story]
-                    });
-                    
-                } catch (error) {
-                    console.error("addStoryToTracker: Error in background script:", error);
+        case "addStoryToTracker":
+            try {
+                if (message.story) {
+                    await StoryManager.saveStory(message.story);
+                    await showNotificationOnActiveTab("Story added!", "success");
                 }
-            })();
+            } catch (error) {
+                console.error("addStoryToTracker: Error in background script:", error);
+            }
             break;
-        }
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }

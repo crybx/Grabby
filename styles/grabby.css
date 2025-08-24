@@ -10,3 +10,7 @@
     font-family: Helvetica, Arial, sans-serif !important;
     font-size: 16px !important;
 }
+
+.notification.error {
+    background-color: #f44336;
+}

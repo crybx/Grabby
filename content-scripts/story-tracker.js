@@ -14,11 +14,9 @@ async function getAllStories() {
         const allData = await chrome.storage.local.get();
         
         // Filter for story entries and extract the story objects
-        const stories = Object.entries(allData)
+        return Object.entries(allData)
             .filter(([key]) => key.startsWith(STORY_PREFIX))
             .map(([, story]) => story);
-            
-        return stories;
     } catch (error) {
         console.error("Error loading stories:", error);
         return [];
