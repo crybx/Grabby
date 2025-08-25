@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Grabby",
   "description": "Make reading stories online easier. Save chapters as clean, readable files and track reading progress across ongoing stories.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "default_locale": "en",
   "icons": {
     "128": "images/clipboard128.png"
@@ -27,21 +27,39 @@
     "unlimitedStorage",
     "webRequest"
   ],
-  "host_permissions": ["*://*/*", "file:///*"],
+  "host_permissions": [
+    "*://*/*",
+    "file:///*"
+  ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "<all_urls>"
+      ],
       "match_origin_as_fallback": true,
-      "css": ["styles/grabby-button.css", "styles/grabby.css"],
-      "js": ["content-scripts/grabby-button.js"]
+      "css": [
+        "styles/grabby-button.css",
+        "styles/grabby.css"
+      ],
+      "js": [
+        "content-scripts/grabby-button.js"
+      ]
     },
     {
-      "matches": ["*://*.hyacinthbloom.com/*"],
-      "css": ["styles/hyacinth.css"]
+      "matches": [
+        "*://*.hyacinthbloom.com/*"
+      ],
+      "css": [
+        "styles/hyacinth.css"
+      ]
     },
     {
-      "matches": ["*://*.wordpress.com/*"],
-      "css": ["styles/wordpress.css"]
+      "matches": [
+        "*://*.wordpress.com/*"
+      ],
+      "css": [
+        "styles/wordpress.css"
+      ]
     }
   ],
   "commands": {
@@ -55,8 +73,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/clipboard128.png"],
-      "matches": ["<all_urls>"],
+      "resources": [
+        "images/clipboard128.png"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
       "match_origin_as_fallback": true
     }
   ]
