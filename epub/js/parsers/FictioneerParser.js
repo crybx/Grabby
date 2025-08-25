@@ -97,7 +97,11 @@ class FictioneerParser extends Parser {
         let img =
             dom.querySelector(".wp-post-image") ||
             dom.querySelector("figure.story__thumbnail img");
-        return (img === null) ? img : img.src;
+        // strip off the arguments for smaller sizes
+        let url = (img === null) ? img : img.src;
+        let pos = url.indexOf("?");
+        if (pos !== -1) { url = url.substring(0, pos); }
+        return url;
     }
 
     customRawDomToContentStep(chapter, content) {
