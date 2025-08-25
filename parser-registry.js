@@ -454,6 +454,7 @@ const PARSER_REGISTRY = {
     "sweek.com": { parserClass: "SweekParser", file: "SweekParser.js" },
     "systemtranslation.com": { parserClass: "SystemTranslationParser", file: "SystemTranslationParser.js" },
     "taffygirl13.wordpress.com": { parserClass: "Taffygirl13Parser", file: "Taffygirl13Parser.js" },
+    "talesinthevalley.com": { parserClass: "LilyOnTheValleyParser", file: "FictioneerParser.js" },
     "tamagotl.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "taonovel.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "tapas.io": { parserClass: "TapasParser", file: "TapasParser.js" },
