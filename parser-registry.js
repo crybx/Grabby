@@ -159,6 +159,8 @@ const PARSER_REGISTRY = {
     "isekaicyborg.wordpress.com": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
     "isekaiscan.com": { parserClass: "IsekaiScanParser", file: "IsekaiScanParser.js" },
     "isotls.com": { parserClass: "IsotlsParser", file: "IsotlsParser.js" },
+    "ixdzs.tw": { parserClass: "IxdzsParser", file: "IxdzsParser.js" },
+    "ixdzs8.com": { parserClass: "Ixdzs8Parser", file: "IxdzsParser.js" },
     "jade-rabbit.net": { parserClass: "JadeRabbitParser", file: "JadeRabbitParser.js" },
     "japtem.com": { parserClass: "JaptemParser", file: "JaptemParser.js" },
     "jjwxc.net": { parserClass: "JjwxcParser", file: "JjwxcParser.js" },
