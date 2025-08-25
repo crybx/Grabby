@@ -1,3 +1,10 @@
+// Report the current page URL to background
+chrome.runtime.sendMessage({
+    target: "background",
+    type: "reportPageUrl",
+    url: window.location.href
+}).then();
+
 // Create and add the clipboard button to the page
 function addGrabbyButton() {
     // Check if button already exists

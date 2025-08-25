@@ -25,7 +25,6 @@ export class ScriptInjector {
     async injectScriptsSequentially(tabId) {
         const scripts = [
             "content-scripts/utils.js",
-            "content-scripts/story-manager.js",
             "content-scripts/grab-actions.js",
             "content-scripts/grabbers.js",
             "website-configs.js",
@@ -65,7 +64,6 @@ export class ScriptInjector {
             const variablesToCheck = {
                 "website-configs": ["WEBSITE_CONFIGS", "findMatchingConfig"], // Objects from website-configs.js
                 "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
-                "story-manager": ["StoryManager"], // Object from story-manager.js
                 "grab-actions": ["GrabActions"], // Object from grab-actions.js
                 "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
                 "parser-registry": ["PARSER_REGISTRY"], // Object from parser-registry.js

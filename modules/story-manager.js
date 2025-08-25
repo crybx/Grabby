@@ -1,7 +1,5 @@
-// Story Manager - Works in both background script and content script contexts
-// Traditional script format that can be imported or injected
-
-class StoryManager {
+// Story Manager - ES6 module for background script to use
+export class StoryManager {
     static STORY_PREFIX = "story_";
 
     // Get story key for individual storage
@@ -138,10 +136,10 @@ class StoryManager {
         
         // Find story where the chapter URL actually belongs to the story
         return stories.find(s => {
-            // Normalize URLs by removing trailing slashes for comparison
-            const normalizedExtracted = extractedMainUrl.replace(/\/$/, "");
-            const normalizedStoryUrl = s.mainStoryUrl.replace(/\/$/, "");
-            const normalizedChapterUrl = chapterUrl.replace(/\/$/, "");
+            // Use our normalization function for consistency
+            const normalizedExtracted = this.normalizeUrlForComparison(extractedMainUrl);
+            const normalizedStoryUrl = this.normalizeUrlForComparison(s.mainStoryUrl);
+            const normalizedChapterUrl = this.normalizeUrlForComparison(chapterUrl);
             
             // Exact match on normalized extracted main URL
             if (normalizedExtracted === normalizedStoryUrl) {
@@ -159,7 +157,8 @@ class StoryManager {
             // Check secondary URL matches if they exist
             if (s.secondaryUrlMatches && Array.isArray(s.secondaryUrlMatches)) {
                 for (const urlPrefix of s.secondaryUrlMatches) {
-                    if (urlPrefix && normalizedChapterUrl.startsWith(urlPrefix.replace(/\/$/, ""))) {
+                    const normalizedPrefix = this.normalizeUrlForComparison(urlPrefix);
+                    if (normalizedPrefix && normalizedChapterUrl.startsWith(normalizedPrefix)) {
                         return true;
                     }
                 }
@@ -227,11 +226,7 @@ class StoryManager {
         
         if (story) {
             // Check if this is the same chapter as before (potential loop detection)
-            // Normalize URLs for comparison to handle /# variations
-            const normalizedCurrent = this.normalizeUrlForComparison(chapterUrl);
-            const normalizedLast = this.normalizeUrlForComparison(story.lastChapterUrl);
-            
-            if (normalizedLast === normalizedCurrent) {
+            if (this.areUrlsEqual(chapterUrl, story.lastChapterUrl)) {
                 // Update story tracker status and send stop grabbing message
                 const duplicateMessage = "Duplicate chapter detected - stopping to prevent loop";
                 await this.updateLastCheckStatus(chapterUrl, duplicateMessage);
@@ -275,25 +270,26 @@ class StoryManager {
         normalized = normalized.replace(/\/$/, "");
         return normalized;
     }
-
-    // Check if current URL is a duplicate of last chapter (for pre-grab detection)
-    static async isDuplicateChapter(chapterUrl) {
-        const story = await this.findStoryByChapterUrl(chapterUrl);
-        if (!story || !story.lastChapterUrl) return false;
-        
-        // Normalize both URLs for comparison
-        const normalizedCurrent = this.normalizeUrlForComparison(chapterUrl);
-        const normalizedLast = this.normalizeUrlForComparison(story.lastChapterUrl);
-        
-        return normalizedCurrent === normalizedLast;
+    
+    // Compare two URLs after normalizing them
+    static areUrlsEqual(url1, url2) {
+        if (!url1 || !url2) return false;
+        const normalized1 = this.normalizeUrlForComparison(url1);
+        const normalized2 = this.normalizeUrlForComparison(url2);
+        return normalized1 === normalized2;
     }
-}
 
-// Export for both browser contexts
-if (typeof window !== "undefined") {
-    // Browser/content script context
-    window.StoryManager = StoryManager;
-} else if (typeof globalThis !== "undefined") {
-    // Service worker context  
-    globalThis.StoryManager = StoryManager;
+    // Check if current URL is a duplicate of last chapter
+    // Can take optional storyId for direct lookup (more efficient)
+    static async isDuplicateChapter(chapterUrl, storyId = null) {
+        if (!chapterUrl) { return false; }
+
+        // Get story either by ID or by chapter URL
+        const story = storyId
+            ? await this.getStory(storyId)
+            : await this.findStoryByChapterUrl(chapterUrl);
+
+        // Return false if no story or no lastChapterUrl, otherwise compare URLs
+        return story?.lastChapterUrl ? this.areUrlsEqual(chapterUrl, story.lastChapterUrl) : false;
+    }
 }

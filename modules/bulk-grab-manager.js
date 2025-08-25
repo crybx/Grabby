@@ -274,6 +274,19 @@ export class BulkGrabManager {
         this.sendStatusToPopup(`Grabbing page ${attemptNumber} of ${state.totalPages}`, progress);
         
         try {
+            // Check if tab still exists before attempting grab
+            try {
+                await chrome.tabs.get(state.tabId);
+            } catch (tabError) {
+                console.log(`Tab ${state.tabId} no longer exists, stopping bulk grab`);
+                await this.sendCompletionToPopup(tabId);
+                await this.clearBulkGrabState(tabId);
+                if (this.completionCallback) {
+                    this.completionCallback(tabId, false, "Tab closed", true, state.currentPage, false);
+                }
+                return;
+            }
+            
             // Perform the grab
             await this.grabContentCallback(null, { tab: { id: state.tabId } });
             

@@ -62,13 +62,7 @@ function loadAllImages() {
 }
 
 // Peach Tea Agency specific: Click "All on one page?" button if it exists
-async function peachTeaClickAllOnOnePageButton(duplicateCheck = true) {
-    // Check for duplicates first unless disabled
-    if (duplicateCheck) {
-        const duplicateResult = await checkForDuplicateChapter();
-        if (duplicateResult.abort) return duplicateResult;
-    }
-
+async function peachTeaClickAllOnOnePageButton() {
     // Look for buttons/links with "All on one page?" text
     const allElements = document.querySelectorAll("button, a, [role=\"button\"]");
     
@@ -87,13 +81,7 @@ async function peachTeaClickAllOnOnePageButton(duplicateCheck = true) {
 }
 
 // Function to check for premium/locked content and abort if found
-async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = true, premiumText = null) {
-    // Check for duplicates first unless disabled
-    if (duplicateCheck) {
-        const duplicateResult = await checkForDuplicateChapter();
-        if (duplicateResult.abort) return duplicateResult;
-    }
-
+async function checkForPremiumContent(selectors = ["h2, h3"], premiumText = null) {
     if (!premiumText) {
         premiumText = [
             "Advanced Chapter",
@@ -125,13 +113,7 @@ async function checkForPremiumContent(selectors = ["h2, h3"], duplicateCheck = t
 }
 
 // Function to check if URL contains certain text and abort if found
-async function checkForUrlText(urlText = [], duplicateCheck = true) {
-    // Check for duplicates first unless disabled
-    if (duplicateCheck) {
-        const duplicateResult = await checkForDuplicateChapter();
-        if (duplicateResult.abort) return duplicateResult;
-    }
-
+async function checkForUrlText(urlText = []) {
     if (!Array.isArray(urlText) || urlText.length === 0) {
         console.log("No URL text patterns provided for checking");
         return { abort: false };
@@ -151,13 +133,7 @@ async function checkForUrlText(urlText = [], duplicateCheck = true) {
 }
 
 // Function to check for page not found errors and abort if found
-async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"], duplicateCheck = true) {
-    // Check for duplicates first unless disabled
-    if (duplicateCheck) {
-        const duplicateResult = await checkForDuplicateChapter();
-        if (duplicateResult.abort) return duplicateResult;
-    }
-    
+async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
     const notFoundIndicators = [
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
@@ -181,27 +157,6 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
     return { abort: false };
 }
 
-// Function to check if current URL is a duplicate chapter and abort if found
-async function checkForDuplicateChapter(duplicateCheck = true) {
-    if (!duplicateCheck) {
-        return { abort: false };
-    }
-    
-    if (typeof StoryManager !== "undefined") {
-        try {
-            const isDuplicate = await StoryManager.isDuplicateChapter(window.location.href);
-            if (isDuplicate) {
-                console.log("Duplicate chapter detected before grabbing - aborting grab");
-                return { abort: true, reason: "Duplicate chapter - already grabbed this URL" };
-            }
-        } catch (error) {
-            console.error("Error checking for duplicate chapter:", error);
-        }
-    }
-    
-    return { abort: false };
-}
-
 async function ridiTranslate() {
     scrollToBottom();
     // wait 3 seconds for translation to complete
@@ -210,11 +165,6 @@ async function ridiTranslate() {
 
 // specifically for Peach Tea Agency
 async function peachTeaClickNextChapterLink() {
-    // First, ensure the "All on one page?" button is clicked to show the Next chapter link
-    if (typeof GrabActions !== "undefined" && GrabActions.peachTeaClickAllOnOnePageButton) {
-        await GrabActions.peachTeaClickAllOnOnePageButton(false);
-    }
-    
     // Find all links that contain "Next chapter" as exact text
     const allLinks = document.querySelectorAll("a");
     
@@ -305,7 +255,6 @@ function clickElementWithText(text, options = {}) {
     }
     return false;
 }
-
 
 // Function to click an element by CSS selector (without requiring text matching)
 function clickElementBySelector(selector, options = {}) {
@@ -517,7 +466,6 @@ window.GrabActions = {
     checkForPremiumContent,
     checkForUrlText,
     checkForPageNotFound,
-    checkForDuplicateChapter,
     ridiTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,

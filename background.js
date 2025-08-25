@@ -3,13 +3,24 @@ import { ScriptInjector } from "./modules/script-injector.js";
 import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
 import { QueueManager } from "./modules/queue-manager.js";
-import { StoryManager } from "./modules/story-manager-module.js";
+import { StoryManager } from "./modules/story-manager.js";
 import "./website-configs.js";
 // WEBSITE_CONFIGS and related functions are available via globalThis
 
 // Initialize modules
 const downloadHandler = new DownloadHandler();
 const scriptInjector = new ScriptInjector();
+
+// Story status cache for tabs
+const tabStoryStatus = new Map(); // Map<tabId, StoryStatusInfo>
+// StoryStatusInfo structure:
+// {
+//   url: string,              // Current URL of the tab
+//   storyId: string | null,   // Known story ID if from tracker
+//   story: StoryObject | null, // Full story object with lastChapterUrl
+//   isFromTracker: boolean,   // True if opened from story tracker
+//   checkedAt: timestamp      // When cache was last updated
+// }
 
 // Helper function to show notification on active tab
 async function showNotificationOnActiveTab(message, type = "success") {
@@ -38,8 +49,28 @@ async function showNotificationOnActiveTab(message, type = "success") {
 async function handleGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
     if (tabId) {
+        // Verify the tab still exists before proceeding
         try {
-            // Perform the content grab - pass false for direct grab
+            await chrome.tabs.get(tabId);
+        } catch (error) {
+            console.log("Tab", tabId, "no longer exists, skipping grab");
+            return;
+        }
+
+        // Check cached story status first
+        const status = tabStoryStatus.get(tabId);
+        const isDuplicate = await StoryManager.isDuplicateChapter(status?.url, status?.storyId);
+        if (isDuplicate) {
+            // Don't inject scripts for duplicate - show notification instead
+            await showNotificationOnActiveTab(
+                "Chapter already grabbed", 
+                "error"
+            );
+            return;
+        }
+        
+        try {
+            // Proceed with normal grab
             await scriptInjector.injectGrabbingScriptsAndExecute(tabId, false);
         } catch (error) {
             console.error("Error during grab content:", error);
@@ -51,8 +82,59 @@ async function handleGrabContent(message, sender) {
 async function handleBulkGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
     if (tabId) {
+        // Verify the tab still exists before proceeding
         try {
-            // Perform the content grab - pass true for bulk grab
+            await chrome.tabs.get(tabId);
+        } catch (error) {
+            console.log("Tab", tabId, "no longer exists, skipping bulk grab");
+            // Notify bulk grab manager that this tab is gone
+            if (bulkGrabManager) {
+                await bulkGrabManager.cleanupTab(tabId);
+            }
+            return;
+        }
+
+        // Check cached story status first
+        const status = tabStoryStatus.get(tabId);
+        const isDuplicate = await StoryManager.isDuplicateChapter(status?.url, status?.storyId);
+        if (isDuplicate) {
+            // Check if this is from story tracker (ALL story tracker grabs are bulk)
+            if (status?.isFromTracker && status?.storyId) {
+                // Notify queue manager so it can continue processing
+                queueManager.handleBulkGrabComplete(
+                    tabId, 
+                    false,
+                    "Duplicate chapter - already grabbed", 
+                    false, // not an error, just a duplicate
+                    0,
+                    false
+                );
+                
+                // Update story tracker status
+                await StoryManager.updateLastCheckStatus(
+                    status.url, 
+                    "Duplicate chapter detected", 
+                    status.storyId
+                );
+                
+                // Close the tab (queue manager might also try to close it)
+                try {
+                    await chrome.tabs.remove(tabId);
+                } catch (e) {
+                    // Tab might already be closed
+                }
+            } else {
+                // Regular manual bulk grab - just show notification
+                await showNotificationOnActiveTab(
+                    "Cannot start bulk grab from already grabbed chapter", 
+                    "error"
+                );
+            }
+            return;
+        }
+        
+        try {
+            // Proceed with normal bulk grab
             await scriptInjector.injectGrabbingScriptsAndExecute(tabId, true);
         } catch (error) {
             console.error("Error during bulk grab content:", error);
@@ -85,6 +167,15 @@ async function handleAutoGrab(message) {
         const tab = await chrome.tabs.create({
             url: message.lastChapterUrl,
             active: shouldBeActive
+        });
+
+        // Cache the story info immediately for tracker-opened tabs
+        tabStoryStatus.set(tab.id, {
+            url: message.lastChapterUrl,
+            storyId: message.storyId || message.id,
+            story: message, // Full story object from tracker
+            isFromTracker: true,
+            checkedAt: Date.now()
         });
 
         // Register tab with queue manager if story has an ID
@@ -178,7 +269,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     const autoNavConfig = configResult[0]?.result;
                     
                     if (!autoNavConfig || !autoNavConfig.enabled) {
-                        chrome.tabs.remove(tabId);
+                        await chrome.tabs.remove(tabId);
                         // DEBUG: Comment out the line above to keep tabs open for auto-nav debugging
                         return;
                     }
@@ -267,11 +358,29 @@ async function handleMessages(message, sender, sendResponse) {
             try {
                 const tabId = await scriptInjector.getTabId(message, sender);
                 
-                // Check if this tab is associated with a queue story
-                const storyId = queueManager.getStoryIdForTab(tabId);
+                // First check our cached story status (includes manually opened tracker tabs)
+                const cachedStatus = tabStoryStatus.get(tabId);
+                let storyId = cachedStatus?.storyId;
+                
+                // If not in cache, check if this tab is associated with a queue story
+                if (!storyId) {
+                    storyId = queueManager.getStoryIdForTab(tabId);
+                }
+                
                 
                 // Update story tracker directly via StoryManager
                 await StoryManager.updateLastChapter(message.url, message.title, storyId);
+                
+                // If we successfully updated and had cached status, update the cache too
+                if (cachedStatus && storyId) {
+                    // Just update the URL in cache, no need to fetch fresh story
+                    // The duplicate check will fetch fresh data when needed
+                    tabStoryStatus.set(tabId, {
+                        ...cachedStatus,
+                        url: message.url,
+                        checkedAt: Date.now()
+                    });
+                }
             } catch (error) {
                 // Handle case where tab doesn't exist
                 console.log("Could not get tab ID for story tracker update, trying without storyId:", error.message);
@@ -298,6 +407,27 @@ async function handleMessages(message, sender, sendResponse) {
                 console.error("Failed to open background tab:", error);
             }
             break;
+        case "openTrackedStoryTab": {
+            // Open a tab from story tracker with story tracking info
+            try {
+                const tab = await chrome.tabs.create({
+                    url: message.url,
+                    active: message.active !== false  // Default to active
+                });
+                
+                // Cache the story info for this manually opened tab
+                tabStoryStatus.set(tab.id, {
+                    url: message.url,
+                    storyId: message.storyId,
+                    story: message.story,
+                    isFromTracker: true,  // Treat manual tracker links as "from tracker"
+                    checkedAt: Date.now()
+                });
+            } catch (error) {
+                console.error("Failed to open tracked story tab:", error);
+            }
+            break;
+        }
         case "startBulkGrab": {
             const startTabId = await scriptInjector.getTabId(message, sender);
             await bulkGrabManager.startBulkGrab(message.pageCount, message.delaySeconds, startTabId);
@@ -378,6 +508,35 @@ async function handleMessages(message, sender, sendResponse) {
             handleInjectWebToEpubParser(message, sender)
                 .catch(error => console.error("Error in handleInjectWebToEpubParser:", error));
             break;
+        case "reportPageUrl": {
+            const tabId = sender.tab?.id;
+            if (!tabId) return;
+            
+            // Check if we already have info (from tracker)
+            const existing = tabStoryStatus.get(tabId);
+            if (existing?.isFromTracker) {
+                // For tracker tabs, the onUpdated listener handles URL changes
+                // Just log that we're skipping this report
+                return;
+            }
+            
+            // Only do lookup if not from tracker
+            try {
+                const story = await StoryManager.findStoryByChapterUrl(message.url);
+                
+                const statusInfo = {
+                    url: message.url,
+                    storyId: story?.id || null,
+                    story: story,
+                    isFromTracker: false,
+                    checkedAt: Date.now()
+                };
+                tabStoryStatus.set(tabId, statusInfo);
+            } catch (error) {
+                console.error("Error checking story status for tab", tabId, ":", error);
+            }
+            break;  // No response needed
+        }
         case "addStoryToTracker":
             try {
                 if (message.story) {
@@ -391,7 +550,6 @@ async function handleMessages(message, sender, sendResponse) {
         case "updateStoryCheckStatus":
             try {
                 await StoryManager.updateLastCheckStatus(message.url, message.status, message.storyId);
-                console.log(`Updated story tracker status: ${message.status}`);
             } catch (error) {
                 console.warn("Could not update story tracker status:", error);
             }
@@ -416,5 +574,30 @@ chrome.runtime.onMessage.addListener(handleMessages);
 chrome.alarms.onAlarm.addListener(bulkGrabManager.handleAlarm.bind(bulkGrabManager));
 
 // Clean up bulk grab state when tabs are closed
-chrome.tabs.onRemoved.addListener(bulkGrabManager.cleanupTab.bind(bulkGrabManager));
+chrome.tabs.onRemoved.addListener((tabId) => {
+    bulkGrabManager.cleanupTab(tabId).then();
+    if (tabStoryStatus.has(tabId)) {
+        tabStoryStatus.delete(tabId); // Clean up story status cache
+    }
+});
+
+// Clear cache on navigation (URL change)
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+    if (changeInfo.url) {
+        const existing = tabStoryStatus.get(tabId);
+        
+        if (existing?.isFromTracker) {
+            // Tracker tab navigated - update the cache with new URL
+            // Update the tab/story map with new URL
+            tabStoryStatus.set(tabId, {
+                ...existing, // Keep story info and isFromTracker flag
+                url: changeInfo.url,
+                checkedAt: Date.now()
+            });
+        } else if (existing) {
+            // Non-tracker tab navigated, clear cache
+            tabStoryStatus.delete(tabId);
+        }
+    }
+});
 

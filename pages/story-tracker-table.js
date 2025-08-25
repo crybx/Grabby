@@ -1,5 +1,5 @@
 // Story Tracker Table - with filtering, sorting, and selection
-import { StoryManager } from "../modules/story-manager-module.js";
+import { StoryManager } from "../modules/story-manager.js";
 
 class StoryTrackerTable {
     constructor() {
@@ -270,6 +270,34 @@ class StoryTrackerTable {
         document.getElementById("manage-tags-modal").addEventListener("click", (e) => {
             if (e.target.id === "manage-tags-modal") this.hideManageTagsModal();
         });
+        
+        // Add event delegation for chapter links and story title links
+        document.getElementById("stories-table").addEventListener("click", (e) => {
+            // Check if clicked element is a chapter link or story title link
+            if (e.target.classList.contains("chapter-link") || e.target.classList.contains("story-title-link")) {
+                e.preventDefault(); // Prevent default link behavior
+                
+                // Find the story data for this link
+                const row = e.target.closest("tr");
+                const storyIndex = parseInt(row.dataset.storyIndex);
+                const story = this.filteredStories[storyIndex];
+                
+                if (story) {
+                    // Open tab with story tracking info
+                    // Background if Ctrl/Cmd held
+                    const active = !e.ctrlKey && !e.metaKey;
+                    
+                    chrome.runtime.sendMessage({
+                        target: "background",
+                        type: "openTrackedStoryTab",
+                        url: e.target.href,
+                        story: story,
+                        storyId: story.id,
+                        active: active
+                    }).then();
+                }
+            }
+        });
     }
 
     applyFilters() {
@@ -497,8 +525,10 @@ class StoryTrackerTable {
 
             // Use DocumentFragment for batch DOM insertion
             const fragment = document.createDocumentFragment();
-            pageStories.forEach(story => {
+            pageStories.forEach((story, pageIndex) => {
                 const row = this.createTableRow(story);
+                // Add the index in the filtered stories array, not the page index
+                row.dataset.storyIndex = startIndex + pageIndex;
                 fragment.appendChild(row);
             });
             tbody.appendChild(fragment);
@@ -866,9 +896,13 @@ class StoryTrackerTable {
         }
 
         chaptersToOpen.forEach(story => {
-            chrome.tabs.create({
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "openTrackedStoryTab",
                 url: story.lastChapterUrl,
-                active: false
+                story: story,
+                storyId: story.id,
+                active: false  // Always open in background for batch operations
             });
         });
     }
@@ -887,9 +921,13 @@ class StoryTrackerTable {
         }
 
         selectedStoriesData.forEach(story => {
-            chrome.tabs.create({
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "openTrackedStoryTab",
                 url: story.mainStoryUrl,
-                active: false
+                story: story,
+                storyId: story.id,
+                active: false  // Always open in background for batch operations
             });
         });
     }

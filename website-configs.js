@@ -27,7 +27,6 @@ const WEBSITE_CONFIGS = {
         "blogspot.com": { grabber: "grabBlogspot" },
         "chrysanthemumgarden.com": {
             grabber: "grabChrysanthemum",
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: {
                 fn: "GrabActions.clickElementWithText",
                 args: ["Next", {
@@ -47,7 +46,6 @@ const WEBSITE_CONFIGS = {
         "docs.google.com": { grabber: "grabGoogleDocMobileBasic" },
         "emptymurmurs.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: { fn: "GrabActions.clickElementWithText", args: [["NEXT", "Next"], { abortIfNotFound: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
@@ -62,7 +60,7 @@ const WEBSITE_CONFIGS = {
             grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },
             preGrab: {
                 fn: "GrabActions.checkForPremiumContent",
-                args: [["div", "span", "p"], true, ["This is an early access chapter."]]
+                args: [["div", "span", "p"], ["This is an early access chapter."]]
             },
             postGrab: {
                 fn: "GrabActions.clickElementBySelector",
@@ -83,7 +81,6 @@ const WEBSITE_CONFIGS = {
         "lightnovelworld.co": { grabber: { fn: "grabStandard", args: ["#chapter-container", ".chapter-title"] } },
         "maplesantl.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: {
                 fn: "GrabActions.clickElementWithText",
                 args: [
@@ -104,7 +101,6 @@ const WEBSITE_CONFIGS = {
         "peachtea.agency": { 
             grabber: "grabPeachTeaAgency", 
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: "GrabActions.peachTeaClickNextChapterLink",
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 60, activeTab: true }
         },
@@ -183,7 +179,6 @@ const WEBSITE_CONFIGS = {
                 fn: "GrabActions.checkForPremiumContent",
                 args: [
                     ["h1, h2, h3, .mycred-sell-this-wrapper"],
-                    true,
                     ["Secret Pavilion", "Hidden Pavilion"]
                 ]
             },
@@ -194,7 +189,6 @@ const WEBSITE_CONFIGS = {
             domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
             grabber: "madaraWpTheme",
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
@@ -202,7 +196,6 @@ const WEBSITE_CONFIGS = {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
                 "mendacity.me", "wordpress.com"],
             grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForDuplicateChapter",
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["NEXT", { abortIfNotFound: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         }
