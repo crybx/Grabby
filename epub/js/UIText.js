@@ -1,10 +1,10 @@
 "use strict";
 
 /**
- * Centralized UI text constants for WebToEpub
- * All user-facing text should be defined here for easier translation management
+ * Centralized UI text constants
+ * User-facing text that needs to be localized should be defined here for easier management
  */
-class UIText {
+class UIText { // eslint-disable-line no-unused-vars
     // Chapter-related text
     static Chapter = {
         menuRefreshChapter: chrome.i18n.getMessage("__MSG_menu_Refresh_Chapter__"),
@@ -16,7 +16,7 @@ class UIText {
         tooltipChapterDownloading: chrome.i18n.getMessage("__MSG_Tooltip_chapter_downloading__"),
         tooltipViewChapter: chrome.i18n.getMessage("__MSG_tooltip_View_Chapter__"),
         tooltipChapterSleeping: chrome.i18n.getMessage("__MSG_Tooltip_chapter_sleeping__"),
-        maxChaptersSelected: chrome.i18n.getMessage("__MSG_More_than_max_chapters_selected__"),
+        maxChaptersSelected: (selectedCount, maxChapters) => chrome.i18n.getMessage("__MSG_More_than_max_chapters_selected__", [selectedCount, maxChapters]),
         shiftClickMessage: chrome.i18n.getMessage("__MSG_Shift_Click__")
     };
     
@@ -87,7 +87,7 @@ class UIText {
         errorClearCache: chrome.i18n.getMessage("__MSG_error_Failed_Clear_Cache__"),
         errorSaveSettings: chrome.i18n.getMessage("__MSG_error_Failed_Save_Cache_Settings__")
     };
-    
+
     // Error messages
     static Error = {
         noParserFound: chrome.i18n.getMessage("noParserFound"),
@@ -101,7 +101,7 @@ class UIText {
         errorAddToLibraryLibraryAddPageWithChapters: chrome.i18n.getMessage("errorAddToLibraryLibraryAddPageWithChapters"),
         htmlFetchFailed: (url, error) => chrome.i18n.getMessage("htmlFetchFailed", [url, error]),
         imageFetchFailed: (url, parentUrl, error) => chrome.i18n.getMessage("imageFetchFailed", [url, parentUrl, error]),
-        imgurFetchFailed: (url, error) => chrome.i18n.getMessage("imgurFetchFailed", [url, error]),
+        imgurFetchFailed: (url, parentUrl, error) => chrome.i18n.getMessage("imgurFetchFailed", [url, parentUrl, error]),
         gotHtmlExpectedImageWarning: (url) => chrome.i18n.getMessage("gotHtmlExpectedImageWarning", [url]),
         convertToXhtmlWarning: (filename, url, errorMessage) => chrome.i18n.getMessage("convertToXhtmlWarning", [filename, url, errorMessage])
     };
@@ -150,10 +150,11 @@ class UIText {
         makeFailCanRetryMessage: chrome.i18n.getMessage("httpFetchCanRetry")
     };
 
-    // Utility method for localizing UI elements (from main.js)
+    // Utility method for localizing UI elements
     static localizeElement(element) {
-        let localized = chrome.i18n.getMessage(element.textContent.trim());
-        if (localized && localized !== element.textContent.trim()) {
+        let key = element.textContent.trim();
+        let localized = chrome.i18n.getMessage(key);
+        if (!util.isNullOrEmpty(localized) && localized !== key) {
             element.textContent = localized;
         }
     }

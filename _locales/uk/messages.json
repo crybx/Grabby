@@ -169,7 +169,7 @@
 	},
 	"__MSG_label_Default_Parser_Test_Chapter_Url__": {
 		"message": "Адреса першої глави:",
-		"description": "Label in front of input for URL to test deefault parser settings."
+		"description": "Label in front of input for URL to test default parser settings."
 	},
 	"__MSG_label_Default_Parser_Unwanted_Elements_CSS__": {
 		"message": "CSS-селектор елементу (елементів), що будуть видалені:",
@@ -278,6 +278,18 @@
 	"__MSG_label_No_Download_Popup__": {
 		"message": "Зберегти epub у фоновому режимі",
 		"description": "Label for checkbox to download the final epub without a popup"
+	},
+	"__MSG_label_Disable_Shift_Click_Alert__": {
+		"message": "Вимкнути попередження про Shift+клік вибір",
+		"description": "Label for checkbox to disable the alert shown when user shift-clicks to select multiple chapters"
+	},
+	"__MSG_label_Disable_Image_Res_Error__": {
+		"message": "Вимкнути попередження про невдачі високої роздільності зображень",
+		"description": "Label for checkbox to disable warnings when high resolution image fetch fails and lower resolution is used instead"
+	},
+	"__MSG_label_Disable_Webp_Image_Format_Error__": {
+		"message": "Вимкнути попередження про сумісність формату WebP",
+		"description": "Label for checkbox to disable warnings that WebP format images may not render in epub viewers"
 	},
 	"__MSG_label_Write_Error_History_To_File__": {
 		"message": "Зберігати помилки у файл",

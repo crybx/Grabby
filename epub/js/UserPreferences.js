@@ -141,6 +141,8 @@ class UserPreferences { // eslint-disable-line no-unused-vars
         this.LibShowCompactView = this.addPreference("LibShowCompactView", "LibShowCompactViewCheckbox", false);
         this.LibDownloadEpubAfterUpdate = this.addPreference("LibDownloadEpubAfterUpdate", "LibDownloadEpubAfterUpdateCheckbox", false);
         this.disableShiftClickAlert = this.addPreference("disableShiftClickAlert", "disableShiftClickAlertCheckbox", false);
+        this.disableImageResError = this.addPreference("disableImageResError", "disableImageResErrorCheckbox", false);
+        this.disableWebpImageFormatError = this.addPreference("disableWebpImageFormatError", "disableWebpImageFormatErrorCheckbox", false);
         this.defaultAuthorName = this.addPreference("defaultAuthorName", "defaultAuthorNameInput", "<unknown>");
         this.sitePasswords = this.addPreference("sitePasswords", "", "{}");
 
@@ -241,7 +243,7 @@ class UserPreferences { // eslint-disable-line no-unused-vars
     async handleEpubStructureChange(event) {
         let newStructure = event.target.value;
         let currentStructure = this.epubInternalStructure.value;
-        
+
         if (newStructure === currentStructure) {
             return; // No change
         }
@@ -249,7 +251,7 @@ class UserPreferences { // eslint-disable-line no-unused-vars
         try {
             // Check if user has library books
             let bookCount = await LibraryStorage.getLibraryBookCount();
-            
+
             if (bookCount === 0) {
                 // No library books, just update the preference
                 this.epubInternalStructure.value = newStructure;
@@ -260,7 +262,7 @@ class UserPreferences { // eslint-disable-line no-unused-vars
 
             // Show confirmation dialog
             let confirmMessage = `You have ${bookCount} book${bookCount > 1 ? "s" : ""} in your library that need${bookCount === 1 ? "s" : ""} to be converted to the new EPUB structure.\n\nThis conversion will update all your library books to use the new internal file structure. This process may take a few moments.\n\nDo you want to proceed with the conversion?`;
-            
+
             if (!confirm(confirmMessage)) {
                 // User cancelled, revert the dropdown
                 event.target.value = currentStructure;
@@ -272,13 +274,13 @@ class UserPreferences { // eslint-disable-line no-unused-vars
             statusElement.textContent = " (Converting library books...)";
             statusElement.style.color = "orange";
             event.target.parentElement.appendChild(statusElement);
-            
+
             // Disable the dropdown during conversion
             event.target.disabled = true;
 
             // Perform the conversion
             let result = await EpubStructure.convertAllLibraryBooks(newStructure);
-            
+
             // Remove status indication
             statusElement.remove();
             event.target.disabled = false;
@@ -288,7 +290,7 @@ class UserPreferences { // eslint-disable-line no-unused-vars
                 this.epubInternalStructure.value = newStructure;
                 this.writeToLocalStorage();
                 this.notifyObserversOfChange();
-                
+
                 alert(`Successfully converted ${result.converted} library book${result.converted > 1 ? "s" : ""} to the new EPUB structure.`);
             } else {
                 // Conversion failed, revert dropdown
@@ -304,11 +306,11 @@ class UserPreferences { // eslint-disable-line no-unused-vars
             // Error during conversion, revert dropdown
             event.target.value = currentStructure;
             event.target.disabled = false;
-            
+
             // Remove any status elements
             let statusElements = event.target.parentElement.querySelectorAll("span[style*='color: orange']");
             statusElements.forEach(el => el.remove());
-            
+
             console.error("Error handling EPUB structure change:", error);
             alert(`Error during conversion: ${error.message}\n\nYour EPUB structure setting has been reverted.`);
         }

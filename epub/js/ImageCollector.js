@@ -416,11 +416,11 @@ class ImageCollector {
                 if (dataOrigFileUrl != null) {
                     return this.findImageFileUrlUsingDataOrigFileUrl(imageInfo);
                 }
-                // TODO: make disabling this error a user preference?
-                // I see this error almost every time and I don't want to.
-                // let baseUri = xhr.responseXML.baseURI;
-                // let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
-                // ErrorLog.log(errorMsg);
+                if (!this.userPreferences?.disableImageResError?.value) {
+                    let baseUri = xhr.responseXML.baseURI;
+                    let errorMsg = UIText.Error.gotHtmlExpectedImageWarning(baseUri);
+                    ErrorLog.log(errorMsg);
+                }
                 temp = imageInfo.sourceUrl;
             }
             temp = ImageCollector.removeSizeParamsFromWordPressQuery(temp);

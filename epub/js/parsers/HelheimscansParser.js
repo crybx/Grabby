@@ -42,7 +42,7 @@ class HelheimscansParser extends Parser {
                 realURL = realURL.replace("realUrl = `","").replace("${uid}`;","");
             } catch (error) {
                 realURL = "https://image.meowing.org/uploads/";
-            }
+            }       
         }
         for (let img of imgs) {
             img.src = realURL+img?.attributes?.uid?.textContent;

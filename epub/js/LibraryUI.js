@@ -3,7 +3,7 @@
 */
 "use strict";
 
-class LibraryUI {
+class LibraryUI {  // eslint-disable-line no-unused-vars
     
     /**
      * Render all saved EPUBs in the library UI
@@ -20,12 +20,6 @@ class LibraryUI {
         let ShowCompactView = userPreferences.LibShowCompactView.value;
         let CurrentLibKeys = LibArray;
         let LibRenderString = "";
-
-        // Calculate library usage once for both views
-        let LibraryUsesHTML = "";
-        if (ShowAdvancedOptions && !util.isFirefox()) {
-            LibraryUsesHTML = await LibraryUI.LibBytesInUse();
-        }
 
         // Library Header
         LibRenderString += "<div class='library-header'>";
@@ -1522,9 +1516,9 @@ class LibraryUI {
         // Create a mock parser to work with existing UI
         let libraryParser = {
             getPagesToFetch: () => new Map(bookData.chapters.map((ch, i) => [i, ch])),
-            setPagesToFetch: (chapters) => {
-                // Store updated chapter list if needed
-            },
+            // setPagesToFetch: (chapters) => {
+            //     // Store updated chapter list if needed
+            // },
             getRateLimit: () => 0, // Library chapters don't need rate limiting
             constructor: { name: "LibraryParser" },
             

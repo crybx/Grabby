@@ -50,10 +50,10 @@ class ChapterUrlsUI {
         let row = document.createElement("div");
         row.className = "chapter-row";
         row.rowIndex = index;
-        
+
         // Ensure chapterListIndex is set to track UI list position
         chapter.chapterListIndex = index;
-        
+
         ChapterUrlsUI.appendCheckBoxToRow(row, chapter);
         ChapterUrlsUI.appendInputTextToRow(row, chapter);
         chapter.row = row;
@@ -98,9 +98,9 @@ class ChapterUrlsUI {
         newChapters.forEach((chapter, index) => {
             // Add chapterListIndex to track UI list position (distinct from epubSpineIndex spine position)
             chapter.chapterListIndex = index;
-            
+
             let existingRow = existingRows[index];
-            
+
             if (existingRow) {
                 // Update existing row
                 this.updateExistingChapterRow(existingRow, chapter, index);
@@ -154,7 +154,7 @@ class ChapterUrlsUI {
         if (titleInput) {
             titleInput.value = chapter.title;
         }
-        
+
         // Update source URL display - use input field like normal mode but disabled
         let urlColumn = row.querySelector(".chapter-url-column");
         if (urlColumn) {
@@ -186,21 +186,21 @@ class ChapterUrlsUI {
         // Remove all existing status columns from the row
         let statusColumns = row.querySelectorAll(".chapter-status-column");
         statusColumns.forEach(col => col.remove());
-        
+
         // Re-create the status column using existing method
         ChapterUrlsUI.appendChapterStatusColumnToRow(row, chapter).then();
     }
 
     /**
      * Add library chapter indicators to the chapter list UI
-     * @param {string} bookId - The Library book ID  
+     * @param {string} bookId - The Library book ID
      * @param {Array} chapters - Enhanced chapters array
      */
     static async addLibraryChapterIndicators(bookId, chapters) {
         try {
             // Wait a moment for the chapter table to be fully rendered
             await new Promise(resolve => setTimeout(resolve, 200));
-            
+
             chapters.forEach((chapter, index) => {
                 // Find row by rowIndex property
                 let rows = document.querySelectorAll(".chapter-row");
@@ -214,7 +214,7 @@ class ChapterUrlsUI {
                     row.classList.add("chapter-new-on-website");
                 }
             });
-            
+
         } catch (error) {
             console.error("Error adding library chapter indicators:", error);
         }
@@ -263,8 +263,7 @@ class ChapterUrlsUI {
             .filter(c => c.checked)
             .map(c => c.closest(".chapter-row"));
         if (max< selectedRows.length ) {
-            let message = UIText.Chapter.maxChaptersSelected.replace("$1", 
-                selectedRows.length).replace("$2", max);
+            let message = UIText.Chapter.maxChaptersSelected(selectedRows.length, max);
             if (confirm(message) === false) {
                 for (let row of selectedRows.slice(max)) {
                     ChapterUrlsUI.setRowCheckboxState(row, false);
@@ -378,7 +377,7 @@ class ChapterUrlsUI {
     static async handleSelectAllCheckbox() {
         const selectAllCheckbox = document.getElementById("selectAllUrlsCheckbox");
         const newState = selectAllCheckbox.checked;
-        
+
         // Set flag to prevent recursive updates
         ChapterUrlsUI._updatingSelectAll = true;
 
@@ -401,12 +400,12 @@ class ChapterUrlsUI {
     static updateSelectAllCheckboxState() {
         const selectAllCheckbox = document.getElementById("selectAllUrlsCheckbox");
         if (!selectAllCheckbox) return;
-        
+
         const allCheckboxes = [...document.querySelectorAll(".chapterSelectCheckbox")];
         if (allCheckboxes.length === 0) return;
-        
+
         const checkedCount = allCheckboxes.filter(cb => cb.checked).length;
-        
+
         if (checkedCount === 0) {
             // All unchecked
             selectAllCheckbox.checked = false;
@@ -494,7 +493,7 @@ class ChapterUrlsUI {
         // Handle both input field (normal/library mode) and text content (legacy)
         let urlInput = urlCell.querySelector("input[type=\"url\"]");
         let sourceUrl = urlInput ? urlInput.value.trim() : urlCell.textContent.trim();
-        
+
         // Check if chapter is cached
         try {
             let cachedContent = await ChapterCache.get(sourceUrl);
@@ -531,14 +530,14 @@ class ChapterUrlsUI {
     static appendColumnDataToRow(row, chapter) {
         let col = document.createElement("div");
         col.className = "chapter-url-column";
-        
+
         let input = document.createElement("input");
         input.type = "url";
         input.value = chapter.sourceUrl;
-        input.addEventListener("blur", function() { 
-            chapter.sourceUrl = input.value; 
+        input.addEventListener("blur", function() {
+            chapter.sourceUrl = input.value;
         }, true);
-        
+
         col.appendChild(input);
         row.appendChild(col);
         return col;
@@ -559,7 +558,7 @@ class ChapterUrlsUI {
         let col = document.createElement("div");
         col.className = "chapter-status-column";
         row.appendChild(col);
-        
+
         // Check if chapter is cached or has an error
         return Promise.all([
             ChapterCache.get(chapter.sourceUrl),
@@ -597,7 +596,7 @@ class ChapterUrlsUI {
 
             // Check for library mode first
             let isLibraryMode = window.currentLibraryBook && window.currentLibraryBook.id;
-            
+
             // Check for cached chapters by looking at visual state (much faster than cache queries)
             let hasCachedChapters = false;
             if (!isLibraryMode) {
@@ -607,7 +606,7 @@ class ChapterUrlsUI {
                 let errorRows = document.querySelectorAll(".chapter-row.error-state");
                 hasCachedChapters = cachedCheckboxes.length > 0 || errorRows.length > 0;
             }
-            
+
             // Show/hide cache-dependent items based on whether we have cached chapters
             let showCacheItems = isLibraryMode || hasCachedChapters;
             if (showCacheItems) {
@@ -633,7 +632,7 @@ class ChapterUrlsUI {
         // Create more actions wrapper
         let moreWrapper = document.createElement("div");
         moreWrapper.className = "more-actions-wrapper clickable-icon";
-        
+
         // Create three dots icon (inline SVG for color control)
         let moreIcon = SvgIcons.createSvgElement(SvgIcons.THREE_DOTS_VERTICAL);
         moreIcon.classList.add("menu-icon");
@@ -641,7 +640,7 @@ class ChapterUrlsUI {
         // Create dropdown menu
         let menu = document.createElement("div");
         menu.className = "more-actions-menu";
-        
+
         // REFRESH CHAPTER option
         let refreshItem = document.createElement("div");
         refreshItem.className = "menu-item";
@@ -660,7 +659,7 @@ class ChapterUrlsUI {
             }
             ChapterUrlsUI.hideMoreActionsMenu(menu);
         };
-        
+
         // OPEN CHAPTER URL option
         let openUrlItem = document.createElement("div");
         openUrlItem.className = "menu-item";
@@ -674,7 +673,7 @@ class ChapterUrlsUI {
             window.open(sourceUrl, "_blank");
             ChapterUrlsUI.hideMoreActionsMenu(menu);
         };
-        
+
         // DELETE CHAPTER option
         let deleteItem = document.createElement("div");
         deleteItem.className = "menu-item";
@@ -688,7 +687,7 @@ class ChapterUrlsUI {
             await ChapterUrlsUI.deleteChapter(chapter, row);
             ChapterUrlsUI.hideMoreActionsMenu(menu);
         };
-        
+
         // DOWNLOAD HTML FILE option
         let downloadItem = document.createElement("div");
         downloadItem.className = "menu-item";
@@ -702,7 +701,7 @@ class ChapterUrlsUI {
             await ChapterCache.downloadSingleChapterAsFile(sourceUrl, title);
             ChapterUrlsUI.hideMoreActionsMenu(menu);
         };
-        
+
         // Add items to menu
         menu.appendChild(refreshItem);
         menu.appendChild(openUrlItem);
@@ -714,12 +713,12 @@ class ChapterUrlsUI {
             e.stopPropagation();
             ChapterUrlsUI.toggleMoreActionsMenu(menu);
         };
-        
+
         // Assemble more actions
         moreWrapper.appendChild(moreIcon);
         moreWrapper.appendChild(menu);
         col.appendChild(moreWrapper);
-        
+
         // Close menu when clicking outside
         document.addEventListener("click", () => ChapterUrlsUI.hideMoreActionsMenu(menu));
     }
@@ -733,7 +732,7 @@ class ChapterUrlsUI {
         document.querySelectorAll(".more-actions-menu.show").forEach(m => {
             if (m !== menu) m.classList.remove("show");
         });
-        
+
         menu.classList.toggle("show");
     }
 
@@ -759,7 +758,7 @@ class ChapterUrlsUI {
             [ChapterUrlsUI.CHAPTER_STATUS_ERROR]: SvgIcons.EYE_FILL,
             [ChapterUrlsUI.CHAPTER_STATUS_LIBRARY]: SvgIcons.BOOK
         };
-        
+
         let iconElement = SvgIcons.createSvgElement(svgConstants[state]);
         iconElement.classList.add("chapter-status-icon");
         if (state === ChapterUrlsUI.CHAPTER_STATUS_LIBRARY) {
@@ -792,9 +791,9 @@ class ChapterUrlsUI {
 
         let wrapper = document.createElement("div");
         wrapper.className = "tooltip-wrapper";
-        
+
         let iconElement = ChapterUrlsUI.createIconElement(state);
-        
+
         let tooltip = document.createElement("span");
         tooltip.className = "tooltipText";
         tooltip.textContent = ChapterUrlsUI.TooltipForState[state];
@@ -802,7 +801,7 @@ class ChapterUrlsUI {
         wrapper.appendChild(iconElement);
         wrapper.appendChild(tooltip);
         column.appendChild(wrapper);
-        
+
         // Handle successBox class for checkbox in row
         let checkbox = row.querySelector(".chapterSelectCheckbox");
         if (checkbox) {
@@ -815,7 +814,7 @@ class ChapterUrlsUI {
 
         // Remove all state-specific classes before applying new state
         row.classList.remove("error-state", "chapter-in-library", "chapter-new-on-website");
-        
+
         // Apply state-specific behavior and styling
         switch (state) {
             case ChapterUrlsUI.CHAPTER_STATUS_DOWNLOADED: // Chapter is cached - show eye icon
@@ -986,7 +985,7 @@ class ChapterUrlsUI {
     static async updateRange(startRowIndex, endRowIndex, state) {
         let direction = startRowIndex < endRowIndex ? 1 : -1;
         let allRows = ChapterUrlsUI.getTableRowsWithChapters();
-        
+
         // Set flag to prevent individual checkbox updates during bulk update
         ChapterUrlsUI._updatingSelectAll = true;
 
@@ -1013,7 +1012,7 @@ class ChapterUrlsUI {
     /** @private */
     static tellUserAboutShiftClick(event, row) {
         let userPreferences = main.getUserPreferences();
-        if (userPreferences && userPreferences.disableShiftClickAlert.value) {
+        if (userPreferences?.disableShiftClickAlert?.value) {
             return;
         }
         if (event.shiftKey || (ChapterUrlsUI.lastSelectedRow === null)) {
@@ -1028,7 +1027,7 @@ class ChapterUrlsUI {
             return;
         }
         ++ChapterUrlsUI.ConsecutiveRowClicks;
-        if (ChapterUrlsUI.ConsecutiveRowClicks === 5) {
+        if (ChapterUrlsUI.ConsecutiveRowClicks == 5) {
             alert(UIText.Chapter.shiftClickMessage);
         }
     }
@@ -1222,16 +1221,17 @@ class ChapterUrlsUI {
         let downloadSelectedHtmlIcon = document.getElementById("downloadSelectedHtmlIcon");
         let deleteSelectedChaptersIcon = document.getElementById("deleteSelectedChaptersIcon");
         let deleteAllChaptersIcon = document.getElementById("deleteAllChaptersIcon");
-        
+
         // Set up icons if not already done
         if (headerMoreActionsIcon && headerMoreActionsIcon.children.length === 0) {
             headerMoreActionsIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.THREE_DOTS_VERTICAL));
         }
 
+
         if (deleteSelectedChaptersIcon && deleteSelectedChaptersIcon.children.length === 0) {
             deleteSelectedChaptersIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.TRASH3_FILL));
         }
-        
+
         if (deleteAllChaptersIcon && deleteAllChaptersIcon.children.length === 0) {
             deleteAllChaptersIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.TRASH3_FILL));
         }
@@ -1285,7 +1285,7 @@ class ChapterUrlsUI {
                 ChapterUrlsUI.toggleHeaderMoreActionsMenu(headerMoreActionsMenu);
             };
         }
-        
+
 
         // Set up download selected chapters as HTML handler
         let downloadSelectedHtmlItem = document.getElementById("downloadSelectedChaptersHtml");
@@ -1296,7 +1296,7 @@ class ChapterUrlsUI {
                 ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
             };
         }
-        
+
         // Set up delete selected cached chapters handler
         let deleteSelectedCachedItem = document.getElementById("deleteSelectedChaptersMenuItem");
         if (deleteSelectedCachedItem) {
@@ -1333,7 +1333,7 @@ class ChapterUrlsUI {
             downloadLibraryBookItem.onclick = async (e) => {
                 e.stopPropagation();
                 ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
-                
+
                 // Download the current library book using the existing LibDownload function
                 if (window.currentLibraryBook) {
                     LibraryUI.LibDownload({ dataset: { libepubid: window.currentLibraryBook.id } });
@@ -1347,7 +1347,7 @@ class ChapterUrlsUI {
             toggleLibraryChaptersItem.onclick = async (e) => {
                 e.stopPropagation();
                 ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
-                
+
                 // Toggle visibility of library chapters
                 ChapterUrlsUI.toggleLibraryChaptersVisibility();
             };
@@ -1400,7 +1400,7 @@ class ChapterUrlsUI {
         document.querySelectorAll(".more-actions-menu.show, .header-more-actions-menu.show").forEach(m => {
             if (m !== menu) m.classList.remove("show");
         });
-        
+
         menu.classList.toggle("show");
     }
 
@@ -1417,15 +1417,15 @@ class ChapterUrlsUI {
     static async downloadSelectedChaptersAsHtml(chapters) {
         try {
             let selectedChapters = ChapterUrlsUI.getSelectedChapters(chapters);
-            
+
             if (selectedChapters.length === 0) {
                 alert("No chapters selected for download.");
                 return;
             }
-            
+
             let count = 0;
             let errors = [];
-            
+
             for (let chapter of selectedChapters) {
                 try {
                     await ChapterCache.downloadSingleChapterAsFile(chapter.sourceUrl, chapter.title);
@@ -1435,13 +1435,13 @@ class ChapterUrlsUI {
                     errors.push(`${chapter.title}: ${error.message}`);
                 }
             }
-            
+
             // Show errors if any occurred
             if (errors.length > 0) {
                 let message = `Errors occurred while downloading chapters:\n${errors.join("\n")}`;
                 alert(message);
             }
-            
+
         } catch (error) {
             console.error("Error downloading selected chapters:", error);
             alert("Failed to download selected chapters: " + error.message);
@@ -1546,16 +1546,17 @@ class ChapterUrlsUI {
     static getSelectedChapters(chapters) {
         let selected = [];
         let rows = document.querySelectorAll(".chapter-row");
-        
+
         rows.forEach((row, index) => {
             let checkbox = row.querySelector("input[type=\"checkbox\"]");
             if (checkbox && checkbox.checked && chapters[index]) {
                 selected.push(chapters[index]);
             }
         });
-        
+
         return selected;
     }
+
 
     /**
      * Delete selected cached chapters
@@ -1951,16 +1952,16 @@ class ChapterUrlsUI {
         try {
             // Get the current state from window property (default: show chapters)
             let hideLibraryChapters = window.hideLibraryChapters === true;
-            
+
             // Toggle the state
             hideLibraryChapters = !hideLibraryChapters;
             window.hideLibraryChapters = hideLibraryChapters;
-            
+
             // Update the menu text and icon based on new state
             let toggleMenuItem = document.getElementById("toggleLibraryChaptersMenuItem");
             let toggleText = document.getElementById("toggleLibraryChaptersText");
             let toggleIcon = document.getElementById("toggleLibraryChaptersIcon");
-            
+
             if (toggleText && toggleIcon) {
                 if (hideLibraryChapters) {
                     // Currently hiding chapters, so show "Show" option
@@ -1978,10 +1979,10 @@ class ChapterUrlsUI {
                     toggleIcon.appendChild(iconElement);
                 }
             }
-            
+
             // Apply the visibility changes to library chapters
             ChapterUrlsUI.updateLibraryChaptersVisibility(hideLibraryChapters);
-            
+
         } catch (error) {
             console.error("Error toggling library chapters visibility:", error);
         }
@@ -1995,11 +1996,11 @@ class ChapterUrlsUI {
         try {
             // Find all chapter rows that are in the library
             let libraryChapterRows = document.querySelectorAll(".chapter-row.chapter-in-library");
-            
+
             libraryChapterRows.forEach(row => {
                 if (hideLibraryChapters) {
                     row.style.display = "none";
-                    
+
                     // Uncheck the checkbox for hidden chapters
                     let checkbox = row.querySelector(".chapterSelectCheckbox");
                     if (checkbox && checkbox.checked) {
@@ -2014,10 +2015,10 @@ class ChapterUrlsUI {
                     // Note: We don't re-check the checkbox when showing chapters again
                 }
             });
-            
+
             // Update the chapter count display to reflect visible chapters
             ChapterUrlsUI.updateVisibleChapterCount();
-            
+
         } catch (error) {
             console.error("Error updating library chapters visibility:", error);
         }
@@ -2029,15 +2030,15 @@ class ChapterUrlsUI {
     static updateVisibleChapterCount() {
         try {
             let allRows = document.querySelectorAll(".chapter-row");
-            let visibleRows = Array.from(allRows).filter(row => 
+            let visibleRows = Array.from(allRows).filter(row =>
                 row.style.display !== "none" && !row.hidden
             );
-            
+
             let spanChapterCount = document.getElementById("spanChapterCount");
             if (spanChapterCount) {
                 spanChapterCount.textContent = visibleRows.length.toString();
             }
-            
+
         } catch (error) {
             console.error("Error updating visible chapter count:", error);
         }
@@ -2050,14 +2051,14 @@ class ChapterUrlsUI {
         try {
             // Reset state to default (show chapters) when initializing
             window.hideLibraryChapters = false;
-            
+
             // Get the current state from window property (default: show chapters)
             let hideLibraryChapters = window.hideLibraryChapters === true;
-            
+
             // Update the menu text and icon to reflect current state
             let toggleText = document.getElementById("toggleLibraryChaptersText");
             let toggleIcon = document.getElementById("toggleLibraryChaptersIcon");
-            
+
             if (toggleText && toggleIcon) {
                 if (hideLibraryChapters) {
                     toggleText.textContent = UIText.Toggle.showLibraryChapters;
@@ -2073,12 +2074,12 @@ class ChapterUrlsUI {
                     toggleIcon.appendChild(iconElement);
                 }
             }
-            
+
             // Apply the visibility changes if we should hide chapters
             if (hideLibraryChapters) {
                 ChapterUrlsUI.updateLibraryChaptersVisibility(hideLibraryChapters);
             }
-            
+
         } catch (error) {
             console.error("Error initializing library chapters toggle:", error);
         }

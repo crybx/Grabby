@@ -5,7 +5,7 @@
 
 const LibFileReader = new FileReader();
 
-class LibraryStorage {
+class LibraryStorage {  // eslint-disable-line no-unused-vars
     
     /**
      * Add EPUB to library, merging with existing if found
@@ -231,12 +231,12 @@ class LibraryStorage {
                     EpubContent = EpubContent.filter(a => a.directory == false);
 
                     let epubPaths = EpubStructure.get();
-                    let Coverxml = await EpubContent.filter( a => a.filename == epubPaths.coverXhtml)[0].getData(new zip.TextWriter());
+                    let Coverxml = await EpubContent.filter( a => a.filename === epubPaths.coverXhtml)[0].getData(new zip.TextWriter());
                     let CoverimgPath = epubPaths.contentDir + Coverxml.match(new RegExp(`"\\.\\./${epubPaths.imagesDirRel}/000.+?"`))[0].replace(/"../,"").replace("\"","");
-                    let Coverimage = await EpubContent.filter( a => a.filename == CoverimgPath)[0].getData(new zip.Data64URIWriter());
+                    let Coverimage = await EpubContent.filter( a => a.filename === CoverimgPath)[0].getData(new zip.Data64URIWriter());
 
                     let CoverFiletype = CoverimgPath.split(".")[1];
-                    if (CoverFiletype == "svg") {
+                    if (CoverFiletype === "svg") {
                         CoverFiletype = "svg+xml";
                     }
                     let Cover = Coverimage.replace("data:;base64,", "data:image/"+CoverFiletype+";base64,");
@@ -316,7 +316,7 @@ class LibraryStorage {
             let EpubZip = new zip.ZipReader(EpubReader, {useWebWorkers: false});
             let EpubContent =  await EpubZip.getEntries();
             let epubPaths = EpubStructure.get();
-            let opfFile = await EpubContent.filter(a => a.filename == epubPaths.contentOpf)[0].getData(new zip.TextWriter());
+            let opfFile = await EpubContent.filter(a => a.filename === epubPaths.contentOpf)[0].getData(new zip.TextWriter());
             
             let LibMetadataTags = ["dc:title", "dc:creator", "dc:language", "dc:subject", "dc:description"];
             let opfFileMatch;
@@ -346,14 +346,14 @@ class LibraryStorage {
             let EpubReader = await new zip.Data64URIReader(await LibraryStorage.LibGetFromStorage("LibEpub"+obj.dataset.libepubid));
             let EpubZipRead = new zip.ZipReader(EpubReader, {useWebWorkers: false});
             let EpubContent =  await EpubZipRead.getEntries();
-            EpubContent = EpubContent.filter(a => a.directory == false);
+            EpubContent = EpubContent.filter(a => a.directory === false);
             let epubPaths = EpubStructure.get();
-            let opfFile = await EpubContent.filter(a => a.filename == epubPaths.contentOpf)[0].getData(new zip.TextWriter());
+            let opfFile = await EpubContent.filter(a => a.filename === epubPaths.contentOpf)[0].getData(new zip.TextWriter());
             
             let EpubWriter = new zip.BlobWriter("application/epub+zip");
             let EpubZipWrite = new zip.ZipWriter(EpubWriter,{useWebWorkers: false,compressionMethod: 8});
             //Copy Epub in NewEpub
-            for (let element of EpubContent.filter(a => a.filename != epubPaths.contentOpf)) {
+            for (let element of EpubContent.filter(a => a.filename !== epubPaths.contentOpf)) {
                 EpubZipWrite.add(element.filename, new zip.BlobReader(await element.getData(new zip.BlobWriter())));
             }
             
@@ -473,7 +473,7 @@ class LibraryStorage {
             let EpubZip = new zip.ZipReader(EpubReader, {useWebWorkers: false});
             let EpubContent =  await EpubZip.getEntries();
             let epubPaths = EpubStructure.get();
-            let opfFile = await EpubContent.filter(a => a.filename == epubPaths.contentOpf)[0].getData(new zip.TextWriter());
+            let opfFile = await EpubContent.filter(a => a.filename === epubPaths.contentOpf)[0].getData(new zip.TextWriter());
             return (opfFile.match(/<dc:identifier id="BookId" opf:scheme="URI">.+?<\/dc:identifier>/)[0].replace(/<dc:identifier id="BookId" opf:scheme="URI">/,"").replace(/<\/dc:identifier>/,""));
         } catch {
             return "Paste URL here!";
@@ -873,5 +873,27 @@ class LibraryStorage {
             }
             throw error;
         }
+    }
+
+    static async LibGetSourceChapterList(url) {
+        let LibArray = await LibraryStorage.LibGetStorageIDs();
+        for (let i = 0; i < LibArray.length; i++) {
+            LibArray[i] = [LibArray[i], await LibraryStorage.LibGetFromStorage("LibStoryURL"+LibArray[i])];
+        }
+        LibArray = await LibArray.filter(a => a[1] === url);
+        if (LibArray == null) {
+            return null;
+        }
+
+        let EpubBase64 = await LibraryStorage.LibGetFromStorage("LibEpub" + LibArray[0][0]);
+        let EpubReader = await new zip.Data64URIReader(EpubBase64);
+        let EpubZip = new zip.ZipReader(EpubReader, {useWebWorkers: false});
+        let EpubContent = await EpubZip.getEntries();
+        EpubContent = EpubContent.filter(a => a.directory === false);
+        let contentopftext = await EpubContent.filter( a => a.filename === epubPaths.contentOpf)[0].getData(new zip.TextWriter());
+        let contentopf = new DOMParser().parseFromString(contentopftext, "text/html");
+        let regex = new RegExp(/^xhtml[0-9]+/g);
+        let chapters = [...contentopf.querySelectorAll("item")].filter(a => (a.id.match(regex) != null));
+        return [...chapters.map(a => contentopf.getElementById("id." + a.id).innerText)];
     }
 }

@@ -393,7 +393,7 @@ class BakaTsukiParser extends Parser {
     }
 
     onFetchImagesClicked() {
-        if (0 === this.imageCollector.imageInfoList.length) {
+        if (0 == this.imageCollector.imageInfoList.length) {
             ErrorLog.showErrorMessage(UIText.Error.noImagesFound);
         } else {
             this.fetchContent();

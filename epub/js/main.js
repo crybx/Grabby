@@ -172,14 +172,13 @@ const main = (function() {
     }
 
     async function fetchContentAndPackEpub() {
-        let libclick = this;
         if (document.getElementById("noAdditionalMetadataCheckbox")?.checked) {
             setUiFieldToValue("subjectInput", "");
             setUiFieldToValue("descriptionInput", "");
         }
         let metaInfo = metaInfoFromControls();
 
-        if (libclick.dataset.libclick === "yes") {
+        if (this.dataset.libclick === "yes") {
             if (document.getElementById("chaptersPageInChapterListCheckbox")?.checked) {
                 ErrorLog.showErrorMessage(UIText.Error.errorAddToLibraryLibraryAddPageWithChapters);
                 return;
@@ -204,7 +203,7 @@ const main = (function() {
             let overwriteExisting = userPreferences.overwriteExistingEpub.value;
             let backgroundDownload = userPreferences.noDownloadPopup.value;
             let fileName = Download.CustomFilename();
-            if (libclick.dataset.libclick === "yes") {
+            if (this.dataset.libclick === "yes") {
                 return LibraryStorage.LibAddToLibrary(content, fileName, document.getElementById("startingUrlInput").value, overwriteExisting, backgroundDownload, userPreferences);
             }
             return Download.save(content, fileName, overwriteExisting, backgroundDownload);
@@ -218,7 +217,7 @@ const main = (function() {
                 // Don't reset UI completely - just update button states
                 setProcessingButtonsState(false);
             }
-            if (libclick.dataset.libsuppressErrorLog == true) {
+            if (this.dataset.libsuppressErrorLog == true) {
                 return;
             } else {
                 ErrorLog.showLogToUser();
@@ -244,7 +243,7 @@ const main = (function() {
 
         // Sync current checkbox states from UI back to parser state before download
         syncCheckboxStatesToParser();
-        
+
         // Check if any chapters are selected after syncing
         let selectedCount = [...parser.state.webPages.values()].filter(chapter => chapter.isIncludeable).length;
         if (selectedCount === 0) {
@@ -255,14 +254,14 @@ const main = (function() {
 
         // Check if we're in Library Mode with a library book loaded
         let isInLibraryMode = window.currentLibraryBook && window.currentLibraryBook.id;
-        
+
         if (isInLibraryMode) {
             // In Library Mode: use the same logic as "Update Library Book"
             // This will download chapters and add them to the existing EPUB via merge logic
             let obj = {};
             obj.dataset = {};
             obj.dataset.libclick = "yes";  // Mark as library operation
-            
+
             try {
                 await fetchContentAndPackEpub.call(obj);
             } catch (err) {
@@ -422,7 +421,7 @@ const main = (function() {
                 return;
             }
         }
-        
+
         // Clear bypass flag after processing (one-time use)
         if (window.bypassLibraryDetection) {
             window.bypassLibraryDetection = false;
@@ -832,7 +831,7 @@ const main = (function() {
         document.getElementById("cacheOptionsButton").onclick = onCacheOptionsClick;
         document.getElementById("ShowMoreMetadataOptionsCheckbox").addEventListener("change", () => onShowMoreMetadataOptionsClick());
         document.getElementById("LibAddToLibrary").addEventListener("click", fetchContentAndPackEpub);
-        
+
         // Setup library book indicator event handlers
         LibraryUI.LibSetupBookIndicatorHandlers();
         if (document.getElementById("stopDownloadButton")) {
@@ -970,10 +969,10 @@ const main = (function() {
     function updateLibraryButtonText() {
         let button = document.getElementById("LibAddToLibrary");
         if (!button) return;
-        
+
         // Check if we're in library mode by looking for currentLibraryBook global
         let isInLibraryMode = window.currentLibraryBook && window.currentLibraryBook.id;
-        
+
         button.textContent = isInLibraryMode ? UIText.Common.updateLibraryBook : UIText.Common.addToLibrary;
     }
 

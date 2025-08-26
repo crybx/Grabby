@@ -3,7 +3,7 @@
 */
 "use strict";
 
-class LibraryBookData {
+class LibraryBookData { // eslint-disable-line no-unused-vars
     
     /**
      * Extract book data (chapters and metadata) from stored Library EPUB

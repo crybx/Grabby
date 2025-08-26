@@ -3,7 +3,7 @@
 */
 "use strict";
 
-class EpubStructure {
+class EpubStructure { // eslint-disable-line no-unused-vars
     
     // EPUB structure constants
     static EPUB_STRUCTURE_OEBPS = {

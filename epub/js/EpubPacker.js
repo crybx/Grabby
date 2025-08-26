@@ -191,11 +191,13 @@ class EpubPacker {
     addManifestItem(manifest, ns, href, id, mediaType) {
         let item = this.createAndAppendChildNS(manifest, ns, "item");
         let relativeHref = this.makeRelative(href);
-        // I seriously don't care about this warning.
-        // if (mediaType === "image/webp") {
-        //     let errorMsg = UIText.Warning.warningWebpImage(relativeHref);
-        //     ErrorLog.log(errorMsg);
-        // }
+        if (mediaType === "image/webp") {
+            let userPreferences = main.getUserPreferences();
+            if (!userPreferences?.disableWebpImageFormatError?.value) {
+                let errorMsg = UIText.Warning.warningWebpImage(relativeHref);
+                ErrorLog.log(errorMsg);
+            }
+        }
         item.setAttributeNS(null, "href", relativeHref);
         item.setAttributeNS(null, "id", id);
         item.setAttributeNS(null, "media-type", mediaType);

@@ -1,7 +1,7 @@
 "use strict";
 
 /** Class that handles chapter viewing in a modal popup */
-class ChapterViewer {
+class ChapterViewer { // eslint-disable-line no-unused-vars
     /**
      * View chapter in a popup
      * @param {string} sourceUrl - The URL of the chapter

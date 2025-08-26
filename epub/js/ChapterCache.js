@@ -3,7 +3,7 @@
  */
 "use strict";
 
-class ChapterCache {
+class ChapterCache { // eslint-disable-line no-unused-vars
     static CACHE_PREFIX = "webtoepub_chapter_";
     static CACHE_VERSION = "1.0";  // Only bump this if cache format changes
     static MAX_CACHE_AGE_DAYS = 7;

@@ -6,7 +6,7 @@
 */
 "use strict";
 
-class EpubUpdater {
+class EpubUpdater { // eslint-disable-line no-unused-vars
     constructor() {
         // Initialize with common EPUB manipulation utilities
     }

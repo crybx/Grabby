@@ -25,16 +25,6 @@ class Brittanypage43Parser extends Parser {
             dom.querySelector("article");
     }
 
-    customRawDomToContentStep(chapter, content) {
-        // They're using the jumble font with this cipher, but not on actual chapter content.
-        // const cipher = "tonquerzlawicvfjpsyhgdmkbxJKABRUDQZCTHFVLIWNEYPSXGOM";
-        // let nodes = content.querySelectorAll(".jum");
-        // for (let node of nodes) {
-        //     util.decipher(node, cipher);
-        //     node.classList.remove("jum");
-        // }
-    }
-
     removeUnwantedElementsFromContentElement(element) {
         util.removeChildElementsMatchingSelector(element, ".jum");
         super.removeUnwantedElementsFromContentElement(element);
