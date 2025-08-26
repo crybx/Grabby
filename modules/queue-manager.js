@@ -585,10 +585,13 @@ export class QueueManager {
             this.markStoryCompleted(storyId, status, displayMessage);
             
             // Auto-close tab for completed queue stories (both success and no-content)
+            // Add a small delay to ensure all messages are sent before closing
             if (status === "success" || status === "no-content") {
-                chrome.tabs.remove(tabId).catch(() => {
-                    // Ignore errors if tab is already closed
-                });
+                setTimeout(() => {
+                    chrome.tabs.remove(tabId).catch(() => {
+                        // Ignore errors if tab is already closed
+                    });
+                }, 500); // 500ms delay to allow final messages to be sent
             }
         }
     }

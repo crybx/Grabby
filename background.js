@@ -137,7 +137,16 @@ async function handleBulkGrabContent(message, sender) {
             // Proceed with normal bulk grab
             await scriptInjector.injectGrabbingScriptsAndExecute(tabId, true);
         } catch (error) {
-            console.error("Error during bulk grab content:", error);
+            // Check if it's a frame removal error (tab was closed)
+            if (error.message && error.message.includes("Frame with ID")) {
+                console.log("Tab was closed during bulk grab, likely the last chapter completed");
+                // Notify bulk grab manager to handle cleanup
+                if (bulkGrabManager) {
+                    await bulkGrabManager.cleanupTab(tabId);
+                }
+            } else {
+                console.error("Error during bulk grab content:", error);
+            }
         }
     }
 }

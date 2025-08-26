@@ -144,7 +144,7 @@ export class BulkGrabManager {
             };
             await this.saveBulkGrabState(tabId, preservedState);
         }
-        chrome.alarms.clear(this.getBulkGrabAlarmName(tabId));
+        await chrome.alarms.clear(this.getBulkGrabAlarmName(tabId));
     }
 
     // Completely remove bulk grab state for a tab (used when tab closes)
@@ -153,7 +153,7 @@ export class BulkGrabManager {
         
         const storageKey = this.getBulkGrabStorageKey(tabId);
         await chrome.storage.session.remove(storageKey);
-        chrome.alarms.clear(this.getBulkGrabAlarmName(tabId));
+        await chrome.alarms.clear(this.getBulkGrabAlarmName(tabId));
     }
 
     // Start bulk grab process
@@ -248,13 +248,18 @@ export class BulkGrabManager {
 
             // Send message to background script to update story tracker
             if (state.storyId || currentUrl) {
-                chrome.runtime.sendMessage({
-                    target: "background",
-                    type: "updateStoryCheckStatus",
-                    url: currentUrl,
-                    status: `Completed ${state.totalPages} chapters in ${duration}s`,
-                    storyId: state.storyId
-                });
+                try {
+                    await chrome.runtime.sendMessage({
+                        target: "background",
+                        type: "updateStoryCheckStatus",
+                        url: currentUrl,
+                        status: `Completed ${state.totalPages} chapters in ${duration}s`,
+                        storyId: state.storyId
+                    });
+                } catch (error) {
+                    // Message couldn't be sent, likely tab was closed
+                    console.log("Could not send story tracker update, tab may have been closed");
+                }
             }
             
             await this.sendCompletionToPopup(tabId);
