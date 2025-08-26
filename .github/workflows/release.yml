@@ -124,7 +124,7 @@ jobs:
           ### Release Notes:
           ${{ github.event.inputs.release_notes }}
           
-          **Full Changelog:** [${{ steps.prev_version.outputs.prev_tag }}...${{ steps.create_release.outputs.tag_name }}](https://github.com/crybx/Grabby/compare/${{ steps.prev_version.outputs.prev_tag }}...${{ steps.create_release.outputs.tag_name }})
+          **Full Changelog:** [${{ steps.prev_version.outputs.prev_tag }}...release-${{ steps.current_version.outputs.version }}](https://github.com/crybx/Grabby/compare/${{ steps.prev_version.outputs.prev_tag }}...release-${{ steps.current_version.outputs.version }})
         draft: false
         prerelease: false
     
