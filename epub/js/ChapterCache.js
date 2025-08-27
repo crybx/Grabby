@@ -1015,12 +1015,24 @@ class ChapterCache { // eslint-disable-line no-unused-vars
     }
 
     /**
-    * Create HTML filename with format "BookTitle_ChapterTitle.html"
-    */
+     * Create HTML filename with format "BookTitle_ChapterTitle_Domain.html"
+     */
     static createHtmlFilename(bookTitle, chapterTitle) {
+        let startUrl = document.getElementById("startingUrlInput")?.value || "";
+        let domain = "";
+        if (startUrl) {
+            try {
+                domain = new URL(startUrl).hostname;
+            } catch (e) {
+                // Invalid URL, just skip domain
+            }
+        }
         let sanitizedBookTitle = ChapterCache.sanitizeFilename(bookTitle || "Book");
         let sanitizedChapterTitle = ChapterCache.sanitizeFilename(chapterTitle || "Chapter");
-        
+
+        if (domain) {
+            return `${sanitizedBookTitle}_${sanitizedChapterTitle}_${domain}.html`;
+        }
         return `${sanitizedBookTitle}_${sanitizedChapterTitle}.html`;
     }
 

@@ -390,7 +390,7 @@ class Parser {
             () => this.makeSaveAsFileNameWithoutExtension(metaInfo.title, useFullTitle),
             "web.epub"
         );
-        metaInfo.subject = this.safeExtract(() => this.extractSubject(dom));
+        metaInfo.subject = this.safeExtract(() => this.extractSubject(dom)).toLowerCase();
         metaInfo.description = this.safeExtract(() => this.extractDescription(dom));
 
         this.extractSeriesInfo(dom, metaInfo);
