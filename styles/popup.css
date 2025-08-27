@@ -19,14 +19,14 @@ h1 {
 
 /* Icon grid styles */
 .icon-grid {
-    padding: 16px 8px;
+    padding: 12px 8px;
     margin-bottom: 8px;
 }
 
 .icon-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
     margin-bottom: 8px;
     justify-items: center;
 }
@@ -50,7 +50,7 @@ h1 {
 .icon-button {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 4px;
     background-color: #f8f9fa;
     display: flex;
     align-items: center;

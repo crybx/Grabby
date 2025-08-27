@@ -289,7 +289,7 @@ async function handleContentDownload(filename, content, originalUrl = null) {
 
         // Update story tracker with the grabbed content
         // Use the original URL from before any grabbing actions modified it
-        chrome.runtime.sendMessage({
+        await chrome.runtime.sendMessage({
             target: "background",
             type: "updateStoryTracker",
             url: originalUrl || window.location.href,

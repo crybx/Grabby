@@ -1,13 +1,82 @@
 // Story Manager - ES6 module for background script to use
 export class StoryManager {
     static STORY_PREFIX = "story_";
+    
+    // Open story statuses cache for tabs - stores story info for open tabs
+    static openStoryStatuses = new Map(); // Map<tabId, StoryStatusInfo>
+    // StoryStatusInfo structure:
+    // {
+    //   url: string,               // Current URL of the tab
+    //   storyId: string | null,    // Known story ID if from tracker
+    //   story: StoryObject | null, // Full story object with lastChapterUrl
+    //   isFromTracker: boolean,    // True if opened from story tracker
+    //   checkedAt: timestamp,      // When cache was last updated
+    //   duplicateDetected: boolean // If duplicate was detected on grab attempt
+    // }
 
     // Get story key for individual storage
     static getStoryKey(storyId) {
         return `${this.STORY_PREFIX}${storyId}`;
     }
 
-    // Get all tracked stories from individual storage
+    static async getOpenStoryStatus(tabId) {
+        // Get current URL
+        const tab = await chrome.tabs.get(tabId);
+        const currentUrl = tab.url;
+        
+        let status = this.openStoryStatuses.get(tabId);
+        
+        if (!status) {
+            // Create new status if none exists
+            const story = await this.findStoryByChapterUrl(currentUrl);
+            status = {
+                url: currentUrl,
+                storyId: story?.id,
+                story: story,
+                isFromTracker: false,
+                checkedAt: Date.now(),
+                duplicateDetected: false
+            };
+            this.openStoryStatuses.set(tabId, status);
+        } else if (status.url !== currentUrl) {
+            // Update existing status with new URL
+            status.url = currentUrl;
+            status.checkedAt = Date.now();
+            status.duplicateDetected = false; // Clear duplicate status on navigation
+            
+            // Refresh story data
+            if (status.storyId) {
+                // If we have a story ID, get the latest story data
+                status.story = await this.getStory(status.storyId);
+            } else {
+                // Otherwise try to find story by URL
+                const story = await this.findStoryByChapterUrl(currentUrl);
+                status.storyId = story?.id;
+                status.story = story;
+            }
+        }
+        
+        return status;
+    }
+
+    static handleOpenStoryNavigation(tabId, newUrl) {
+        const existing = this.openStoryStatuses.get(tabId);
+        
+        if (existing?.isFromTracker) {
+            // Tracker tab navigated - update the cache with new URL
+            this.openStoryStatuses.set(tabId, {
+                ...existing, // Keep everything else
+                url: newUrl,
+                checkedAt: Date.now(),
+                duplicateDetected: false // Clear duplicate status on navigation
+            });
+        } else if (existing) {
+            // Non-tracker tab navigated, clear cache
+            this.openStoryStatuses.delete(tabId);
+        }
+    }
+
+    // Get all tracked stories from storage
     static async getAllStories() {
         try {
             // Get all storage data
@@ -207,10 +276,7 @@ export class StoryManager {
             
             // Save just this story
             await this.saveStory(story);
-            return story;
         }
-        
-        return null;
     }
 
     // Update last grabbed chapter for a story
@@ -232,14 +298,14 @@ export class StoryManager {
                 await this.updateLastCheckStatus(chapterUrl, duplicateMessage);
                 
                 // Send message to stop grabbing
-                chrome.runtime.sendMessage({
+                await chrome.runtime.sendMessage({
                     target: "background",
                     type: "stopGrabbing",
                     url: chapterUrl,
                     status: duplicateMessage
                 });
                 
-                return story; // Don't update anything, just return
+                return; // Don't update anything, just return
             }
             
             // Update the story object
@@ -254,10 +320,7 @@ export class StoryManager {
             
             // Save just this story
             await this.saveStory(story);
-            return story;
         }
-        
-        return null;
     }
 
     // Normalize URL by removing trailing /# patterns for comparison
@@ -279,17 +342,24 @@ export class StoryManager {
         return normalized1 === normalized2;
     }
 
-    // Check if current URL is a duplicate of last chapter
-    // Can take optional storyId for direct lookup (more efficient)
-    static async isDuplicateChapter(chapterUrl, storyId = null) {
-        if (!chapterUrl) { return false; }
+    // Check if current tab's URL is a duplicate of its story's last chapter
+    static async isDuplicateChapter(tabId) {
+        // Get the current status for this tab
+        const status = await this.getOpenStoryStatus(tabId);
+        
+        if (!status.url) { return false; }
 
         // Get story either by ID or by chapter URL
-        const story = storyId
-            ? await this.getStory(storyId)
-            : await this.findStoryByChapterUrl(chapterUrl);
+        const story = status.storyId
+            ? await this.getStory(status.storyId)
+            : await this.findStoryByChapterUrl(status.url);
 
-        // Return false if no story or no lastChapterUrl, otherwise compare URLs
-        return story?.lastChapterUrl ? this.areUrlsEqual(chapterUrl, story.lastChapterUrl) : false;
+        // Check if duplicate
+        const isDuplicate = story?.lastChapterUrl ? this.areUrlsEqual(status.url, story.lastChapterUrl) : false;
+        
+        // Update the status
+        status.duplicateDetected = isDuplicate;
+        
+        return isDuplicate;
     }
 }

@@ -12,6 +12,27 @@ document.addEventListener("DOMContentLoaded", async function() {
         supportsAutoNav = config?.autoNav?.enabled === true;
     }
     
+    // Hide re-grab button by default, then check if duplicate was detected
+    const regrabButtonContainer = document.querySelector("#regrab-button")?.parentElement;
+    if (regrabButtonContainer) {
+        regrabButtonContainer.style.display = "none";
+        
+        // Check if duplicate was already detected for this tab
+        if (tab && tab.id) {
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "getDuplicateStatus",
+                tabId: tab.id
+            }).then(response => {
+                if (response && response.duplicateDetected) {
+                    regrabButtonContainer.style.display = "block";
+                }
+            }).catch(() => {
+                // Background might not have status, that's OK
+            });
+        }
+    }
+    
     // Show bulk grabbing section only if supported
     if (supportsAutoNav) {
         const bulkSection = document.querySelector(".bulk-section");
@@ -32,6 +53,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     
     // Get UI elements
     const grabButton = document.getElementById("grab-button");
+    const regrabButton = document.getElementById("regrab-button");
     const storyTrackerButton = document.getElementById("story-tracker-button");
     const addToTrackerButton = document.getElementById("add-to-tracker-button");
     const optionsButton = document.getElementById("options-button");
@@ -69,6 +91,21 @@ document.addEventListener("DOMContentLoaded", async function() {
             chrome.runtime.sendMessage({
                 target: "background",
                 type: "grabContent"
+            });
+            
+            // Close the popup after clicking
+            window.close();
+        });
+    }
+    
+    // Add click handler for the re-grab button (bypasses duplicate check)
+    if (regrabButton) {
+        regrabButton.addEventListener("click", () => {
+            // Send a message to the background script to grab content, ignoring duplicate check
+            chrome.runtime.sendMessage({
+                target: "background",
+                type: "grabContent",
+                ignoreDuplicateCheck: true
             });
             
             // Close the popup after clicking
