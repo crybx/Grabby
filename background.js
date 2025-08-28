@@ -452,15 +452,6 @@ async function handleMessages(message, sender, sendResponse) {
         case "startAutoGrab":
             await handleAutoGrab(message);
             break;
-        case "startQueueProcessing":
-            try {
-                const result = queueManager.startQueueProcessing(message.stories);
-                sendResponse(result);
-            } catch (error) {
-                console.error("Error starting queue processing:", error);
-                sendResponse({ error: error.message });
-            }
-            break;
         case "addToQueue":
             try {
                 const result = queueManager.addToQueue(message.stories);

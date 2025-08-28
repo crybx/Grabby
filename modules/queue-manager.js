@@ -18,25 +18,8 @@ export class QueueManager {
         QueueManager.registerInstance(this);
     }
 
-    // Start queue processing for multiple stories
-    startQueueProcessing(stories) {
-        if (this.isActive) {
-            console.warn("Queue processing is already running, cancelling current queue first");
-            this.cancelQueue();
-        }
-
-        this.currentQueueId = Date.now().toString();
-        this.isActive = true;
-        this.isPaused = false;
-        this.isCompleted = false;
-        this.queue = [];
-        this.processing.clear();
-        this.completed.clear();
-        this.tabStoryState.clear();
-        this.processingByDomain.clear();
-        this.activeTabDomainProcessing = null;
-
-        // Categorize stories by domain and activeTab requirement
+    // Categorize stories by domain and activeTab requirement
+    categorizeStories(stories) {
         const storiesByDomain = new Map();
         const activeTabStories = [];
         const backgroundStories = [];
@@ -58,102 +41,61 @@ export class QueueManager {
             storiesByDomain.get(domain).push(storyWithMetadata);
         }
 
-        // Start immediate processing - one per domain for background, one activeTab story immediately
-        const immediateStories = [];
-        const queuedStories = [];
-        
-        // Process one background story per domain immediately
-        const processedDomains = new Set();
-        for (const story of backgroundStories) {
-            if (!processedDomains.has(story.domain)) {
-                immediateStories.push(story);
-                processedDomains.add(story.domain);
-            } else {
-                queuedStories.push(story);
-            }
-        }
-        
-        // Process one activeTab story immediately (if any)
-        if (activeTabStories.length > 0) {
-            immediateStories.push(activeTabStories[0]);
-            queuedStories.push(...activeTabStories.slice(1));
-        }
-
-        // Add remaining stories to queue
-        this.queue = queuedStories;
-
-        // Return response immediately
-        const result = {
-            queueId: this.currentQueueId,
-            immediate: immediateStories.length,
-            queued: queuedStories.length,
-            total: stories.length
-        };
-
-        // Start immediate processing asynchronously (don't await)
-        setTimeout(() => {
-            void this.startImmediateProcessing(immediateStories);
-        }, 0);
-
-        // Notify UI of queue start
-        this.notifyQueueUpdate();
-
-        return result;
+        return { storiesByDomain, activeTabStories, backgroundStories };
     }
 
-    // Add stories to existing active queue
+    // Add stories to queue (creates queue if needed)
     addToQueue(stories) {
+        // Initialize queue if not active
         if (!this.isActive) {
-            throw new Error("No active queue to add stories to");
+            this.currentQueueId = Date.now().toString();
+            this.isActive = true;
+            this.isPaused = false;
+            this.isCompleted = false;
+            this.queue = [];
+            this.processing.clear();
+            this.completed.clear();
+            this.tabStoryState.clear();
+            this.processingByDomain.clear();
+            this.activeTabDomainProcessing = null;
         }
 
-        // Categorize stories by domain and activeTab requirement  
-        const storiesByDomain = new Map();
-        const activeTabStories = [];
-        const backgroundStories = [];
-
-        for (const story of stories) {
-            const domain = this.extractDomain(story.lastChapterUrl);
-            const needsActiveTab = this.checkIfNeedsActiveTab(story.lastChapterUrl);
-            const storyWithMetadata = { ...story, needsActiveTab, domain };
-            
-            if (needsActiveTab) {
-                activeTabStories.push(storyWithMetadata);
-            } else {
-                backgroundStories.push(storyWithMetadata);
-            }
-
-            if (!storiesByDomain.has(domain)) {
-                storiesByDomain.set(domain, []);
-            }
-            storiesByDomain.get(domain).push(storyWithMetadata);
-        }
-
-        // Add stories to existing queue
-        this.queue.push(...backgroundStories, ...activeTabStories);
+        // Categorize stories by domain and activeTab requirement
+        const { storiesByDomain, activeTabStories, backgroundStories } = this.categorizeStories(stories);
 
         // Start processing new stories that can be processed immediately
-        // (domains not currently being processed)
+        // (one per domain not currently being processed)
         const immediateStories = [];
-        for (const story of backgroundStories) {
-            const domainProcessing = this.processingByDomain.get(story.domain);
-            if (!domainProcessing || domainProcessing.size === 0) {
-                immediateStories.push(story);
-                // Remove from queue since we're processing immediately
-                const queueIndex = this.queue.findIndex(q => q.id === story.id);
-                if (queueIndex !== -1) {
-                    this.queue.splice(queueIndex, 1);
+        
+        // Check each domain for processing availability
+        for (const [domain, domainStories] of storiesByDomain) {
+            const domainProcessing = this.processingByDomain.get(domain);
+            const backgroundDomainStories = domainStories.filter(s => !s.needsActiveTab);
+            
+            if (backgroundDomainStories.length > 0) {
+                if (!domainProcessing || domainProcessing.size === 0) {
+                    // Domain is free, process first story immediately
+                    immediateStories.push(backgroundDomainStories[0]);
+                    // Queue the rest
+                    this.queue.push(...backgroundDomainStories.slice(1));
+                } else {
+                    // Domain is busy, queue all stories
+                    this.queue.push(...backgroundDomainStories);
                 }
             }
         }
 
         // Process one activeTab story immediately if none is currently processing
-        if (activeTabStories.length > 0 && !this.activeTabDomainProcessing) {
-            immediateStories.push(activeTabStories[0]);
-            // Remove from queue since we're processing immediately
-            const queueIndex = this.queue.findIndex(q => q.id === activeTabStories[0].id);
-            if (queueIndex !== -1) {
-                this.queue.splice(queueIndex, 1);
+        if (activeTabStories.length > 0) {
+            if (!this.activeTabDomainProcessing) {
+                immediateStories.push(activeTabStories[0]);
+                // Add remaining activeTab stories to queue
+                if (activeTabStories.length > 1) {
+                    this.queue.push(...activeTabStories.slice(1));
+                }
+            } else {
+                // All activeTab stories go to queue if one is already processing
+                this.queue.push(...activeTabStories);
             }
         }
 
@@ -374,7 +316,7 @@ export class QueueManager {
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
                 if (alarm.name.startsWith("queue-processing-")) {
-                    chrome.alarms.clear(alarm.name);
+                    chrome.alarms.clear(alarm.name).then();
                 }
             });
         });

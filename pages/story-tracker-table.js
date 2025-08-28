@@ -1606,38 +1606,11 @@ class StoryTrackerTable {
         }
 
         try {
-            // First check if there's an active queue
-            const queueStatus = await new Promise((resolve, reject) => {
-                chrome.runtime.sendMessage({
-                    target: "background",
-                    type: "getQueueStatus"
-                }, (response) => {
-                    if (chrome.runtime.lastError) {
-                        reject(new Error(chrome.runtime.lastError.message));
-                    } else {
-                        resolve(response);
-                    }
-                });
-            });
-
-            let messageType;
-            let actionDescription;
-            
-            if (queueStatus && queueStatus.isActive) {
-                // Queue is active, add to existing queue
-                messageType = "addToQueue";
-                actionDescription = `Adding ${eligibleStories.length} stories to active queue`;
-            } else {
-                // No active queue, start new one
-                messageType = "startQueueProcessing";
-                actionDescription = `Starting queue processing for ${eligibleStories.length} stories`;
-            }
-
-            // Send message to background to start queue processing or add to queue
+            // Send stories to background for QueueManager to handle
             const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({
                     target: "background",
-                    type: messageType,
+                    type: "addToQueue",
                     stories: eligibleStories
                 }, (response) => {
                     if (chrome.runtime.lastError) {
@@ -1649,7 +1622,7 @@ class StoryTrackerTable {
             });
 
             if (response.error) {
-                alert(`Error ${messageType === "addToQueue" ? "adding to queue" : "starting queue processing"}: ${response.error}`);
+                alert(`Error processing stories: ${response.error}`);
                 return;
             }
 
