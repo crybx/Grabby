@@ -116,7 +116,7 @@ const WEBSITE_CONFIGS = {
         "ridibooks.com": {
             grabber: "grabRidi",
             runActionsOnDirectGrab: false,
-            preGrab: "GrabActions.ridiTranslate",
+            preGrab: "GrabActions.googleTranslate",
             postGrab: "GrabActions.ridiNext",
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 15, activeTab: true },
             filenameCleanupPatterns: [" - Ridibooks"]
@@ -145,7 +145,12 @@ const WEBSITE_CONFIGS = {
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
-        "syosetu.com": { grabber: "grabSyosetu" },
+        "syosetu.com": { 
+            grabber: "grabSyosetu",
+            preGrab: "GrabActions.googleTranslate",
+            postGrab: { fn: "GrabActions.clickElementBySelector", args: [".c-pager__item--next"] },
+            autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
+        },
         "tapas.io": { grabber: "grabTapas", useFirstHeadingTitle: true },
         "transweaver.com": {
             grabber: { fn: "grabStandard", args: [".entry-content"] },

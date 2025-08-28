@@ -157,7 +157,7 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
     return { abort: false };
 }
 
-async function ridiTranslate() {
+async function googleTranslate() {
     scrollToBottom();
     // wait 3 seconds for translation to complete
     await new Promise(r => setTimeout(r, 3100));
@@ -466,7 +466,7 @@ window.GrabActions = {
     checkForPremiumContent,
     checkForUrlText,
     checkForPageNotFound,
-    ridiTranslate,
+    googleTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,
     clickElementWithText,
