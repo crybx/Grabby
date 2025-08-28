@@ -506,14 +506,6 @@ async function handleMessages(message, sender, sendResponse) {
                 console.warn("Could not update story tracker status:", error);
             }
             break;
-        case "getDuplicateStatus":
-            if (message.tabId) {
-                const status = await StoryManager.getOpenStoryStatus(message.tabId);
-                sendResponse({ duplicateDetected: status?.duplicateDetected || false });
-            } else {
-                sendResponse({ duplicateDetected: false });
-            }
-            return true; // Will send response asynchronously
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }
@@ -533,11 +525,13 @@ chrome.runtime.onMessage.addListener(handleMessages);
 // Listen for alarm events (bulk grab scheduling)
 chrome.alarms.onAlarm.addListener(bulkGrabManager.handleAlarm.bind(bulkGrabManager));
 
-// Clean up bulk grab state when tabs are closed
+// Clean up when tabs are closed
 chrome.tabs.onRemoved.addListener((tabId) => {
     bulkGrabManager.cleanupTab(tabId).then();
     // Clean up story status cache
     StoryManager.openStoryStatuses.delete(tabId);
+    // Clean up session storage
+    chrome.storage.session.remove([`duplicateTab_${tabId}`]).then();
 });
 
 // Clear cache on navigation (URL change)

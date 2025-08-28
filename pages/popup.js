@@ -19,16 +19,16 @@ document.addEventListener("DOMContentLoaded", async function() {
         
         // Check if duplicate was already detected for this tab
         if (tab && tab.id) {
-            chrome.runtime.sendMessage({
-                target: "background",
-                type: "getDuplicateStatus",
-                tabId: tab.id
-            }).then(response => {
-                if (response && response.duplicateDetected) {
+            // Check session storage directly - much more reliable than message passing
+            chrome.storage.session.get([`duplicateTab_${tab.id}`], (result) => {
+                const isDuplicate = result[`duplicateTab_${tab.id}`] === true;
+                console.log(`Duplicate status for tab ${tab.id}:`, isDuplicate);
+                if (isDuplicate) {
+                    console.log("Showing re-grab button");
                     regrabButtonContainer.style.display = "block";
+                } else {
+                    console.log("Not showing re-grab button");
                 }
-            }).catch(() => {
-                // Background might not have status, that's OK
             });
         }
     }

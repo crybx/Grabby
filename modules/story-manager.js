@@ -44,6 +44,9 @@ export class StoryManager {
             status.checkedAt = Date.now();
             status.duplicateDetected = false; // Clear duplicate status on navigation
             
+            // Clear session storage on navigation
+            await chrome.storage.session.remove([`duplicateTab_${tabId}`]);
+            
             // Refresh story data
             if (status.storyId) {
                 // If we have a story ID, get the latest story data
@@ -359,6 +362,17 @@ export class StoryManager {
         
         // Update the status
         status.duplicateDetected = isDuplicate;
+        
+        if (isDuplicate) {
+            console.log(`Duplicate detected for tab ${tabId}, status:`, status);
+            // Store in session storage for popup to access
+            await chrome.storage.session.set({ 
+                [`duplicateTab_${tabId}`]: true 
+            });
+        } else {
+            // Clear if not duplicate
+            await chrome.storage.session.remove([`duplicateTab_${tabId}`]);
+        }
         
         return isDuplicate;
     }
