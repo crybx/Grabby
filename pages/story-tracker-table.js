@@ -105,23 +105,23 @@ class StoryTrackerTable {
 
         // Bulk actions
         document.getElementById("open-last-chapters-btn").addEventListener("click", () => {
-            this.openLastChapters();
+            this.openLastChapters().then();
         });
 
         document.getElementById("open-main-stories-btn").addEventListener("click", () => {
-            this.openMainStories();
+            this.openMainStories().then();
         });
 
-        document.getElementById("manage-tags-btn").addEventListener("click", () => {
-            this.showManageTagsModal();
+        document.getElementById("edit-tags-btn").addEventListener("click", () => {
+            this.showEditTagsModal();
         });
 
         document.getElementById("grab-chapters-btn").addEventListener("click", () => {
-            this.handleAutoGrabNewChapters();
+            this.handleAutoGrabNewChapters().then();
         });
 
         document.getElementById("delete-selected-btn").addEventListener("click", () => {
-            this.deleteSelectedStories();
+            this.deleteSelectedStories().then();
         });
 
         // Sort headers
@@ -152,11 +152,11 @@ class StoryTrackerTable {
         // Form submission
         document.getElementById("story-form").addEventListener("submit", (e) => {
             e.preventDefault();
-            this.handleStoryFormSubmit();
+            this.handleStoryFormSubmit().then();
         });
 
         document.getElementById("delete-story-btn").addEventListener("click", () => {
-            this.handleDeleteStory();
+            this.handleDeleteStory().then();
         });
 
         // "Now" buttons for datetime inputs
@@ -169,7 +169,7 @@ class StoryTrackerTable {
         });
 
         document.getElementById("refresh-btn").addEventListener("click", () => {
-            this.refresh();
+            this.refresh().then();
         });
 
         // Clear tag filter button
@@ -217,7 +217,7 @@ class StoryTrackerTable {
 
         // Export stories
         document.getElementById("export-stories-btn").addEventListener("click", () => {
-            this.exportStories();
+            this.exportStories().then();
         });
 
         document.getElementById("close-import-modal").addEventListener("click", () => {
@@ -230,7 +230,7 @@ class StoryTrackerTable {
 
         document.getElementById("import-stories-form").addEventListener("submit", (e) => {
             e.preventDefault();
-            this.handleImportStories();
+            this.handleImportStories().then();
         });
 
         // Close import modal when clicking outside
@@ -252,23 +252,23 @@ class StoryTrackerTable {
             this.clearJsonFiles();
         });
 
-        // Manage tags modal controls
+        // Edit tags modal controls
         document.getElementById("close-tags-modal").addEventListener("click", () => {
-            this.hideManageTagsModal();
+            this.hideEditTagsModal();
         });
 
         document.getElementById("cancel-tags-btn").addEventListener("click", () => {
-            this.hideManageTagsModal();
+            this.hideEditTagsModal();
         });
 
-        document.getElementById("manage-tags-form").addEventListener("submit", (e) => {
+        document.getElementById("edit-tags-form").addEventListener("submit", (e) => {
             e.preventDefault();
-            this.handleManageTags();
+            this.handleEditTags().then();
         });
 
-        // Close manage tags modal when clicking outside
-        document.getElementById("manage-tags-modal").addEventListener("click", (e) => {
-            if (e.target.id === "manage-tags-modal") this.hideManageTagsModal();
+        // Close edit tags modal when clicking outside
+        document.getElementById("edit-tags-modal").addEventListener("click", (e) => {
+            if (e.target.id === "edit-tags-modal") this.hideEditTagsModal();
         });
         
         // Add event delegation for chapter links and story title links
@@ -725,11 +725,11 @@ class StoryTrackerTable {
         const openChaptersBtn = document.getElementById("open-last-chapters-btn");
         const openMainBtn = document.getElementById("open-main-stories-btn");
         const grabChaptersBtn = document.getElementById("grab-chapters-btn");
-        const manageTagsBtn = document.getElementById("manage-tags-btn");
+        const editTagsBtn = document.getElementById("edit-tags-btn");
         const deleteSelectedBtn = document.getElementById("delete-selected-btn");
         openChaptersBtn.disabled = count === 0;
         openMainBtn.disabled = count === 0;
-        manageTagsBtn.disabled = count === 0;
+        editTagsBtn.disabled = count === 0;
         deleteSelectedBtn.disabled = count === 0;
         
         // Check if queue is active to handle Auto Grab button specially
@@ -1489,8 +1489,8 @@ class StoryTrackerTable {
         }
     }
 
-    // Manage tags modal management
-    showManageTagsModal() {
+    // Edit tags modal management
+    showEditTagsModal() {
         const selectedCount = this.selectedStories.size;
         if (selectedCount === 0) {
             alert("Please select at least one story.");
@@ -1498,20 +1498,20 @@ class StoryTrackerTable {
         }
         
         // Update modal title with count
-        document.querySelector("#manage-tags-modal h2").textContent = 
-            `Manage Tags for ${selectedCount} Selected Stories`;
+        document.querySelector("#edit-tags-modal h2").textContent =
+            `Edit Tags for ${selectedCount} Selected Stories`;
         
-        document.getElementById("manage-tags-modal").style.display = "flex";
+        document.getElementById("edit-tags-modal").style.display = "flex";
         document.getElementById("tags-to-add").focus();
     }
 
-    hideManageTagsModal() {
-        document.getElementById("manage-tags-modal").style.display = "none";
-        document.getElementById("manage-tags-form").reset();
+    hideEditTagsModal() {
+        document.getElementById("edit-tags-modal").style.display = "none";
+        document.getElementById("edit-tags-form").reset();
     }
 
     // Handle bulk tag management
-    async handleManageTags() {
+    async handleEditTags() {
         const tagsToAddInput = document.getElementById("tags-to-add").value.trim();
         const tagsToRemoveInput = document.getElementById("tags-to-remove").value.trim();
         
@@ -1570,7 +1570,7 @@ class StoryTrackerTable {
         if (updatedCount > 0) {
             this.applyFilters();
             this.renderTable();
-            this.hideManageTagsModal();
+            this.hideEditTagsModal();
         } else {
             alert("No stories were updated. All selected stories already have the specified tag state.");
         }

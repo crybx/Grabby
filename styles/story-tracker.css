@@ -43,6 +43,8 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .queue-progress-header h3 {
@@ -54,6 +56,7 @@ header {
 .queue-controls {
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .queue-progress-stats {
@@ -181,17 +184,6 @@ header {
     
     .queue-progress-stats {
         gap: 16px;
-    }
-    
-    .queue-controls {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .queue-progress-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
     }
 }
 

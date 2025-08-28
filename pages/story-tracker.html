@@ -48,9 +48,9 @@
                     </div>
                     <div class="bulk-actions">
                         <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
-                        <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Main Stories</button>
+                        <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Story URLs</button>
                         <button id="grab-chapters-btn" class="btn primary-btn" disabled>Grab New Chapters</button>
-                        <button id="manage-tags-btn" class="btn secondary-btn" disabled>Manage Tags</button>
+                        <button id="edit-tags-btn" class="btn secondary-btn" disabled>Edit Tags</button>
                         <button id="refresh-btn" class="btn secondary-btn">Refresh</button>
                     </div>
                 </div>
@@ -287,15 +287,15 @@
         </div>
     </div>
 
-    <!-- Manage Tags Modal -->
-    <div id="manage-tags-modal" class="modal" style="display: none;">
+    <!-- Edit Tags Modal -->
+    <div id="edit-tags-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Manage Tags for Selected Stories</h2>
+                <h2>Edit Tags for Selected Stories</h2>
                 <button id="close-tags-modal" class="close-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="manage-tags-form">
+                <form id="edit-tags-form">
                     <div class="form-group">
                         <label for="tags-to-add">Tags to Add</label>
                         <input type="text" id="tags-to-add" placeholder="fantasy, favorites, completed (comma-separated)">

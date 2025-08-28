@@ -364,7 +364,6 @@ export class StoryManager {
         status.duplicateDetected = isDuplicate;
         
         if (isDuplicate) {
-            console.log(`Duplicate detected for tab ${tabId}, status:`, status);
             // Store in session storage for popup to access
             await chrome.storage.session.set({ 
                 [`duplicateTab_${tabId}`]: true 
