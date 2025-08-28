@@ -104,7 +104,7 @@ async function checkForPremiumContent(selectors = ["h2, h3"], premiumText = null
             const text = element.textContent.trim();
             if (premiumText.some(indicator => text.includes(indicator))) {
                 console.log(`Premium content detected: "${text}" - aborting grab`);
-                return { abort: true, reason: `Premium content detected: ${text}`, invalidateGrab: true };
+                return { abort: true, reason: `Premium content detected: ${text}` };
             }
         }
     }
@@ -125,7 +125,7 @@ async function checkForUrlText(urlText = []) {
         const searchText = textToCheck.toLowerCase();
         if (currentUrl.includes(searchText)) {
             console.log(`URL contains restricted text: "${textToCheck}" - aborting grab`);
-            return { abort: true, reason: `URL contains restricted text: "${textToCheck}"`, invalidateGrab: true };
+            return { abort: true, reason: `URL contains restricted text: "${textToCheck}"` };
         }
     }
     

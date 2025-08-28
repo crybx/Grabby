@@ -186,6 +186,31 @@ async function handleAutoGrab(message) {
     }
 }
 
+// Get storyId from tab - checks both StoryManager and QueueManager
+async function getStoryIdFromTab(tabId) {
+    if (!tabId) return null;
+    
+    try {
+        // First check StoryManager's open story status
+        const status = await StoryManager.getOpenStoryStatus(tabId);
+        if (status.storyId) {
+            return status.storyId;
+        }
+        
+        // If no storyId in status, check if this tab is associated with a queue story
+        const queueStoryId = queueManager.getStoryIdForTab(tabId);
+        if (queueStoryId) {
+            return queueStoryId;
+        }
+        
+        return null;
+    } catch (error) {
+        // Tab might not exist anymore
+        console.log("Could not get storyId for tab:", error.message);
+        return null;
+    }
+}
+
 // Perform the auto-nav and grabbing sequence: postGrab -> check URL change -> start bulk grab
 async function performAutoGrabSequence(tabId, storyInfo) {
     try {
@@ -255,7 +280,6 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     
                     if (!autoNavConfig || !autoNavConfig.enabled) {
                         await chrome.tabs.remove(tabId);
-                        // DEBUG: Comment out the line above to keep tabs open for auto-nav debugging
                         return;
                     }
                     
@@ -279,7 +303,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                     }
                     
                     // Close the tab since no new content
-                    await chrome.tabs.remove(tabId);
+                    await chrome.tabs.remove(tabId);  // DEBUG: Commented out for testing
                 }
             } catch (error) {
                 console.error(`Error checking URL change for ${storyInfo.storyTitle}:`, error);
@@ -328,9 +352,24 @@ async function handleMessages(message, sender, sendResponse) {
     }
 
     switch (message.type) {
-        case "downloadAsFile":
-            await downloadHandler.downloadAsFile(message.title, message.blobUrl, message.cleanup);
+        case "processAndDownload": {
+            const result = await downloadHandler.processAndDownload(message.data);
+            const tabId = await scriptInjector.getTabId(message, sender);
+            const storyId = await getStoryIdFromTab(tabId);
+            
+            // Update story tracker with the determined filename
+            if (result.success && result.filename) {
+                await showNotificationOnActiveTab("Content grabbed!");
+                await StoryManager.updateLastChapter(message.data.url, result.filename, storyId);
+            } else {
+                await showNotificationOnActiveTab("Grab failed!", "error");
+            }
+            
+            // Notify queue manager that download attempt is complete
+            // This ensures tabs marked for closing will close
+            queueManager.onDownloadComplete(tabId);
             break;
+        }
         case "showError":
             // You could implement a notification system here
             console.log("ERROR: " + message.message);
@@ -338,36 +377,6 @@ async function handleMessages(message, sender, sendResponse) {
         case "grabContent":
             await handleGrabContent(message, sender);
             break;
-        case "updateStoryTracker": {
-            try {
-                const tabId = await scriptInjector.getTabId(message, sender);
-                
-                // Get story status (creates one if needed, updates URL automatically)
-                const status = await StoryManager.getOpenStoryStatus(tabId);
-                let storyId = status.storyId;
-                
-                // If no storyId in status, check if this tab is associated with a queue story
-                if (!storyId) {
-                    storyId = queueManager.getStoryIdForTab(tabId);
-                }
-                
-                // Update story tracker directly via StoryManager
-                await StoryManager.updateLastChapter(message.url, message.title, storyId);
-            } catch (error) {
-                // Handle case where tab doesn't exist
-                console.log("Could not get tab ID for story tracker update, trying without storyId:", error.message);
-                
-                // Still try to update story tracker with just URL and title
-                if (message.url) {
-                    try {
-                        await StoryManager.updateLastChapter(message.url, message.title);
-                    } catch (storyError) {
-                        console.warn("Could not update story tracker:", storyError);
-                    }
-                }
-            }
-            break;
-        }
         case "openBackgroundTab":
             // Open URL in background tab
             try {

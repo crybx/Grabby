@@ -5,7 +5,7 @@ export class QueueManager {
         this.queue = [];
         this.processing = new Map(); // Currently processing stories
         this.completed = new Map(); // Completed stories with results
-        this.tabToStoryMap = new Map(); // Map tabId to storyId for bulk grab completion
+        this.tabStoryState = new Map(); // Map tabId to { storyId, shouldClose } for tab state tracking
         this.processingByDomain = new Map(); // Track processing stories by domain
         this.activeTabDomainProcessing = null; // Track which activeTab domain is currently processing
         this.isPaused = false;
@@ -32,7 +32,7 @@ export class QueueManager {
         this.queue = [];
         this.processing.clear();
         this.completed.clear();
-        this.tabToStoryMap.clear();
+        this.tabStoryState.clear();
         this.processingByDomain.clear();
         this.activeTabDomainProcessing = null;
 
@@ -466,7 +466,7 @@ export class QueueManager {
 
         this.processing.clear();
         this.queue = [];
-        this.tabToStoryMap.clear();
+        this.tabStoryState.clear();
         this.processingByDomain.clear();
         this.activeTabDomainProcessing = null;
         this.isActive = false;
@@ -560,9 +560,11 @@ export class QueueManager {
 
     // Handle bulk grab completion (called by bulk grab manager)
     handleBulkGrabComplete(tabId, success, message = "", isError = false, chaptersDownloaded = 0, isManualStop = false) {
-        const storyId = this.tabToStoryMap.get(tabId);
+        const tabState = this.tabStoryState.get(tabId);
+        const storyId = tabState ? tabState.storyId : null;
         if (storyId) {
-            this.tabToStoryMap.delete(tabId);
+            // Note: We don't delete from tabStoryState here yet,
+            // as we might need it for tab closing
             
             // Determine the appropriate status based on what actually happened
             let status;
@@ -572,39 +574,66 @@ export class QueueManager {
                 status = "error";
             } else if (isManualStop) {
                 status = "cancelled";
-            } else if (chaptersDownloaded > 0) {
-                // Downloaded chapters - this is success, regardless of how/why it stopped
+            } else if (success) {
+                // Normal completion - bulk grab reached its target count
                 status = "success";
-                displayMessage = `Downloaded ${chaptersDownloaded} chapter${chaptersDownloaded === 1 ? "" : "s"} - ${message}`;
+                displayMessage = message; // Will be like "Completed X pages in Ys"
             } else {
-                // No chapters downloaded - this is no-content
+                // Interrupted before completion (abort, no next chapter, etc.)
+                // Don't try to determine based on chaptersDownloaded since it's unreliable
                 status = "no-content";
-                displayMessage = message; // Show the actual reason (abort message, etc.)
+                displayMessage = message; // Show the actual reason
             }
             
             this.markStoryCompleted(storyId, status, displayMessage);
             
-            // Auto-close tab for completed queue stories (both success and no-content)
-            // Add a small delay to ensure all messages are sent before closing
+            // Mark tab for closing after download completes
             if (status === "success" || status === "no-content") {
-                setTimeout(() => {
-                    chrome.tabs.remove(tabId).catch(() => {
-                        // Ignore errors if tab is already closed
-                    });
-                }, 500); // 500ms delay to allow final messages to be sent
+                // Check if this completion is from a normal bulk grab end (success = true from callback)
+                // vs an interruption/abort (success = false from callback)
+                if (success && status === "success" && tabState) {
+                    // Normal completion with grabs - defer closing until last download completes
+                    tabState.shouldClose = true;
+                    console.log(`Marked tab ${tabId} for closing after download completes`);
+                } else {
+                    // Interrupted/aborted - close immediately
+                    // This includes pre-grab aborts, errors, manual stops, and no-content cases
+                    // Clean up tabStoryState since we're closing now
+                    this.tabStoryState.delete(tabId);
+                    setTimeout(() => {
+                        chrome.tabs.remove(tabId).catch(() => {
+                            // Ignore errors if tab is already closed
+                        });
+                    }, 500);
+                }
             }
         }
     }
 
     // Register tab-to-story mapping when auto-nav and grabbing starts
     registerStoryTab(storyId, tabId) {
-        this.tabToStoryMap.set(tabId, storyId);
+        this.tabStoryState.set(tabId, { storyId, shouldClose: false });
+    }
+    
+    // Called when a download completes for a tab
+    onDownloadComplete(tabId) {
+        // Check if this tab is marked for closing
+        const tabState = this.tabStoryState.get(tabId);
+        if (tabState && tabState.shouldClose) {
+            console.log(`Download complete for tab ${tabId}, closing tab now`);
+            this.tabStoryState.delete(tabId);
+            
+            // Close the tab
+            chrome.tabs.remove(tabId).catch(() => {
+                // Ignore errors if tab is already closed
+            });
+        }
     }
 
     // Get tab ID for a story (reverse lookup)
     getTabIdForStory(storyId) {
-        for (const [tabId, mappedStoryId] of this.tabToStoryMap.entries()) {
-            if (mappedStoryId === storyId) {
+        for (const [tabId, state] of this.tabStoryState.entries()) {
+            if (state.storyId === storyId) {
                 return tabId;
             }
         }
@@ -613,7 +642,8 @@ export class QueueManager {
 
     // Get story ID for a tab (direct lookup)
     getStoryIdForTab(tabId) {
-        return this.tabToStoryMap.get(tabId) || null;
+        const state = this.tabStoryState.get(tabId);
+        return state ? state.storyId : null;
     }
 
     // Static methods for global alarm handling

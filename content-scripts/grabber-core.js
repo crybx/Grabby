@@ -1,5 +1,3 @@
-// Website configurations are now in website-configs.js
-
 /**
  * Try to use a WebToEpub parser for the given URL
  * @param {string} url - The URL to check for parser support
@@ -21,7 +19,7 @@ async function tryWebToEpubParser(url) {
         console.log(`Found WebToEpub parser for ${domain}: ${parserInfo.parserClass}`);
 
         // Request background script to inject WebToEpub infrastructure and parser
-        chrome.runtime.sendMessage({
+        await chrome.runtime.sendMessage({
             target: "background",
             type: "injectWebToEpubParser",
             parserInfo: parserInfo
@@ -29,8 +27,7 @@ async function tryWebToEpubParser(url) {
         
         // Wait a bit for injection to complete
         await new Promise(resolve => setTimeout(resolve, 500));
-        
-        
+
         // Use parserFactory to get the parser instance
         // This avoids the need to resolve class names since parserFactory has the constructors
         let parser = null;
@@ -67,11 +64,19 @@ async function tryWebToEpubParser(url) {
     }
 }
 
-
-function getTitleFromFirstHeading(content) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, "text/html");
-    return doc.querySelector("h1").textContent;
+// Extract title based on configuration
+function extractTitle(content, useFirstHeadingTitle) {
+    if (useFirstHeadingTitle) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(content, "text/html");
+        const titleFromHeading = doc.querySelector("h1")?.textContent;
+        if (titleFromHeading) {
+            return titleFromHeading;
+        }
+    }
+    return document.querySelector("title")?.textContent ||
+           document.querySelector("h1")?.textContent ||
+           "Chapter";
 }
 
 // Helper function to handle grab interruptions (aborts, errors, end of story, etc.)
@@ -82,166 +87,120 @@ function handleGrabInterruption(message) {
         type: "stopGrabbing",
         url: window.location.href,
         status: message
-    });
-}
-
-function extractTitle(content, useFirstHeadingTitle) {
-    if (useFirstHeadingTitle) {
-        return getTitleFromFirstHeading(content);
-    }
-    return document.querySelector("title")?.textContent ||
-        document.querySelector("h1")?.textContent ||
-        "chapter";
-}
-
-function handleLocalFile(url) {
-    const filename = url.split("/").pop().split(".").slice(0, -1).join(".");
-    const content = grabLocalFile();
-    return { filename, content, url };
+    }).then();
 }
 
 async function grabFromWebsite(isBulkGrab = false) {
     const url = window.location.href;
-    let filename, content;
+    let content, titleFromParser;
 
     try {
+        const matchingConfig = findMatchingConfig(url);
+
         if (url.includes("file://")) {
-            ({ filename, content } = handleLocalFile(url));
-        } else {
-            const matchingConfig = findMatchingConfig(url);
+            content = grabLocalFile();
+        } else if (matchingConfig) {
+            // Resolve function references to actual functions
+            const config = resolveConfigFunctions(matchingConfig, {
+                grabbers: window, // All grabber functions are in global scope
+                GrabActions: window.GrabActions
+            });
 
-            if (matchingConfig) {
-                // Resolve function references to actual functions
-                const config = resolveConfigFunctions(matchingConfig, {
-                    grabbers: window, // All grabber functions are in global scope
-                    GrabActions: window.GrabActions 
-                });
-                
-                // Run pre-grab function if it exists and conditions are met
-                // Default to true if runActionsOnDirectGrab is not specified
-                const configAllowsDirectActions = config.runActionsOnDirectGrab !== false;
-                const shouldRunActions = isBulkGrab || configAllowsDirectActions;
-                
-                if (config.preGrab && typeof config.preGrab === "function" && shouldRunActions) {
-                    try {
-                        const preGrabResult = await config.preGrab();
-                        
-                        // Check if preGrab returned an abort signal
-                        if (preGrabResult && preGrabResult.abort) {
-                            console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
-                            
-                            handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
-                            
-                            return null; // Abort the grab
-                        }
-                    } catch (preGrabError) {
-                        console.error("Error in pre-grab function:", preGrabError);
-                    }
-                }
+            // Run pre-grab function if it exists and conditions are met
+            // Default to true if runActionsOnDirectGrab is not specified
+            const configAllowsDirectActions = config.runActionsOnDirectGrab !== false;
+            const shouldRunActions = isBulkGrab || configAllowsDirectActions;
 
+            if (config.preGrab && typeof config.preGrab === "function" && shouldRunActions) {
                 try {
-                    content = await config.grabber();
-                } catch (grabError) {
-                    console.error(`Error in grabber for ${url}:`, grabError);
-                    content = grabStandard()(); // Fallback to generic grabber
-                }
-                filename = extractTitle(content, config.useFirstHeadingTitle);
-            } else {
-                // Check if WebToEpub parser exists for this domain
-                const epubParserResult = await tryWebToEpubParser(url);
-                
-                if (epubParserResult) {
-                    content = epubParserResult.content;
-                    filename = epubParserResult.title;
-                    console.log("Used WebToEpub parser for:", url);
-                } else {
-                    content = grabStandard()();
-                    filename = extractTitle(content, false);
-                    console.log("This website is not specifically supported: ", url);
+                    const preGrabResult = await config.preGrab();
+
+                    // Check if preGrab returned an abort signal
+                    if (preGrabResult && preGrabResult.abort) {
+                        console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
+
+                        handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
+
+                        return null; // Abort the grab
+                    }
+                } catch (preGrabError) {
+                    console.error("Error in pre-grab function:", preGrabError);
                 }
             }
 
-            // append domain name to the filename for easier search
-            const domain = new URL(url).hostname;
-            filename = `${filename}_${domain}`;
+            try {
+                content = await config.grabber();
+            } catch (grabError) {
+                console.error(`Error in grabber for ${url}:`, grabError);
+                content = grabStandard()(); // Fallback to generic grabber
+            }
+        } else {
+            // Check if WebToEpub parser exists for this domain
+            const epubParserResult = await tryWebToEpubParser(url);
+
+            if (epubParserResult) {
+                content = epubParserResult.content;
+                titleFromParser = epubParserResult.title;
+                console.log("Used WebToEpub parser for:", url);
+            } else {
+                content = grabStandard()();
+                console.log("This website is not specifically supported: ", url);
+            }
         }
 
         if (!content || content.trim() === "") {
-            throw new Error("No content could be extracted from this page");
+            console.error("No content could be extracted from this page");
+            handleGrabInterruption("No content could be extracted from this page");
+            return;
         }
+
+        copyToClipboard(content);
+        
+        // Extract title based on config
+        const title = extractTitle(content, matchingConfig?.useFirstHeadingTitle);
+
+        // Send content and config to background for processing and download
+        await chrome.runtime.sendMessage({
+            target: "background",
+            type: "processAndDownload",
+            data: {
+                content,
+                matchingConfig,
+                title,
+                titleFromParser,
+                url
+            }
+        });
 
         // Run post-grab function if it exists and conditions are met
         if (!url.includes("file://")) {
-            const matchingConfig = findMatchingConfig(url);
             // Default to true if runActionsOnDirectGrab is not specified
             const configAllowsDirectActions = matchingConfig?.runActionsOnDirectGrab !== false;
             const shouldRunActions = isBulkGrab || configAllowsDirectActions;
             
-            if (matchingConfig && matchingConfig.postGrab && shouldRunActions) {
+            if (matchingConfig?.postGrab && shouldRunActions) {
                 try {
                     // Resolve function references
                     const config = resolveConfigFunctions(matchingConfig, {
                         grabbers: window,
                         GrabActions: window.GrabActions
                     });
-
                     const postGrabResult = await config.postGrab();
                     
                     // Check if postGrab returned an abort signal
                     if (postGrabResult && postGrabResult.abort) {
                         console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
-                        
                         handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
-                        
-                        // If invalidateGrab is true, return null to invalidate this grab
-                        // Otherwise, just stop future grabs but keep this one
-                        if (postGrabResult.invalidateGrab) {
-                            console.log("Post-grab requested invalidation - discarding current grab");
-                            return null;
-                        }
-                        
-                        // Note: We don't return null here since the grab itself was successful
-                        // We just want to stop future grabs in a bulk operation
                     }
                 } catch (postGrabError) {
                     console.error("Error in post-grab function:", postGrabError);
                 }
             }
         }
-
-        // in content, replace every instance of exactly </p><p with </p>/n/n<p
-        content = content.replace(/<\/p><p/g, "</p>\n\n<p");
-        // replace <br> with <br/>
-        content = content.replace(/<br>/g, "<br/>");
-
-        return { filename, content, url };
-
     } catch (error) {
         console.error("Error grabbing content:", error);
-        
         handleGrabInterruption(`Error: ${error.message}`);
-        
-        return null;
     }
-}
-
-function getFileBlobFromContent(title, bodyText) {
-    let blobText = getHtmlFromContent(title, bodyText);
-    return new Blob([blobText], {type: "text/html"});
-}
-
-function getHtmlFromContent(title, bodyText) {
-    return `<?xml version="1.0" encoding="utf-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title>${title}</title>
-  <link type="text/css" rel="stylesheet" href="../styles/stylesheet.css"/>
-</head>
-<body>
-${bodyText}
-</body>
-</html>
-    `;
 }
 
 function copyToClipboard(text) {
@@ -271,54 +230,7 @@ function copyToClipboard(text) {
     document.body.removeChild(copyFrom);
 }
 
-async function handleContentDownload(filename, content, originalUrl = null) {
-    let blobUrl;
-    try {
-        copyToClipboard(content);
-
-        const blob = getFileBlobFromContent(filename, content);
-        blobUrl = URL.createObjectURL(blob);
-
-        await chrome.runtime.sendMessage({
-            target: "background",
-            type: "downloadAsFile",
-            title: filename,
-            blobUrl: blobUrl,
-            cleanup: () => URL.revokeObjectURL(blobUrl)
-        });
-
-        // Update story tracker with the grabbed content
-        // Use the original URL from before any grabbing actions modified it
-        await chrome.runtime.sendMessage({
-            target: "background",
-            type: "updateStoryTracker",
-            url: originalUrl || window.location.href,
-            title: filename
-        });
-
-        // Show feedback to user
-        const notification = document.createElement("div");
-        notification.textContent = "Content grabbed!";
-        notification.classList.add("notification");
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-
-        return true;
-    } catch (error) {
-        console.error("Error downloading content:", error);
-        URL.revokeObjectURL(blobUrl);
-        return false;
-    } finally {
-        if (blobUrl) URL.revokeObjectURL(blobUrl);
-    }
-}
-
-
 // Export functions for use in other files
 window.GrabbyCore = {
-    grabFromWebsite,
-    handleContentDownload
+    grabFromWebsite
 };
