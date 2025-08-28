@@ -118,7 +118,8 @@ const WEBSITE_CONFIGS = {
             runActionsOnDirectGrab: false,
             preGrab: "GrabActions.ridiTranslate",
             postGrab: "GrabActions.ridiNext",
-            autoNav: { enabled: true, defaultCount: 5, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultCount: 5, defaultDelay: 15, activeTab: true },
+            filenameCleanupPatterns: [" - Ridibooks"]
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
         "publang.com": { 
@@ -187,7 +188,8 @@ const WEBSITE_CONFIGS = {
             grabber: "madaraWpTheme",
             useFirstHeadingTitle: true,
             postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
+            filenameCleanupPatterns: [" - citrus aurora"]
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",

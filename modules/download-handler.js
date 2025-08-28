@@ -4,13 +4,12 @@ export class DownloadHandler {
     async processAndDownload(data) {
         let content = data.content;
         let title = data.title;
-        // Not using yet, but will for domain specific patterns to remove from filenames
-        // let matchingConfig = data.matchingConfig;
+        let matchingConfig = data.matchingConfig;
         let titleFromParser = data.titleFromParser;
         let url = data.url;
 
         try {
-            const filename = this.createFileName(title, titleFromParser, url);
+            const filename = this.createFileName(title, titleFromParser, url, matchingConfig);
             const processedContent = this.processContent(content);
 
             // Create HTML from content
@@ -49,9 +48,16 @@ ${bodyText}
 </html>`;
     }
 
-    createFileName(title, titleFromParser, url) {
+    createFileName(title, titleFromParser, url, matchingConfig) {
         // Use WebToEpub title if available, otherwise use the extracted title
         let filename = titleFromParser || title;
+
+        // Apply domain-specific cleanup patterns from config
+        if (matchingConfig?.filenameCleanupPatterns && Array.isArray(matchingConfig.filenameCleanupPatterns)) {
+            for (const pattern of matchingConfig.filenameCleanupPatterns) {
+                filename = filename.replace(new RegExp(pattern, "g"), "");
+            }
+        }
 
         // Add domain to filename
         const domain = new URL(url).hostname;
@@ -62,8 +68,6 @@ ${bodyText}
         let illegalWindowsFileNameRegex = /[<>:"#!/\\|?*]/g;
         filename = filename.replace(illegalWindowsFileNameRegex, "");
 
-        // remove 'Ridibooks' from the filename
-        filename = filename.replace(" - Ridibooks", "");
         // remove any other whitespace
         filename = filename.replace(/\s/g, "_");
         // replace . with _ in the filename
