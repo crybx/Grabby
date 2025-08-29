@@ -321,6 +321,12 @@ export class QueueManager {
             });
         });
 
+        // Schedule a final cleanup in 60 seconds to get tabs that aren't
+        // stale yet right now (marked < 60s ago)
+        setTimeout(() => {
+            this.cleanupStaleTabs();
+        }, 60000);
+
         this.notifyQueueUpdate();
     }
 
@@ -415,6 +421,12 @@ export class QueueManager {
         this.isPaused = false;
         this.isCompleted = true; // Mark as completed when cancelled
         // Keep currentQueueId for summary display
+
+        // Schedule a final cleanup in 60 seconds to get tabs that aren't
+        // stale yet right now (marked < 60s ago)
+        setTimeout(() => {
+            this.cleanupStaleTabs();
+        }, 60000);
 
         this.notifyQueueUpdate();
     }
@@ -536,6 +548,7 @@ export class QueueManager {
                 if (success && status === "success" && tabState) {
                     // Normal completion with grabs - defer closing until last download completes
                     tabState.shouldClose = true;
+                    tabState.markedForCloseAt = Date.now();
                     console.log(`Marked tab ${tabId} for closing after download completes`);
                 } else {
                     // Interrupted/aborted - close immediately
@@ -554,7 +567,11 @@ export class QueueManager {
 
     // Register tab-to-story mapping when auto-nav and grabbing starts
     registerStoryTab(storyId, tabId) {
-        this.tabStoryState.set(tabId, { storyId, shouldClose: false });
+        this.tabStoryState.set(tabId, { 
+            storyId, 
+            shouldClose: false,
+            markedForCloseAt: null 
+        });
     }
     
     // Called when a download completes for a tab
@@ -570,6 +587,10 @@ export class QueueManager {
                 // Ignore errors if tab is already closed
             });
         }
+        
+        // Also clean up any stale tabs while we're here
+        // This handles the race condition where download completes before marking
+        this.cleanupStaleTabs();
     }
 
     // Get tab ID for a story (reverse lookup)
@@ -587,6 +608,27 @@ export class QueueManager {
         const state = this.tabStoryState.get(tabId);
         return state ? state.storyId : null;
     }
+    
+    // Clean up any tabs that have been marked for closing for too long
+    // This can be called periodically or after certain operations
+    cleanupStaleTabs() {
+        const staleTimeout = 60000; // 60 seconds
+        const now = Date.now();
+        
+        for (const [tabId, tabState] of this.tabStoryState.entries()) {
+            if (tabState.shouldClose && 
+                tabState.markedForCloseAt && 
+                (now - tabState.markedForCloseAt) > staleTimeout) {
+                
+                console.log(`Cleaning up tab ${tabId} that was marked for close ${Math.round((now - tabState.markedForCloseAt) / 1000)}s ago`);
+                this.tabStoryState.delete(tabId);
+                
+                chrome.tabs.remove(tabId).catch(() => {
+                    // Ignore errors if tab is already closed
+                });
+            }
+        }
+    }
 
     // Static methods for global alarm handling
     static currentInstance = null;
@@ -598,7 +640,7 @@ export class QueueManager {
         if (!QueueManager.alarmListenerSet) {
             chrome.alarms.onAlarm.addListener((alarm) => {
                 if (alarm.name.startsWith("queue-processing-") && QueueManager.currentInstance) {
-                    QueueManager.currentInstance.processNextInQueue();
+                    QueueManager.currentInstance.processNextInQueue().then();
                 }
             });
             QueueManager.alarmListenerSet = true;
