@@ -71,7 +71,7 @@ class TapasParser extends Parser {
         const title =
             dom.querySelector(".center-info .js-ep-title") ||
             dom.querySelector("div.viewer__header p.title");
-        return title ? title.textContent : null;
+        return title?.textContent ?? null;
     }
 
     findCoverImageUrl(dom) {

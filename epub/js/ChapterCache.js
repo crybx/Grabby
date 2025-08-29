@@ -1015,8 +1015,8 @@ class ChapterCache { // eslint-disable-line no-unused-vars
     }
 
     /**
-     * Create HTML filename with format "BookTitle_ChapterTitle_Domain.html"
-     */
+    * Create HTML filename with format "BookTitle_ChapterTitle_Domain.html"
+    */
     static createHtmlFilename(bookTitle, chapterTitle) {
         let startUrl = document.getElementById("startingUrlInput")?.value || "";
         let domain = "";
@@ -1029,7 +1029,7 @@ class ChapterCache { // eslint-disable-line no-unused-vars
         }
         let sanitizedBookTitle = ChapterCache.sanitizeFilename(bookTitle || "Book");
         let sanitizedChapterTitle = ChapterCache.sanitizeFilename(chapterTitle || "Chapter");
-
+        
         if (domain) {
             return `${sanitizedBookTitle}_${sanitizedChapterTitle}_${domain}.html`;
         }

@@ -97,11 +97,13 @@ class FictioneerParser extends Parser {
         let img =
             dom.querySelector(".wp-post-image") ||
             dom.querySelector("figure.story__thumbnail img");
-        // strip off the arguments for smaller sizes
-        let url = (img === null) ? img : img.src;
-        let pos = url.indexOf("?");
-        if (pos !== -1) { url = url.substring(0, pos); }
-        return url;
+
+        if (!img?.src) return null;
+
+        // Strip off the arguments for smaller sizes
+        let url = img.src;
+        const pos = url.indexOf("?");
+        return pos !== -1 ? url.substring(0, pos) : url;
     }
 
     customRawDomToContentStep(chapter, content) {
@@ -128,7 +130,7 @@ class FictioneerParser extends Parser {
 
     extractSubject(dom) {
         let tags = ([...dom.querySelectorAll(".story__taxonomies .tag-pill")]);
-        return tags.map(t => t.textContent?.trim().toLowerCase()).join(", ");
+        return tags.map(t => t.textContent?.trim()).join(", ");
     }
 }
 
