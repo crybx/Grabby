@@ -177,7 +177,9 @@ const WEBSITE_CONFIGS = {
                 "novelib.com", "springofromance.com", "smeraldogarden.com"],
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
-            preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h1, h2, h3, .mycred-sell-this-wrapper"]] },
+            preGrab: {
+                fn: "GrabActions.checkForPremiumContent",
+                args: [["h1, h2, h3, .mycred-sell-this-wrapper, .cmppp-plan-card"]] },
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },

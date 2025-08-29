@@ -94,6 +94,7 @@ async function checkForPremiumContent(selectors = ["h2, h3"], premiumText = null
             "Please Login or Register First",
             "Login to buy access to the advanced chapters.",
             "This is a premium chapter",
+            "Unlock this chapter",
             "🔒"
         ];
     }
