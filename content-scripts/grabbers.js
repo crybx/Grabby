@@ -460,27 +460,38 @@ function grabNovelingua() {
 }
 
 function grabZenithtls() {
-    const content = document.querySelector("article");
-    // title is all the text inside the ol tag inside header tag, with the li items in reverse order
-    let title = "";
-    const ol = document.querySelector("header ol");
+    // title is all the text inside the ol tag inside header tag,
+    // with the li items in reverse order
+    let titleParts = [];
 
+    // Process breadcrumb navigation
+    const ol = document.querySelector("header ol");
     if (ol) {
-        const li = ol.querySelectorAll("li");
-        for (let i = li.length - 1; i >= 0; i--) {
-            //title += li[i].textContent + " ";
-            // skip if it is Home or /
-            if (li[i].textContent === "Home" || li[i].textContent === "/") {
-                continue;
-            }
-            title += li[i].textContent + "_";
-        }
-        // replace all spaces and apostrophes with underscores
-        title = title.replace(/ /g, "_");
-        // remove apostrophes and make sure to properly escape the ' character in the regex
-        title = title.replace(/'/g, "");
+        [...ol.querySelectorAll("li")]
+            .reverse()
+            .forEach(li => {
+                const text = li.textContent?.trim();
+                if (text && text !== "Home" && text !== "/") {
+                    titleParts.push(text);
+                }
+            });
     }
 
+    // Process header elements, which may have chapter number
+    const headerSection = document.querySelector("main header");
+    if (headerSection) {
+        [...headerSection.children].forEach(child => {
+            const text = child.textContent?.trim();
+            if (text && !titleParts.includes(text)) {
+                titleParts.push(text);
+            }
+        });
+    }
+
+    // Join parts and remove apostrophes
+    let title = titleParts.join(" ").replace(/'/g, "");
+
+    const content = document.querySelector("article");
     utils.standardContentCleanup(content);
     content.querySelectorAll("*").forEach(element => {
         utils.standardElementCleanup(element);

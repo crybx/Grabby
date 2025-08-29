@@ -240,11 +240,11 @@ export class StoryManager {
         });
     }
 
-    // Clean chapter title by keeping only numbers, punctuation, and spaces
-    static cleanTitle(chapterTitle, storyTitle = null) {
+    // Clean chapter title
+    static cleanTitle(chapterTitle) {
         if (!chapterTitle) return chapterTitle;
         
-        // Remove all letters and periods (keep only numbers, punctuation, and spaces)
+        // Remove all letters
         let cleanedTitle = chapterTitle.replace(/[a-zA-Z]/g, "");
         
         // Collapse multiple spaces to single space
@@ -258,8 +258,11 @@ export class StoryManager {
         
         // Trim any non-numbers from the end, but allow ) and ] to remain
         cleanedTitle = cleanedTitle.replace(/[^0-9)\]]+$/, "");
-        
-        return cleanedTitle || chapterTitle;
+
+        // collapse multiple consecutive underscores to single underscore
+        cleanedTitle = cleanedTitle.replace(/_+/g, "_");
+
+        return cleanedTitle;
     }
 
     // Update last check status for a story (used for aborts or other check results)
