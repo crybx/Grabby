@@ -9,7 +9,9 @@ export class ScriptInjector {
         await chrome.scripting.executeScript({
             target: {tabId: tabId},
             func: (isBulkGrab) => {
-                GrabbyCore.grabFromWebsite(isBulkGrab).then();
+                GrabbyCore.grabFromWebsite(isBulkGrab).then().catch(error => {
+                    console.error("Error during grab:", error);
+                });
             },
             args: [isBulkGrab]
         });
