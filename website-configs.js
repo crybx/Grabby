@@ -54,7 +54,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabFenrir",
             preGrab: { fn: "GrabActions.checkForUrlText", args: [["auth/login"]] },
             postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 30, defaultDelay: 10 }
         },
         "helioscans.com": {
             grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },
@@ -118,7 +118,7 @@ const WEBSITE_CONFIGS = {
             runActionsOnDirectGrab: false,
             preGrab: "GrabActions.googleTranslate",
             postGrab: "GrabActions.ridiNext",
-            autoNav: { enabled: true, defaultCount: 5, defaultDelay: 15, activeTab: true },
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 15, activeTab: true },
             filenameCleanupPatterns: [" - Ridibooks"]
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
