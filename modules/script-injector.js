@@ -23,6 +23,7 @@ export class ScriptInjector {
             "content-scripts/grabbers.js",
             "website-configs.js",
             "parser-registry.js",
+            "epub/dompurify/dist/purify.min.js",
             "content-scripts/grabber-core.js"
         ];
 
@@ -54,13 +55,15 @@ export class ScriptInjector {
             }
 
             // Check if this script needs to be injected
-            const scriptName = scripts[index].replace("content-scripts/", "").replace("modules/", "").replace(".js", "");
+            // Extract just the filename without path or extension
+            const scriptName = scripts[index].match(/([^/]+?)(?:\.min)?\.js$/)?.[1] || scripts[index];
             const variablesToCheck = {
                 "website-configs": ["WEBSITE_CONFIGS", "findMatchingConfig"], // Objects from website-configs.js
                 "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
                 "grab-actions": ["GrabActions"], // Object from grab-actions.js
                 "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
                 "parser-registry": ["PARSER_REGISTRY"], // Object from parser-registry.js
+                "purify": ["DOMPurify"], // DOMPurify library
                 "grabber-core": ["GrabbyCore"] // Object from grabber-core.js
             };
 

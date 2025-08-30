@@ -159,12 +159,22 @@ async function grabFromWebsite(isBulkGrab = false) {
         // Extract title based on config
         const title = extractTitle(content, matchingConfig?.useFirstHeadingTitle);
 
+        // Sanitize content with DOMPurify before sending to background
+        let cleanContent;
+        try {
+            cleanContent = DOMPurify.sanitize(content);
+        } catch (e) {
+            console.error("Failed to sanitize content:", e);
+            handleGrabInterruption("Content sanitization failed - aborting for security");
+            return;
+        }
+
         // Send content and config to background for processing and download
         await chrome.runtime.sendMessage({
             target: "background",
             type: "processAndDownload",
             data: {
-                content,
+                content: cleanContent,
                 matchingConfig,
                 title,
                 titleFromParser,

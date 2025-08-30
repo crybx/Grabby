@@ -24,13 +24,34 @@ export class DownloadHandler {
             return { success: false };
         }
     }
-    
-    // Process content (replace line breaks, etc.)
+
     processContent(content) {
         // Replace </p><p with </p>\n\n<p for better readability
         content = content.replace(/<\/p><p/g, "</p>\n\n<p");
-        // Replace <br> with <br/> for XHTML compliance
-        content = content.replace(/<br>/g, "<br/>");
+        
+        // Convert void HTML elements to self-closing XHTML format
+        // List of void elements that should be self-closing in XHTML
+        const voidElements = ["area", "base", "br", "col", "embed", "hr", "img", "input", 
+            "link", "meta", "param", "source", "track", "wbr"];
+        
+        // Create regex pattern for all void elements
+        const voidPattern = new RegExp(`<(${voidElements.join("|")})(\\s[^>]*)?>`, "gi");
+        
+        content = content.replace(voidPattern, (match, tagName, attributes) => {
+            // Skip if already self-closing
+            if (match.endsWith("/>")) {
+                return match;
+            }
+            // Convert to self-closing
+            if (attributes) {
+                // Has attributes, insert / before >
+                return `<${tagName}${attributes}/>`;
+            } else {
+                // No attributes
+                return `<${tagName}/>`;
+            }
+        });
+
         return content;
     }
     
