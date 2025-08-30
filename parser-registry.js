@@ -447,7 +447,7 @@ const PARSER_REGISTRY = {
     "springofromance.com": { parserClass: "FictioneerParser", file: "FictioneerParser.js" },
     "sspai.com": { parserClass: "SspaiParser", file: "SspaiParser.js" },
     "starlightstream.net": { parserClass: "StarlightstreamParser", file: "StarlightstreamParser.js" },
-    "stellarrealm.net": { parserClass: "StellarRealmParser", file: "StellarRealmParser.js" },
+    "brightnovels.com": { parserClass: "StellarRealmParser", file: "StellarRealmParser.js" },
     "sto.cx": { parserClass: "StocxParser", file: "StocxParser.js" },
     "storiesonline.net": { parserClass: "WLPublishingParser", file: "WLPublishingParser.js" },
     "storyseedling.com": { parserClass: "StorySeedlingParser", file: "StorySeedlingParser.js" },

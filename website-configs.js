@@ -37,7 +37,7 @@ const WEBSITE_CONFIGS = {
             },
             autoNav: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
-        "stellarrealm.net": {
+        "brightnovels.com": {
             grabber: { fn: "grabStandard", args: [".chapter-content"] },
             preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h4"]] },
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
@@ -198,7 +198,8 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         madaraWpSites: {
-            domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com", "sleepytranslations.com", "system707.com"],
+            domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com",
+                "lovelyblossoms.com", "sleepytranslations.com", "system707.com"],
             grabber: "madaraWpTheme",
             useFirstHeadingTitle: true,
             postGrab: "GrabActions.pressRightArrow",
