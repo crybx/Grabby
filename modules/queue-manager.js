@@ -13,6 +13,7 @@ export class QueueManager {
         this.isCompleted = false; // Track if queue has completed
         this.queueDelayMinutes = 0.25; // Delay between starting queued stories (15 seconds)
         this.currentQueueId = null;
+        this.pendingAlarmsByDomain = new Map(); // Track pending alarms per domain
         
         // Register this instance for alarm handling
         QueueManager.registerInstance(this);
@@ -76,11 +77,13 @@ export class QueueManager {
                 if (!domainProcessing || domainProcessing.size === 0) {
                     // Domain is free, process first story immediately
                     immediateStories.push(backgroundDomainStories[0]);
-                    // Queue the rest
-                    this.queue.push(...backgroundDomainStories.slice(1));
+                    // Queue the rest with waiting status
+                    const toQueue = backgroundDomainStories.slice(1).map(s => ({ ...s, status: "waiting" }));
+                    this.queue.push(...toQueue);
                 } else {
-                    // Domain is busy, queue all stories
-                    this.queue.push(...backgroundDomainStories);
+                    // Domain is busy, queue all stories with waiting status
+                    const toQueue = backgroundDomainStories.map(s => ({ ...s, status: "waiting" }));
+                    this.queue.push(...toQueue);
                 }
             }
         }
@@ -89,13 +92,15 @@ export class QueueManager {
         if (activeTabStories.length > 0) {
             if (!this.activeTabDomainProcessing) {
                 immediateStories.push(activeTabStories[0]);
-                // Add remaining activeTab stories to queue
+                // Add remaining activeTab stories to queue with waiting status
                 if (activeTabStories.length > 1) {
-                    this.queue.push(...activeTabStories.slice(1));
+                    const toQueue = activeTabStories.slice(1).map(s => ({ ...s, status: "waiting" }));
+                    this.queue.push(...toQueue);
                 }
             } else {
-                // All activeTab stories go to queue if one is already processing
-                this.queue.push(...activeTabStories);
+                // All activeTab stories go to queue with waiting status if one is already processing
+                const toQueue = activeTabStories.map(s => ({ ...s, status: "waiting" }));
+                this.queue.push(...toQueue);
             }
         }
 
@@ -129,10 +134,8 @@ export class QueueManager {
                 await new Promise(resolve => setTimeout(resolve, 2000)); // 2s delay between immediate starts
             }
 
-            // Start queue processing if there are queued stories
-            if (this.queue.length > 0) {
-                this.scheduleNextQueueProcess();
-            }
+            // Don't schedule next queue processing here - let it happen when stories complete
+            // This prevents scheduling alarms while domains are still processing
         } catch (error) {
             console.error("Error in immediate processing:", error);
         }
@@ -200,19 +203,57 @@ export class QueueManager {
         }
     }
 
-    // Schedule next queue processing
-    scheduleNextQueueProcess() {
+    // Schedule next queue processing for a specific domain
+    scheduleNextQueueProcess(completedDomain = null) {
         if (this.queue.length === 0 || this.isPaused) {
             return;
         }
 
-        const alarmName = `queue-processing-${this.currentQueueId}-${Date.now()}`;
-        const when = Date.now() + (this.queueDelayMinutes * 60 * 1000);
+        // Find domains that need scheduling
+        const domainsToSchedule = new Set();
         
-        chrome.alarms.create(alarmName, { when });
-        const delayText = this.queueDelayMinutes < 1 
-            ? `${this.queueDelayMinutes * 60} seconds`
-            : `${this.queueDelayMinutes} minutes`;
+        if (completedDomain) {
+            // A specific domain just completed, schedule for that domain
+            domainsToSchedule.add(completedDomain);
+        } else {
+            // Initial scheduling or resume - schedule for all domains with waiting stories
+            for (const story of this.queue) {
+                if (story.status === "waiting" && !this.pendingAlarmsByDomain.has(story.domain)) {
+                    domainsToSchedule.add(story.domain);
+                }
+            }
+        }
+        
+        // Schedule alarms for each domain
+        for (const domain of domainsToSchedule) {
+            // Don't schedule if this domain already has a pending alarm
+            if (this.pendingAlarmsByDomain.has(domain)) {
+                continue;
+            }
+
+            // Find the first waiting story for this domain
+            const domainStory = this.queue.find(s => s.domain === domain && s.status === "waiting");
+            if (!domainStory) {
+                continue;
+            }
+
+            // Get domain-specific delay
+            let delaySeconds = this.queueDelayMinutes * 60; // Default 15 seconds
+            try {
+                const config = findMatchingConfig(domainStory.lastChapterUrl);
+                if (config?.autoNav?.defaultDelay) {
+                    delaySeconds = config.autoNav.defaultDelay;
+                }
+            } catch (e) {
+                // Use default delay if config lookup fails
+            }
+
+            const alarmName = `queue-${this.currentQueueId}-${domain}-${Date.now()}`;
+            const when = Date.now() + (delaySeconds * 1000);
+            
+            chrome.alarms.create(alarmName, { when });
+            this.pendingAlarmsByDomain.set(domain, alarmName);
+        }
     }
 
     // Process next story in queue
@@ -246,14 +287,29 @@ export class QueueManager {
         }
         
         if (nextStory) {
+            // Clear the pending alarm for this domain since we're processing now
+            this.pendingAlarmsByDomain.delete(nextStory.domain);
+            
             // Remove from queue
             this.queue.splice(nextStoryIndex, 1);
             await this.startStoryAutoGrab(nextStory);
-        }
-
-        // Schedule next if more in queue
-        if (this.queue.length > 0) {
-            this.scheduleNextQueueProcess();
+            // Don't schedule here - let the story completion handle scheduling
+        } else {
+            // Clear pending alarms for domains that can't process yet
+            // This allows rescheduling when the domain becomes free
+            for (const [domain, alarmName] of this.pendingAlarmsByDomain) {
+                const domainStillProcessing = this.processingByDomain.has(domain) && 
+                                            this.processingByDomain.get(domain).size > 0;
+                if (domainStillProcessing) {
+                    this.pendingAlarmsByDomain.delete(domain);
+                }
+            }
+            
+            // Only reschedule if we couldn't find a processable story
+            // (all domains might be busy)
+            if (this.queue.length > 0) {
+                this.scheduleNextQueueProcess();
+            }
         }
     }
 
@@ -287,22 +343,11 @@ export class QueueManager {
 
             // Check if queue is complete
             if (this.processing.size === 0 && this.queue.length === 0) {
+                console.log("Queue processing complete");
                 this.completeQueue();
             } else if (this.queue.length > 0) {
-                // Always try to restart queue processing when a story completes
-
-                // Check if there's an activeTab story ready to process immediately
-                const hasActiveTabReady = this.queue.some(story => 
-                    story.needsActiveTab && this.activeTabDomainProcessing === null
-                );
-                
-                if (hasActiveTabReady) {
-                    // Process activeTab stories immediately without delay
-                    setTimeout(() => this.processNextInQueue(), 100); // Small delay just to let completion finish
-                } else {
-                    // Normal scheduling for background stories
-                    this.scheduleNextQueueProcess();
-                }
+                // Schedule next story for the domain that just completed
+                this.scheduleNextQueueProcess(domain);
             }
         }
     }
@@ -311,11 +356,12 @@ export class QueueManager {
     completeQueue() {
         this.isActive = false;
         this.isCompleted = true;
+        this.pendingAlarmsByDomain.clear(); // Clear all pending alarm tracking
         
         // Clear any remaining alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith("queue-processing-")) {
+                if (alarm.name.startsWith(`queue-${this.currentQueueId}-`)) {
                     chrome.alarms.clear(alarm.name).then();
                 }
             });
@@ -335,11 +381,12 @@ export class QueueManager {
         if (!this.isActive) return;
         
         this.isPaused = true;
+        this.pendingAlarmsByDomain.clear(); // Clear all pending alarm tracking
         
         // Clear scheduled alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith("queue-processing-")) {
+                if (alarm.name.startsWith(`queue-${this.currentQueueId}-`)) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -366,10 +413,11 @@ export class QueueManager {
     cancelQueue() {
         if (!this.isActive) return;
 
+        this.pendingAlarmsByDomain.clear(); // Clear all pending alarm tracking
         // Clear alarms
         chrome.alarms.getAll((alarms) => {
             alarms.forEach(alarm => {
-                if (alarm.name.startsWith("queue-processing-")) {
+                if (alarm.name.startsWith(`queue-${this.currentQueueId}-`)) {
                     chrome.alarms.clear(alarm.name);
                 }
             });
@@ -639,7 +687,7 @@ export class QueueManager {
         // Set up global alarm listener only once
         if (!QueueManager.alarmListenerSet) {
             chrome.alarms.onAlarm.addListener((alarm) => {
-                if (alarm.name.startsWith("queue-processing-") && QueueManager.currentInstance) {
+                if (alarm.name.startsWith("queue-") && QueueManager.currentInstance) {
                     QueueManager.currentInstance.processNextInQueue().then();
                 }
             });

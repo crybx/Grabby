@@ -1810,6 +1810,9 @@ class StoryTrackerTable {
                     case "starting":
                         storyElement.classList.add("processing"); // Use processing style for starting
                         break;
+                    case "waiting":
+                        storyElement.classList.add("queued"); // Waiting stories use queued style
+                        break;
                 }
             } else {
                 // For queued stories without status
@@ -1850,6 +1853,14 @@ class StoryTrackerTable {
                         statusElement.textContent = statusText;
                         break;
                     }
+                    case "waiting":
+                        // For waiting stories in queue, show domain
+                        if (story.lastChapterUrl) {
+                            statusElement.textContent = story.domain || this.extractDomain(story.lastChapterUrl);
+                        } else {
+                            statusElement.textContent = "Queued";
+                        }
+                        break;
                 }
             } else {
                 // For queued items, show domain
