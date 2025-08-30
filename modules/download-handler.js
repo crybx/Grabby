@@ -87,7 +87,15 @@ ${bodyText}
         // Use TextEncoder for proper Unicode handling
         const encoder = new TextEncoder();
         const data = encoder.encode(htmlContent);
-        const base64 = btoa(String.fromCharCode(...data));
+        
+        // Convert to base64 in chunks to avoid stack overflow with large content
+        let binary = "";
+        const chunkSize = 8192; // Process 8KB at a time
+        for (let i = 0; i < data.length; i += chunkSize) {
+            const chunk = data.slice(i, i + chunkSize);
+            binary += String.fromCharCode.apply(null, chunk);
+        }
+        const base64 = btoa(binary);
         const dataUrl = `data:text/html;base64,${base64}`;
         
         let options = {
