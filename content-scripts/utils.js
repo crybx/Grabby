@@ -453,7 +453,7 @@ const utils = (function() {
         // wrap raw text in p tags
         // Find text nodes that are direct children of the content div
         const textNodes = [];
-        const walker = document.createTreeWalker(
+        const walker = dom.ownerDocument.createTreeWalker(
             dom,
             NodeFilter.SHOW_TEXT,
             { acceptNode: node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== "" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
@@ -462,7 +462,7 @@ const utils = (function() {
         while (walker.nextNode()) {
             const node = walker.currentNode;
             // Only process text nodes that are direct children of the content div
-            if (node.parentNode === content) {
+            if (node.parentNode === dom) {
                 textNodes.push(node);
             }
         }
@@ -471,7 +471,7 @@ const utils = (function() {
         textNodes.forEach(node => {
             const text = node.nodeValue.trim();
             if (text) {
-                const p = document.createElement("p");
+                const p = dom.ownerDocument.createElement("p");
                 p.textContent = text;
                 node.parentNode.replaceChild(p, node);
             }
@@ -564,6 +564,7 @@ const utils = (function() {
         removeComments(content);
         removeEmptyAttributes(content);
         unwrapSpansWithNoAttributes(content);
+        wrapRawTextInPTags(content); // do after unwrapping spans in case we created raw text
     }
 
     function cipherSubstitution(element, cipher, alphab = null) {
@@ -613,6 +614,7 @@ const utils = (function() {
         unwrapAllOfTag: unwrapAllOfTag,
         unwrapTag: unwrapTag,
         wrapInnerContentInTag: wrapInnerContentInTag,
+        wrapRawTextInPTags: wrapRawTextInPTags,
         replaceSemanticInlineStylesWithTags: replaceSemanticInlineStylesWithTags,
         standardElementCleanup: standardElementCleanup,
         standardContentCleanup: standardContentCleanup,

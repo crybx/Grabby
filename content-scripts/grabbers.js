@@ -205,23 +205,21 @@ function grabBlogspot() {
 }
 
 function madaraWpTheme() {
+    const dom = document.cloneNode(true);
     const chapter =
-        document.querySelector(".selectpicker_chapter .selected")?.textContent ||
-        document.querySelector("ol.breadcrumb li.active")?.textContent ||
-        document.querySelector("#chapter-heading")?.textContent ||
-        document.querySelector(".wp-block-heading")?.textContent ||
+        dom.querySelector(".selectpicker_chapter .selected")?.textContent ||
+        dom.querySelector("ol.breadcrumb li.active")?.textContent ||
+        dom.querySelector("#chapter-heading")?.textContent ||
+        dom.querySelector(".wp-block-heading")?.textContent ||
         "";
-    let title = document.querySelector("title")?.textContent;
+    let title = dom.querySelector("title")?.textContent;
     title += chapter;
 
-    const content =
-        document.querySelector(".text-left") ||
-        document.querySelector(".entry-content_wrap");
+    let content =
+        dom.querySelector(".text-left") ||
+        dom.querySelector(".entry-content_wrap");
 
-    content.querySelectorAll("*").forEach(element => {
-        utils.removeSpansInsideParagraph(element);
-        utils.removeTags(element, ["SCRIPT", "INS", "DIV"]);
-    });
+    content = standardCleanup(content);
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
