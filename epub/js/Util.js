@@ -1057,7 +1057,7 @@ const util = (function() {
 
     function sanitize(dirty) {
         let savedBaseURI = dirty.baseURI;
-        const clean = DOMPurify.sanitize(dirty, {ADD_ATTR: ["tooltip-target"]});
+        const clean = DOMPurify.sanitize(dirty);
         let html = new DOMParser().parseFromString(clean, "text/html");
         if (savedBaseURI) {
             util.setBaseTag(savedBaseURI, html);

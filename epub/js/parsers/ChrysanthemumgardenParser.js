@@ -10,14 +10,14 @@ class ChrysanthemumgardenParser extends WordpressBaseParser {
     populateUIImpl() {
         document.getElementById("passwordRow").hidden = false;
         document.getElementById("removeAuthorNotesRow").hidden = false;
-        
+
         // Pre-populate password field with saved value for this site
         let passwordInput = document.getElementById("passwordInput");
         if (passwordInput) {
             let hostname = "chrysanthemumgarden.com";
             let savedPassword = this.userPreferences.getSitePassword(hostname);
             passwordInput.value = savedPassword;
-            
+
             // Set up event listener to save password when changed
             passwordInput.addEventListener("input", () => {
                 this.userPreferences.setSitePassword(hostname, passwordInput.value);
@@ -80,6 +80,7 @@ class ChrysanthemumgardenParser extends WordpressBaseParser {
             for (let n of notes) {
                 content.appendChild(n);
             }
+            this.addLinksToFootnotes(webPageDom);
         }
         util.resolveLazyLoadedImages(webPageDom, "img.br-lazy", "data-breeze");
     }
@@ -94,5 +95,61 @@ class ChrysanthemumgardenParser extends WordpressBaseParser {
             return cover.src;
         }
         return super.findCoverImageUrl(dom);
+    }
+
+    addLinksToFootnotes(dom) {
+        let makeLink = (id) => {
+            let link = dom.createElement("a");
+            link.href = "#" + id;
+            return link;
+        };
+
+        let addParent = (newParent, element) => {
+            element.replaceWith(newParent);
+            newParent.appendChild(element);
+        };
+
+        let addIndexToSpan = (span, index) => {
+            let sup = dom.createElement("sup");
+            sup.textContent = index;
+            span.appendChild(sup);
+        };
+
+        let addHyperlinkToSpan = (span, id) =>
+            addParent(makeLink(id), span);
+
+        let updateSpan = (span, index, id, backRef) => {
+            addIndexToSpan(span, index);
+            span.id = backRef;
+            addHyperlinkToSpan(span, id);
+        };
+
+        let addIndexToFootnote = (title, index) =>
+            title.prepend(dom.createTextNode(index + " "));
+
+        let addHyperlinkToFootnote = (title, backRef) => {
+            let link = makeLink(backRef);
+            util.moveChildElements(title, link);
+            title.appendChild(link);
+        };
+
+        let updateFootnote = (footnote, index, backRef) => {
+            let title = footnote.querySelector(".tooltip-title");
+            addIndexToFootnote(title, index);
+            addHyperlinkToFootnote(title, backRef);
+        };
+
+        let spans = [...dom.querySelectorAll("span.tooltip-toggle")];
+        let index = 0;
+        for (let span of spans) {
+            let id = span.getAttribute("tooltip-target");
+            let footnote = dom.querySelector("#" + id);
+            let backRef = "back-" + id;
+            if (id) {
+                ++index;
+                updateSpan(span, index, id, backRef);
+                updateFootnote(footnote, index, backRef);
+            }
+        }
     }
 }
