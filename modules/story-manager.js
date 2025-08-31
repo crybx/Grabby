@@ -13,6 +13,32 @@ export class StoryManager {
     //   checkedAt: timestamp,      // When cache was last updated
     //   duplicateDetected: boolean // If duplicate was detected on grab attempt
     // }
+    
+    // StoryObject structure (stored in chrome.storage.local):
+    // {
+    //   id: string,                     // Unique ID (generated: timestamp + random)
+    //   title: string,                  // Story title
+    //   mainStoryUrl: string,           // Primary URL for the story (required, unique)
+    //   domain: string,                 // Domain extracted from mainStoryUrl
+    //   
+    //   // Chapter tracking
+    //   lastChapterUrl: string | null,  // URL of the last grabbed/visited chapter
+    //   lastChapterTitle: string | null,// Title of the last grabbed chapter (cleaned)
+    //   secondaryUrlMatches: string[],  // Additional URL patterns to match this story
+    //   
+    //   // Timestamps (ISO strings)
+    //   dateAdded: string,              // When story was added to tracker
+    //   dateLastGrabbed: string | null, // When content was last grabbed
+    //   dateLastChecked: string | null, // When story was last checked (grab or check)
+    //   
+    //   // Status tracking
+    //   lastCheckStatus: string | null, // Status from last check: "Grabbed", "No new chapters", etc.
+    //   
+    //   // Metadata
+    //   tags: string[],                 // User-defined tags for organization
+    //   
+    //   // Note: completed stories should be removed, not marked as completed
+    // }
 
     // Get story key for individual storage
     static getStoryKey(storyId) {

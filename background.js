@@ -4,6 +4,7 @@ import { BulkGrabManager } from "./modules/bulk-grab-manager.js";
 import { DownloadHandler } from "./modules/download-handler.js";
 import { QueueManager } from "./modules/queue-manager.js";
 import { StoryManager } from "./modules/story-manager.js";
+import { StoryUpdateChecker } from "./modules/story-update-checker.js";
 import "./website-configs.js";
 // WEBSITE_CONFIGS and related functions are available via globalThis
 
@@ -134,6 +135,7 @@ const handleBulkGrabComplete = (tabId, success, message, isError = false, chapte
 
 const bulkGrabManager = new BulkGrabManager(handleBulkGrabContent, handleBulkGrabComplete, scriptInjector);
 const queueManager = new QueueManager(handleAutoGrab);
+const storyUpdateChecker = new StoryUpdateChecker(queueManager, StoryManager);
 
 // Handle bulk grab for individual stories
 async function handleAutoGrab(message) {
@@ -513,8 +515,14 @@ chrome.commands.onCommand.addListener(async (command) => {
 // Register the main message listener
 chrome.runtime.onMessage.addListener(handleMessages);
 
-// Listen for alarm events (bulk grab scheduling)
-chrome.alarms.onAlarm.addListener(bulkGrabManager.handleAlarm.bind(bulkGrabManager));
+// Listen for alarm events (bulk grab scheduling and story update checks)
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === "storyUpdateCheck") {
+        storyUpdateChecker.performCheck().then();
+    } else {
+        bulkGrabManager.handleAlarm(alarm);
+    }
+});
 
 // Clean up when tabs are closed
 chrome.tabs.onRemoved.addListener((tabId) => {
@@ -530,5 +538,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
     if (changeInfo.url) {
         StoryManager.handleOpenStoryNavigation(tabId, changeInfo.url);
     }
+});
+
+// Initialize story update checker on extension startup
+storyUpdateChecker.initialize().then(() => {
+    console.log("Story update checker initialized");
 });
 
