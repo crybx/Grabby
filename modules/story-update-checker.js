@@ -5,12 +5,8 @@ export class StoryUpdateChecker {
         this.storyManager = storyManager;
         this.alarmName = "storyUpdateCheck";
         this.checkIntervalMinutes = 10; // Check every 10 minutes
-        this.updateIntervalHours = 24; // Stories can be updated every 24 hours
-        
-        // Domains that support free episodes on a schedule
-        this.supportedDomains = [
-            "ridibooks.com"
-        ];
+        this.domainSettings = {};
+        this.loadSettings(); // Load initial settings
     }
 
     // Initialize the periodic checking
@@ -63,6 +59,17 @@ export class StoryUpdateChecker {
         }
     }
 
+    // Load settings from chrome.storage.local
+    async loadSettings() {
+        try {
+            const result = await chrome.storage.local.get("autoQueueSettings");
+            this.domainSettings = result.autoQueueSettings || {};
+        } catch (error) {
+            console.error("Error loading auto-queue settings:", error);
+            this.domainSettings = {};
+        }
+    }
+
     // Check if a story is eligible for update
     isEligibleForUpdate(story, now) {
         // Check if story has a URL
@@ -70,17 +77,21 @@ export class StoryUpdateChecker {
             return false;
         }
         
-        // Check if domain is supported
+        // Check if domain has auto-queue configured
         const domain = this.extractDomain(story.lastChapterUrl);
-        if (!domain || !this.supportedDomains.includes(domain)) {
+        if (!domain || !this.domainSettings[domain]) {
             return false;
         }
         
-        // Check last update time (must be > 24 hours ago)
+        // Get the configured days for this domain
+        const daysInterval = this.domainSettings[domain];
+        const hoursInterval = daysInterval * 24;
+        
+        // Check last update time
         const lastChecked = story.dateLastChecked ? new Date(story.dateLastChecked).getTime() : 0;
         const hoursSinceLastCheck = (now - lastChecked) / (1000 * 60 * 60);
         
-        return hoursSinceLastCheck >= this.updateIntervalHours;
+        return hoursSinceLastCheck >= hoursInterval;
     }
 
     // Check if a story is already in the queue or being processed
@@ -117,6 +128,9 @@ export class StoryUpdateChecker {
     // Perform the periodic check
     async performCheck() {
         try {
+            // Load latest settings
+            await this.loadSettings();
+            
             // Check if story tracker is the active tab
             const isTrackerActive = await this.isStoryTrackerActive();
             if (!isTrackerActive) {
@@ -169,12 +183,12 @@ export class StoryUpdateChecker {
     }
 
     // Get current checker status
-    getStatus() {
+    async getStatus() {
+        await this.loadSettings();
         return {
             enabled: true,
             checkInterval: this.checkIntervalMinutes,
-            updateInterval: this.updateIntervalHours,
-            supportedDomains: this.supportedDomains
+            domainSettings: this.domainSettings
         };
     }
 
@@ -185,12 +199,7 @@ export class StoryUpdateChecker {
             await this.initialize(); // Restart with new interval
         }
         
-        if (settings.updateIntervalHours) {
-            this.updateIntervalHours = settings.updateIntervalHours;
-        }
-        
-        if (settings.supportedDomains) {
-            this.supportedDomains = settings.supportedDomains;
-        }
+        // Settings are now loaded from chrome.storage on demand
+        await this.loadSettings();
     }
 }
