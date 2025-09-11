@@ -785,7 +785,7 @@ function grabWebnovel() {
 /**
  * Creates a standard grabber function
  * @param {string} [contentSelector="body"] - Selector for content
- * @param {string|null} [titleSelector="title"] - Selector for title, null to skip title
+ * @param {string|string[]|null} [titleSelector="title"] - Selector(s) for title. Can be a string, array of strings, or null to skip title
  * @returns {Function} Grabber function
  */
 function grabStandard(contentSelector = "body", titleSelector = "title") {
@@ -793,10 +793,7 @@ function grabStandard(contentSelector = "body", titleSelector = "title") {
     return function() {
         const dom = document.cloneNode(true);
         let result = "";
-        if (titleSelector !== null) {
-            const title = dom.querySelector(titleSelector)?.textContent || "";
-            result += `<h1>${title.trim()}</h1>\n\n`;
-        }
+        result += buildTitleHTML(dom, titleSelector);
 
         const content = dom.querySelector(contentSelector);
         standardCleanup(content);
@@ -811,4 +808,31 @@ function standardCleanup(content) {
     });
     utils.standardContentCleanup(content);
     return content;
+}
+
+/**
+ * Builds an H1 title HTML from one or more selectors
+ * @param {Document|Element} dom - The DOM element to query
+ * @param {string|string[]|null} titleSelector - Selector(s) for title. Can be a string, array of strings, or null
+ * @returns {string} HTML string with H1 title, or empty string if no title
+ */
+function buildTitleHTML(dom, titleSelector) {
+    if (titleSelector === null) {
+        return "";
+    }
+
+    let title;
+
+    // Support both string and array of selectors for title
+    if (Array.isArray(titleSelector)) {
+        // Get all matching elements and join their text with spaces
+        const titles = titleSelector
+            .map(selector => dom.querySelector(selector)?.textContent?.trim() || "")
+            .filter(text => text.length > 0);
+        title = titles.join(" ");
+    } else {
+        title = dom.querySelector(titleSelector)?.textContent?.trim() || "";
+    }
+
+    return title ? `<h1>${title}</h1>\n\n` : "";
 }

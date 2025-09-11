@@ -96,6 +96,13 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next Chapter"] },
         },
+        "novelpia.com": {
+            grabber: { fn: "grabStandard", args: ["#book-box", ["title", ".in-ch-txt"]] },
+            useFirstHeadingTitle: true,
+            postGrab: { fn: "GrabActions.clickElementBySelector", args: [".next-epi-btn"] },
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
+            filenameCleanupPatterns: ["Novelpia - "]
+        },
         "noveltranslation.net": { grabber: "grabNovelTranslationNet" },
         "patreon.com": { grabber: "grabPatreon" },
         "peachtea.agency": { 
