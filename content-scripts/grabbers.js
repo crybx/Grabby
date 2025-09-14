@@ -350,21 +350,24 @@ function grabLilyonthevalley() {
 
     const footnotes = document.querySelector(".chapter__footnotes");
 
+    utils.removeTagsFromContent(content, ["BDI", "CODE", "RUBY", "SAMP", "KBD", "RT", "RP", "WBR"]);
     content.querySelectorAll("*").forEach(element => {
         // if it's a p tag and does not have attribute data-paragraph-id, remove it
         if (element.tagName === "P" && !element.hasAttribute("data-paragraph-id")) {
             element.remove();
             return;
         }
-        // if it's a span, and it's only hexadecimal: `<span class="[^"]*">[a-f0-9]+</span>`
+        // if it's a span, and it's got only lower case, numbers, # ; or &:
+        // `<span class="[^"]*">[a-z0-9#;&]+</span>`
         if (element.tagName === "SPAN"
             && element.classList?.length === 1
-            && /^[a-f0-9]+$/.test(element.textContent)) {
+            && /^[a-z0-9#;%]+$/.test(element.textContent)) {
             element.remove();
             return;
         }
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
+        utils.removeElementWithAttributes(element, ["aria-hidden"]);
         utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
     });
     utils.unwrapAllOfTag(content, "span");
