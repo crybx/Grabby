@@ -488,9 +488,15 @@ class LibraryUI {  // eslint-disable-line no-unused-vars
      * Handle merge upload file selection
      */
     static async LibMergeUpload(objbtn) {
-        let PreviousEpubBase64 = await LibraryStorage.LibGetFromStorage("LibEpub" + objbtn.dataset.libepubid);
+        let PreviousEpubBase64 = await Library.LibGetFromStorage("LibEpub" + objbtn.dataset.libepubid);
         let AddEpubBlob = objbtn.files[0];
-        LibraryStorage.LibMergeEpub(PreviousEpubBase64, AddEpubBlob, objbtn.dataset.libepubid);
+        await Library.LibMergeEpub(PreviousEpubBase64, AddEpubBlob, objbtn.dataset.libepubid);
+        let LibStoryURL = await Library.LibGetFromStorage("LibStoryURL" + objbtn.dataset.libepubid);
+        let SourceChapterList = await Library.LibGetSourceChapterList(LibStoryURL);
+        if (SourceChapterList == null) {
+            return;
+        }
+        Library.userPreferences.readingList.setEpub(LibStoryURL, SourceChapterList[SourceChapterList.length-1]);
     }
     
     /**

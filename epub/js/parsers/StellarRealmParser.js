@@ -1,6 +1,6 @@
 "use strict";
 
-// stellarrealm.net moved to brightnovels.com
+parserFactory.registerDeadSite("stellarrealm.net", () => new StellarRealmParser());
 parserFactory.register("brightnovels.com", () => new StellarRealmParser());
 
 class StellarRealmParser extends Parser {

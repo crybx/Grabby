@@ -81,19 +81,19 @@ class KemonopartyParser extends Parser {
     }
 
     async getLastPageOffset(dom, urlbuilder) {
-        try {
-            let offsets = [...dom.querySelectorAll("#paginator-top a")]
-                .map(item => new URL(item?.href)?.searchParams?.get("o"))
-                .filter(item => item !== null)
-                .map(item => parseInt(item));
-            return 0 < offsets.length
-                ? Math.max(...offsets)
-                : 0;
-        } catch (error) {
-            let regex1 = new RegExp("/posts?.+");
-            let profile = await this.fetchJson(urlbuilder.href.replace(regex1, "/profile"));
-            return profile?.post_count;
-        }
+        let offsets = [...dom.querySelectorAll("#paginator-top a")];
+        offsets = offsets.map(item => new URL(item?.href)?.searchParams?.get("o"));
+        offsets = offsets.filter(item => item !== null);
+        offsets = offsets.map(item => parseInt(item));
+        return 0 < offsets.length
+            ? Math.max(...offsets)
+            : await this.getLastPageOffsetAlternative(urlbuilder);
+    }
+
+    async getLastPageOffsetAlternative(urlbuilder) {
+        let regex1 = new RegExp("/posts?.+");
+        let profile = await this.fetchJson(urlbuilder.href.replace(regex1, "/profile"));
+        return profile?.post_count;
     }
 
     async fetchJson(url) {

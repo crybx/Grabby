@@ -28,7 +28,7 @@ class GlobalNovelpiaParser extends Parser {
     }
 
     findContent(dom) {
-        return dom.querySelector(".viewer-contents");
+        return Parser.findConstrutedContent(dom);
     }
 
     extractTitleImpl(dom) {
@@ -60,10 +60,41 @@ class GlobalNovelpiaParser extends Parser {
     findCoverImageUrl(dom) {
         return util.getFirstImgSrc(dom, ".cover-box");
     }
-    
+
+    async fetchChapter(url) {
+        let chapterId = url.split("/").pop();
+        let metaUrl = `https://api-global.novelpia.com/v1/novel/episode?episode_no=${chapterId}`;
+        let metaJson = (await HttpClient.fetchJson(metaUrl)).json;
+        let token = metaJson.result._t;
+        let contentUrl = `https://api-global.novelpia.com/v1/novel/episode/content?_t=${token}`;
+        let contentJson = (await HttpClient.fetchJson(contentUrl)).json;
+        return this.jsonToHtml(url, contentJson.result.data, metaJson.result.data.epi_title);
+    }
+
+    jsonToHtml(pageUrl, data, title) {
+        let newDoc = Parser.makeEmptyDocForContent(pageUrl);
+        let header = newDoc.dom.createElement("h1");
+        header.textContent = title;
+        newDoc.content.appendChild(header);
+        let fragments = Object.keys(data)
+            .filter(k => k.startsWith("epi_content"))
+            .map(k => data[k]);
+        let content = util.sanitize("<div>" + fragments.join("") + "</div>");
+        util.moveChildElements(content.body, newDoc.content);
+        return newDoc.dom;
+    }
+
     removeUnwantedElementsFromContentElement(element) {
         util.removeChildElementsMatchingSelector(element, ".next-epi-btn");
         super.removeUnwantedElementsFromContentElement(element);
     }
 
+    getInformationEpubItemChildNodes(dom) {
+        return [...dom.querySelectorAll(".nv-synopsis")];
+    }
+
+    cleanInformationNode(node) {
+        util.removeChildElementsMatchingSelector(node, "button");
+        return node;
+    }
 }
