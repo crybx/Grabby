@@ -20,14 +20,26 @@ class Brittanypage43Parser extends Parser {
     }
 
     findContent(dom) {
-        return dom.querySelector(".chapter-content") ||
+        return dom.querySelector("#viewport") ||
+            dom.querySelector(".chapter-content") ||
             dom.querySelector("article .entry-content") ||
             dom.querySelector("article");
     }
 
     removeUnwantedElementsFromContentElement(element) {
         util.removeChildElementsMatchingSelector(element, ".jum");
+        util.removeChildElementsMatchingSelector(element, ".cbxwpbkmarkwrap");
         super.removeUnwantedElementsFromContentElement(element);
+    }
+
+    customRawDomToContentStep(chapter, content) {
+        // for all spans with class="aeg-chunk" set textContent to what is in data-aeg attribute
+        content.querySelectorAll("span.aeg-chunk").forEach(span => {
+            const dataAeg = span.getAttribute("data-aeg");
+            if (dataAeg) {
+                span.textContent = dataAeg;
+            }
+        });
     }
 
     findChapterTitle(dom) {
