@@ -220,6 +220,7 @@ function madaraWpTheme() {
         dom.querySelector(".entry-content_wrap");
 
     content = standardCleanup(content);
+    utils.removeAllElementsMatchingSelectors(content, "abh_box");
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
