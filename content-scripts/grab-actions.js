@@ -134,7 +134,7 @@ async function checkForUrlText(urlText = []) {
 }
 
 // Function to check for page not found errors and abort if found
-async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
+async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
     const notFoundIndicators = [
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
@@ -142,6 +142,7 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
         "404",
         "This page does not exist",
         "The page you requested could not be found",
+        "Uncaught Error: Call to undefined function wp_cache_get()"
     ];
     
     for (const selector of selectors) {
@@ -155,6 +156,24 @@ async function checkForPageNotFound(selectors = ["h1", "h2", "h3", ".error-messa
         }
     }
     
+    return { abort: false };
+}
+
+// Combined function to check for both page errors and premium content
+// Pass null/undefined to use defaults for any parameter
+async function checkForPageErrorsAndPremiumContent(errorSelectors, premiumSelectors, premiumText) {
+    // Check for page errors first (use undefined to trigger default if null passed)
+    const errorResult = await checkForPageErrors(errorSelectors ?? undefined);
+    if (errorResult.abort) {
+        return errorResult;
+    }
+
+    // Then check for premium content (use undefined to trigger defaults if null passed)
+    const premiumResult = await checkForPremiumContent(premiumSelectors ?? undefined, premiumText ?? undefined);
+    if (premiumResult.abort) {
+        return premiumResult;
+    }
+
     return { abort: false };
 }
 
@@ -466,7 +485,8 @@ window.GrabActions = {
     peachTeaClickAllOnOnePageButton,
     checkForPremiumContent,
     checkForUrlText,
-    checkForPageNotFound,
+    checkForPageErrors,
+    checkForPageErrorsAndPremiumContent,
     googleTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,

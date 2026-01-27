@@ -141,7 +141,7 @@ const WEBSITE_CONFIGS = {
         "secondlifetranslations.com": { grabber: "grabSecondLifeTranslations" },
         "starlightstream.net": {
             grabber: "grabStarlightStream",
-            preGrab: { fn: "GrabActions.checkForPageNotFound", args: [[".blog-post-title-font"]] },
+            preGrab: { fn: "GrabActions.checkForPageErrors", args: [[".blog-post-title-font"]] },
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 20 }
         },
@@ -195,9 +195,10 @@ const WEBSITE_CONFIGS = {
             grabber: "grabLilyonthevalley",
             useFirstHeadingTitle: true,
             preGrab: {
-                fn: "GrabActions.checkForPremiumContent",
+                fn: "GrabActions.checkForPageErrorsAndPremiumContent",
                 args: [
-                    ["h1, h2, h3, .mycred-sell-this-wrapper"],
+                    null,
+                    ["h1", "h2", "h3", ".mycred-sell-this-wrapper"],
                     ["Secret Pavilion", "Hidden Pavilion"]
                 ]
             },
