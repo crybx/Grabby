@@ -287,3 +287,8 @@ footer {
     color: #666;
     font-style: italic;
 }
+
+/* Disabled state for auto-queue settings */
+#auto-queue-settings-wrapper.disabled {
+    opacity: 0.5;
+}

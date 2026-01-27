@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const openStoryTrackerBtn = document.getElementById("open-story-tracker-btn");
     const showFloatingButtonCheckbox = document.getElementById("show-floating-button");
     const exportUsernameInput = document.getElementById("export-username");
+    const autoQueueEnabledCheckbox = document.getElementById("auto-queue-enabled");
+    const autoQueueSettingsWrapper = document.getElementById("auto-queue-settings-wrapper");
     const autoQueueDomainsContainer = document.getElementById("auto-queue-domains");
     const addAutoQueueDomainBtn = document.getElementById("add-auto-queue-domain");
 
@@ -49,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
         exportUsernameInput.addEventListener("input", function() {
             clearTimeout(saveTimeout);
             const username = this.value.trim();
-            
+
             saveTimeout = setTimeout(() => {
                 if (username) {
                     chrome.storage.local.set({
@@ -60,6 +62,36 @@ document.addEventListener("DOMContentLoaded", function() {
                     chrome.storage.local.remove("exportUsername");
                 }
             }, 500); // Save after 500ms of no typing
+        });
+    }
+
+    // Auto-Queue Enabled Master Toggle
+    function updateAutoQueueSettingsVisibility(enabled) {
+        if (autoQueueSettingsWrapper) {
+            if (enabled) {
+                autoQueueSettingsWrapper.classList.remove("disabled");
+            } else {
+                autoQueueSettingsWrapper.classList.add("disabled");
+            }
+        }
+    }
+
+    if (autoQueueEnabledCheckbox) {
+        // Load current setting
+        chrome.storage.local.get(["autoQueueEnabled"], function(result) {
+            // Default to true if not set
+            const enabled = result.autoQueueEnabled !== false;
+            autoQueueEnabledCheckbox.checked = enabled;
+            updateAutoQueueSettingsVisibility(enabled);
+        });
+
+        // Save setting when changed
+        autoQueueEnabledCheckbox.addEventListener("change", function() {
+            const enabled = this.checked;
+            chrome.storage.local.set({
+                autoQueueEnabled: enabled
+            });
+            updateAutoQueueSettingsVisibility(enabled);
         });
     }
 

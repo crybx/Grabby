@@ -60,14 +60,25 @@
         <h2>Story Tracker</h2>
         <p>Track your reading progress and manage your story collection.</p>
         <button id="open-story-tracker-btn" class="primary-btn">📚 Open Story Tracker</button>
-        <p>Configure which sites should automatically check stories for new chapters and how frequently.</p>
-
-        <div id="auto-queue-domains" class="setting-item">
-            <!-- Domain settings will be populated by JavaScript -->
-        </div>
 
         <div class="setting-item">
-            <button id="add-auto-queue-domain" class="primary-btn">+ Add Domain</button>
+            <label for="auto-queue-enabled" class="setting-label">
+                <input type="checkbox" id="auto-queue-enabled" checked>
+                Enable automatic chapter checking
+            </label>
+            <p class="setting-description">Automatically check tracked stories for new chapters based on the schedule below.</p>
+        </div>
+
+        <div id="auto-queue-settings-wrapper">
+            <p>Configure which sites should automatically check stories for new chapters and how frequently.</p>
+
+            <div id="auto-queue-domains" class="setting-item">
+                <!-- Domain settings will be populated by JavaScript -->
+            </div>
+
+            <div class="setting-item">
+                <button id="add-auto-queue-domain" class="primary-btn">+ Add Domain</button>
+            </div>
         </div>
     </section>
 

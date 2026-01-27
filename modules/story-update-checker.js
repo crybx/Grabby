@@ -62,11 +62,14 @@ export class StoryUpdateChecker {
     // Load settings from chrome.storage.local
     async loadSettings() {
         try {
-            const result = await chrome.storage.local.get("autoQueueSettings");
+            const result = await chrome.storage.local.get(["autoQueueSettings", "autoQueueEnabled"]);
             this.domainSettings = result.autoQueueSettings || {};
+            // Default to true if not set
+            this.enabled = result.autoQueueEnabled !== false;
         } catch (error) {
             console.error("Error loading auto-queue settings:", error);
             this.domainSettings = {};
+            this.enabled = true;
         }
     }
 
@@ -130,7 +133,12 @@ export class StoryUpdateChecker {
         try {
             // Load latest settings
             await this.loadSettings();
-            
+
+            // Check if auto-queue is enabled
+            if (!this.enabled) {
+                return;
+            }
+
             // Check if story tracker is the active tab
             const isTrackerActive = await this.isStoryTrackerActive();
             if (!isTrackerActive) {
@@ -186,7 +194,7 @@ export class StoryUpdateChecker {
     async getStatus() {
         await this.loadSettings();
         return {
-            enabled: true,
+            enabled: this.enabled,
             checkInterval: this.checkIntervalMinutes,
             domainSettings: this.domainSettings
         };
