@@ -14,13 +14,14 @@ export class DownloadHandler {
 
             // Create HTML from content
             const htmlContent = this.getHtmlFromContent(filename, processedContent);
-            
+
             await this.downloadAsFile(filename, htmlContent);
-            
+
             // Return the filename for story tracker
             return { success: true, filename: filename };
         } catch (error) {
             console.error("Error processing and downloading content:", error);
+            console.error("Title was:", title, "URL was:", url);
             return { success: false };
         }
     }
@@ -88,6 +89,10 @@ ${bodyText}
         // # and , are not illegal, but they are annoying
         let illegalWindowsFileNameRegex = /[<>:"#!/\\|?*]/g;
         filename = filename.replace(illegalWindowsFileNameRegex, "");
+
+        // Remove zero-width and other invisible Unicode characters
+        // eslint-disable-next-line no-misleading-character-class
+        filename = filename.replace(/[\u200B-\u200D\uFEFF\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180E\u2000-\u200F\u202A-\u202F\u205F-\u2064\u206A-\u206F\u3000\u2800\uFFA0\u3164]/g, "");
 
         // remove any other whitespace
         filename = filename.replace(/\s/g, "_");
