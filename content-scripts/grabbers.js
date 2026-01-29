@@ -34,6 +34,13 @@ function grabRidi() {
         utils.removeEmptyParagraphAndHeadings(element);
     });
     utils.unwrapAllOfTag(content, "font");
+
+    // Check for empty content before adding heading (page may have loaded without content)
+    const textContent = content.textContent.trim();
+    if (!textContent || textContent.length < 50) {
+        return { abort: true, reason: "Page loaded with no content - will retry on next check" };
+    }
+
     utils.ensureHeading(content, title);
 
     return content.innerHTML;

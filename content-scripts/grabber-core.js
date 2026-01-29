@@ -129,7 +129,16 @@ async function grabFromWebsite(isBulkGrab = false) {
             }
 
             try {
-                content = await config.grabber();
+                const grabResult = await config.grabber();
+
+                // Check if grabber returned an abort signal
+                if (grabResult && typeof grabResult === "object" && grabResult.abort) {
+                    console.log("Grabber requested abort:", grabResult.reason || "No reason provided");
+                    handleGrabInterruption(grabResult.reason || "Aborted by grabber");
+                    return null;
+                }
+
+                content = grabResult;
             } catch (grabError) {
                 console.error(`Error in grabber for ${url}:`, grabError);
                 content = grabStandard()(); // Fallback to generic grabber

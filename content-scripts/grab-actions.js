@@ -432,10 +432,9 @@ function pressRightArrow() {
 async function ridiNext() {
     let unownedEpisodeButtons = document.querySelectorAll(".checkout_contents_wrapper button");
     let unownedText = [
+        "다음화 보기",
         "view next episode",
-        "watch the next episode",
-        "watch the nextepisode",
-        "다음화 보기"
+        "watch the next episode"
     ];
     for (let button of unownedEpisodeButtons) {
         const buttonText = button.textContent.trim().toLowerCase();
@@ -447,19 +446,22 @@ async function ridiNext() {
 
     // wait to let popup load
     await new Promise(r => setTimeout(r, 3100));
-    let checkoutButtons = document.querySelectorAll(".checkout_buttons button");
+    let checkoutButtons = document.querySelectorAll(".checkout_buttons button, .checkout_buttons a");
 
     let paidText = [
+        "결제하고 바로 보기",
         "pay and watch right away",
         "pay and watch immediately",
-        "결제하고 바로 보기",
-        "charge and pay",
-        "충전하고 결제"
+        "충전하고 결제",
+        "charge and pay"
     ];
     let freeText = [
-        "view for free",
         "무료로 보기",
-        "watch for free"
+        "view for free",
+        "watch for free",
+        "다음화 보기",
+        "watch the next episode",
+        "view the next episode"
     ];
     
     // No check button found, so look for real checkout buttons
