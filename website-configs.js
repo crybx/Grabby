@@ -159,12 +159,6 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
         "tapas.io": { grabber: "grabTapas", useFirstHeadingTitle: true },
-        "transweaver.com": {
-            grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForPremiumContent",
-            postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 18, defaultDelay: 10 }
-        },
         "webnovel.com": { grabber: "grabWebnovel" },
         "watashiwasugoidesu.com": { grabber: "grabWatashiWaSugoiDesu" },
         "yoru.world": { grabber: "grabYoruWorld", useFirstHeadingTitle: true },
@@ -191,7 +185,7 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
         },
         fictioneerValleySites: {
-            domains: ["lilyonthevalley.com", "talesinthevalley.com"],
+            domains: ["lilyonthevalley.com", "talesinthevalley.com", "cherrymist.cafe"],
             grabber: "grabLilyonthevalley",
             useFirstHeadingTitle: true,
             preGrab: {
@@ -203,7 +197,7 @@ const WEBSITE_CONFIGS = {
                 ]
             },
             postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 50, defaultDelay: 15 }
         },
         madaraWpSites: {
             domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com",
@@ -213,6 +207,13 @@ const WEBSITE_CONFIGS = {
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
             filenameCleanupPatterns: [" - citrus aurora"]
+        },
+        lightNovelWPThemeSites: {
+            domains: ["blume-verse.com", "transweaver.com"],
+            grabber: { fn: "grabStandard", args: [".entry-content"] },
+            preGrab: "GrabActions.checkForPremiumContent",
+            postGrab: "GrabActions.pressRightArrow",
+            autoNav: { enabled: true, defaultCount: 18, defaultDelay: 10 }
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
