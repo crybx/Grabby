@@ -500,6 +500,7 @@ const utils = (function() {
         ];
         const elementsWithClass = [
             "adsbygoogle",
+            "btn-container",
             "chapternav",
             "confuse",
             "code-block",
