@@ -133,25 +133,26 @@ async function checkForUrlText(urlText = []) {
     return { abort: false };
 }
 
-// Function to check for page not found errors and abort if found
+// Function to check for page errors and abort if found
 async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
-    const notFoundIndicators = [
+    const errorIndicators = [
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
         "Page Not Found",
         "404",
         "This page does not exist",
         "The page you requested could not be found",
-        "Uncaught Error: Call to undefined function wp_cache_get()"
+        "Uncaught Error: Call to undefined function wp_cache_get()",
+        "Error establishing a database connection"
     ];
     
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
-            if (notFoundIndicators.some(indicator => text.includes(indicator))) {
-                console.log(`Page not found error detected: "${text}" - aborting grab`);
-                return { abort: true, reason: `Page not found: "${text}"` };
+            if (errorIndicators.some(indicator => text.includes(indicator))) {
+                console.log(`Page error detected: "${text}" - aborting grab`);
+                return { abort: true, reason: `Page error: "${text}"` };
             }
         }
     }
