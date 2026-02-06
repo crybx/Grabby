@@ -303,10 +303,11 @@ class StoryTrackerTable {
     applyFilters() {
         this.filteredStories = this.stories.filter(story => {
             // Text filter
-            const matchesText = !this.filterText || 
+            const matchesText = !this.filterText ||
                 story.title.toLowerCase().includes(this.filterText) ||
                 story.mainStoryUrl.toLowerCase().includes(this.filterText) ||
                 (story.lastChapterTitle && story.lastChapterTitle.toLowerCase().includes(this.filterText)) ||
+                (story.lastCheckStatus && story.lastCheckStatus.toLowerCase().includes(this.filterText)) ||
                 (story.tags && story.tags.some(tag => tag.toLowerCase().includes(this.filterText)));
 
             // Domain filter - strip "(Active Tab)" suffix for comparison
