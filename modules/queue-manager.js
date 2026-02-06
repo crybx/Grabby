@@ -1,7 +1,9 @@
 // Queue Manager - Handles queued processing of story auto-nav and grabbing
 export class QueueManager {
-    constructor(handleAutoGrabFunction) {
+    constructor(handleAutoGrabFunction, { statusUpdateCallback = null, stopGrabbingCallback = null } = {}) {
         this.handleAutoGrab = handleAutoGrabFunction;
+        this.statusUpdateCallback = statusUpdateCallback;
+        this.stopGrabbingCallback = stopGrabbingCallback;
         this.queue = [];
         this.processing = new Map(); // Currently processing stories
         this.completed = new Map(); // Completed stories with results
@@ -339,6 +341,12 @@ export class QueueManager {
                 duration: Date.now() - processingStory.startTime
             });
             this.processing.delete(storyId);
+
+            // Persist the final status to the story's lastCheckStatus
+            if (this.statusUpdateCallback) {
+                this.statusUpdateCallback(null, message || status, storyId);
+            }
+
             this.notifyQueueUpdate();
 
             // Check if queue is complete
@@ -427,17 +435,8 @@ export class QueueManager {
         for (const [storyId, story] of this.processing) {
             // Find the tab for this story and stop its bulk grab
             const tabId = this.getTabIdForStory(storyId);
-            if (tabId) {
-                // Send message to background to stop the bulk grab
-                chrome.runtime.sendMessage({
-                    target: "background",
-                    type: "stopGrabbing",
-                    tabId: tabId,
-                    status: "Queue cancelled by user",
-                    url: story.lastChapterUrl
-                }).catch(() => {
-                    // Ignore errors if message fails
-                });
+            if (tabId && this.stopGrabbingCallback) {
+                this.stopGrabbingCallback(tabId, "Queue cancelled by user", story.lastChapterUrl);
             }
             
             this.completed.set(storyId, {

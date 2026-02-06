@@ -1,9 +1,10 @@
 // BulkGrabManager - Handles all bulk grabbing operations
 export class BulkGrabManager {
-    constructor(grabContentCallback, completionCallback = null, scriptInjector = null) {
+    constructor(grabContentCallback, completionCallback = null, scriptInjector = null, statusUpdateCallback = null) {
         this.grabContentCallback = grabContentCallback;
         this.completionCallback = completionCallback;
         this.scriptInjector = scriptInjector;
+        this.statusUpdateCallback = statusUpdateCallback;
     }
 
     // Helper functions for tab-specific storage and alarms
@@ -246,20 +247,9 @@ export class BulkGrabManager {
                 // Tab doesn't exist, that's ok
             }
 
-            // Send message to background script to update story tracker
-            if (state.storyId || currentUrl) {
-                try {
-                    await chrome.runtime.sendMessage({
-                        target: "background",
-                        type: "updateStoryCheckStatus",
-                        url: currentUrl,
-                        status: `Completed ${state.totalPages} chapters in ${duration}s`,
-                        storyId: state.storyId
-                    });
-                } catch (error) {
-                    // Message couldn't be sent, likely tab was closed
-                    console.log("Could not send story tracker update, tab may have been closed");
-                }
+            // Update story tracker with completion status
+            if (this.statusUpdateCallback && (state.storyId || currentUrl)) {
+                this.statusUpdateCallback(currentUrl, `Completed ${state.totalPages} chapters in ${duration}s`, state.storyId);
             }
             
             await this.sendCompletionToPopup(tabId);

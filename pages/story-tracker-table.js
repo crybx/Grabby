@@ -1048,7 +1048,10 @@ class StoryTrackerTable {
             const minutes = String(date.getMinutes()).padStart(2, "0");
             document.getElementById("date-last-checked").value = `${year}-${month}-${day}T${hours}:${minutes}`;
         }
-        
+
+        const statusEl = document.getElementById("last-check-status");
+        statusEl.textContent = story.lastCheckStatus || "";
+
         document.getElementById("story-modal").style.display = "flex";
     }
 

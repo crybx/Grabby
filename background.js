@@ -133,8 +133,22 @@ const handleBulkGrabComplete = (tabId, success, message, isError = false, chapte
     queueManager.handleBulkGrabComplete(tabId, success, message, isError, chaptersDownloaded, isManualStop);
 };
 
-const bulkGrabManager = new BulkGrabManager(handleBulkGrabContent, handleBulkGrabComplete, scriptInjector);
-const queueManager = new QueueManager(handleAutoGrab);
+const handleStatusUpdate = (url, status, storyId) => {
+    StoryManager.updateLastCheckStatus(url, status, storyId).catch(err => {
+        console.warn("Could not update story tracker status:", err);
+    });
+};
+
+const handleStopGrabbing = (tabId, reason, url) => {
+    handleStatusUpdate(url, reason, null);
+    bulkGrabManager.stopGrabbing(tabId, reason);
+};
+
+const bulkGrabManager = new BulkGrabManager(handleBulkGrabContent, handleBulkGrabComplete, scriptInjector, handleStatusUpdate);
+const queueManager = new QueueManager(handleAutoGrab, {
+    statusUpdateCallback: handleStatusUpdate,
+    stopGrabbingCallback: handleStopGrabbing
+});
 const storyUpdateChecker = new StoryUpdateChecker(queueManager, StoryManager);
 
 // Handle bulk grab for individual stories
