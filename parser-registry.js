@@ -9,7 +9,7 @@
  * - file: The filename in epub/js/parsers/ directory
  * 
  * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 537
+ * Total supported domains: 539
  */
 
 let PARSER_REGISTRY = {
@@ -260,6 +260,7 @@ let PARSER_REGISTRY = {
     "nanomashin.online": { parserClass: "NanomashinonlineParser", file: "NanomashinonlineParser.js" },
     "ncode.syosetu.com": { parserClass: "SyosetuParser", file: "SyosetuParser.js" },
     "nepustation.com": { parserClass: "NepustationParser", file: "NepustationParser.js" },
+    "nhvnovels.com": { parserClass: "BlogusParser", file: "BlogusParser.js" },
     "nightcomic.com": { parserClass: "MadaraParser", file: "MadaraParser.js" },
     "nineheavens.org": { parserClass: "NineHeavensParser", file: "NineHeavensParser.js" },
     "nobadnovel.com": { parserClass: "NobadnovelParser", file: "NobadnovelParser.js" },
@@ -368,6 +369,7 @@ let PARSER_REGISTRY = {
     "peachpuff.in": { parserClass: "PeachpuffParser", file: "PeachpuffParser.js" },
     "peachygardens.blogspot.com": { parserClass: "PeachygardensBlogspotParser", file: "PeachygardensBlogspotParser.js" },
     "pery.info": { parserClass: "MadaraParser", file: "MadaraParser.js" },
+    "pienovels.com": { parserClass: "BlogusParser", file: "BlogusParser.js" },
     "piaotia.com": { parserClass: "PtwxzParser", file: "PtwxzParser.js" },
     "powanjuan.cc": { parserClass: "PowanjuanParser", file: "PowanjuanParser.js" },
     "puretl.com": { parserClass: "PuretlParser", file: "PuretlParser.js" },
