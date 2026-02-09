@@ -572,10 +572,11 @@ h1 {
 }
 
 .form-help {
-    display: block;
+    display: inline;
     font-size: 12px;
-    color: #666;
-    margin-top: 4px;
+    color: #999;
+    margin-left: 6px;
+    font-weight: normal;
     font-style: italic;
 }
 
