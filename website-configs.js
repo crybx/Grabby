@@ -215,6 +215,14 @@ const WEBSITE_CONFIGS = {
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 18, defaultDelay: 10 }
         },
+        blogusSites: {
+            domains: ["nhvnovels.com", "pienovels.com"],
+            grabber: { fn: "grabStandard", args: [".chapter-text"] },
+            useFirstHeadingTitle: true,
+            preGrab: "GrabActions.checkForPremiumContent",
+            postGrab: { fn: "GrabActions.clickElementBySelector", args: [".next-button"] },
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",
                 "mendacity.me", "wordpress.com"],

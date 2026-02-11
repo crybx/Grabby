@@ -80,7 +80,11 @@ class FictioneerParser extends Parser {
 
     // story description
     extractDescription(dom) {
-        return dom.querySelector(".story__summary").textContent.trim();
+        let summary = dom.querySelector(".story__summary");
+        if (summary === null) return "";
+        summary = summary.cloneNode(true);
+        util.removeElements(summary.querySelectorAll(".related-stories-block"));
+        return summary.textContent.trim();
     }
 
     findChapterTitle(dom) {
@@ -125,7 +129,11 @@ class FictioneerParser extends Parser {
     }
 
     getInformationEpubItemChildNodes(dom) {
-        return [...dom.querySelectorAll(".story__header, .story__summary")];
+        return [...dom.querySelectorAll(".story__header, .story__summary")].map(node => {
+            const clone = node.cloneNode(true);
+            util.removeElements(clone.querySelectorAll(".related-stories-block"));
+            return clone;
+        });
     }
 
     extractSubject(dom) {

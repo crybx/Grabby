@@ -511,10 +511,12 @@ const utils = (function() {
             "grecaptcha-badge",
             "jp-relatedposts",
             "mycred-buy-link",
+            "recommendation",
             "sharedaddy",
             "sidebar-container",
             "sidebar-nav",
             "sidebar-wrapper",
+            "tsl-preview",
             "uwp_widget_author_box",
             "wp-image-16312",
             "wp-block-buttons",
@@ -527,7 +529,7 @@ const utils = (function() {
         // Don't remove:
         // "class" story relevant styles and helps figure out what to remove/target
         // "id" affects footnotes and helps figure out what to remove/target
-        const attributes = [
+        const attributesToRemove = [
             "aria-disabled",
             "dir",
             "data-shortcode",
@@ -536,12 +538,16 @@ const utils = (function() {
             "face",
             "role"
         ];
+        const classesToRemove = [
+            "ng-star-inserted"
+        ]
         removeElementWithIds(element, ids);
         removeElementWithIdsThatStartWith(element, idPrefixes);
         removeElementWithClasses(element, elementsWithClass);
         removeElementWithAttributes(element, elementsWithAttribute);
         replaceSemanticInlineStylesWithTags(element, false);
-        removeAttributes(element, attributes);
+        removeClasses(element, classesToRemove);
+        removeAttributes(element, attributesToRemove);
         removeEmptyAttributes(element);
     }
 
