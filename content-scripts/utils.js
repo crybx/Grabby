@@ -540,7 +540,7 @@ const utils = (function() {
         ];
         const classesToRemove = [
             "ng-star-inserted"
-        ]
+        ];
         removeElementWithIds(element, ids);
         removeElementWithIdsThatStartWith(element, idPrefixes);
         removeElementWithClasses(element, elementsWithClass);

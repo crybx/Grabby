@@ -221,7 +221,8 @@ const WEBSITE_CONFIGS = {
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
             postGrab: { fn: "GrabActions.clickElementBySelector", args: [".next-button"] },
-            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
+            useStoryTitleInFilename: true
         },
         wordpressSites: {
             domains: ["eatapplepies.com", "ladyhotcombtranslations.com", "littlepinkstarfish.com",

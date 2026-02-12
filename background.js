@@ -369,9 +369,21 @@ async function handleMessages(message, sender, sendResponse) {
 
     switch (message.type) {
         case "processAndDownload": {
-            const result = await downloadHandler.processAndDownload(message.data);
             const tabId = await scriptInjector.getTabId(message, sender);
             const storyId = await getStoryIdFromTab(tabId);
+
+            // If config requests story title in filename, look it up from the tab's tracker association
+            const siteConfig = findMatchingConfig(message.data.url);
+            if (siteConfig?.useStoryTitleInFilename) {
+                const status = StoryManager.openStoryStatuses.get(tabId);
+                // story object shape varies: manual tracker opens use .title, auto-queue uses .storyTitle
+                const storyTitle = status?.story?.title || status?.story?.storyTitle;
+                if (storyTitle) {
+                    message.data.storyTitle = storyTitle;
+                }
+            }
+
+            const result = await downloadHandler.processAndDownload(message.data);
             
             // Update story tracker with the determined filename
             if (result.success && result.filename) {

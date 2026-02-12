@@ -7,9 +7,10 @@ export class DownloadHandler {
         let matchingConfig = data.matchingConfig;
         let titleFromParser = data.titleFromParser;
         let url = data.url;
+        let storyTitle = data.storyTitle;
 
         try {
-            const filename = this.createFileName(title, titleFromParser, url, matchingConfig);
+            const filename = this.createFileName(title, titleFromParser, url, matchingConfig, storyTitle);
             const processedContent = this.processContent(content);
 
             // Create HTML from content
@@ -70,9 +71,14 @@ ${bodyText}
 </html>`;
     }
 
-    createFileName(title, titleFromParser, url, matchingConfig) {
+    createFileName(title, titleFromParser, url, matchingConfig, storyTitle) {
         // Use WebToEpub title if available, otherwise use the extracted title
         let filename = titleFromParser || title;
+
+        // Prefix with story title if provided (for sites where chapter pages lack story context)
+        if (storyTitle) {
+            filename = `${storyTitle} - ${filename}`;
+        }
 
         // Apply domain-specific cleanup patterns from config
         if (matchingConfig?.filenameCleanupPatterns && Array.isArray(matchingConfig.filenameCleanupPatterns)) {
