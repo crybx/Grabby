@@ -254,7 +254,7 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                             await resolvedConfig.postGrab();
 
                             // Return delay from website-config
-                            const delay = config.autoNav?.defaultDelay || 10; // fallback to 10 seconds if not found
+                            const delay = config.autoNav?.defaultDelay || 15; // fallback to 15 seconds if not found
                             return delay * 1000; // convert to milliseconds
                         } catch (error) {
                             console.error("Error in postGrab action:", error);
