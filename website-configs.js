@@ -220,7 +220,7 @@ const WEBSITE_CONFIGS = {
             grabber: { fn: "grabStandard", args: [".chapter-text"] },
             useFirstHeadingTitle: true,
             preGrab: "GrabActions.checkForPremiumContent",
-            postGrab: { fn: "GrabActions.clickElementBySelector", args: [".next-button"] },
+            postGrab: { fn: "GrabActions.clickElementBySelector", args: ["[aria-label*=\"Next\"]"] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
             useStoryTitleInFilename: true
         },
