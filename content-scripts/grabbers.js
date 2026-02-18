@@ -376,7 +376,7 @@ function grabLilyonthevalley() {
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeElementWithAttributes(element, ["aria-hidden"]);
-        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
+        utils.removeElementWithClasses(element, ["encryptedPayload", "eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
     });
     utils.unwrapAllOfTag(content, "span");
     content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
