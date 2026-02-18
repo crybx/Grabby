@@ -197,7 +197,7 @@ const WEBSITE_CONFIGS = {
                 ]
             },
             postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultCount: 50, defaultDelay: 15 }
+            autoNav: { enabled: true, defaultCount: 50, defaultDelay: 15, activeTab: true }
         },
         madaraWpSites: {
             domains: ["citrusaurora.com", "duskblossoms.com", "foxaholic.com",
