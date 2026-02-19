@@ -548,8 +548,8 @@ export class QueueManager {
                 status = "no-content";
                 if (message.toLowerCase().includes("no next")) {
                     displayMessage = "No new chapters found";
-                } else if (message.toLowerCase().includes("premium")) {
-                    displayMessage = "Premium content reached";
+                } else if (message.toLowerCase().includes("locked")) {
+                    displayMessage = "Locked content reached";
                 } else {
                     displayMessage = "No content available";
                 }

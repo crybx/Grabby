@@ -293,7 +293,7 @@ export class BulkGrabManager {
             
             // Schedule next grab if not the last page
             if (state.currentPage < state.totalPages) {
-                this.sendStatusToPopup(`Waiting ${state.delaySeconds}s before next grab... (page ${state.currentPage} of ${state.totalPages})`, progress);
+                this.sendStatusToPopup(`Waiting ${state.delaySeconds}s (page ${state.currentPage} of ${state.totalPages})`, progress);
                 
                 // Use Chrome alarms API for delays >= 60s, setTimeout with keepalive for shorter delays
                 if (state.delaySeconds >= 60) {

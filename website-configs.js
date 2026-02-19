@@ -39,7 +39,7 @@ const WEBSITE_CONFIGS = {
         },
         "brightnovels.com": {
             grabber: { fn: "grabStandard", args: [".chapter-content"] },
-            preGrab: { fn: "GrabActions.checkForPremiumContent", args: [["h4"]] },
+            preGrab: { fn: "GrabActions.checkForLockedContent", args: [["h4"]] },
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
@@ -59,7 +59,7 @@ const WEBSITE_CONFIGS = {
         "helioscans.com": {
             grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },
             preGrab: {
-                fn: "GrabActions.checkForPremiumContent",
+                fn: "GrabActions.checkForLockedContent",
                 args: [["div", "span", "p"], ["This is an early access chapter."]]
             },
             postGrab: {
@@ -71,7 +71,7 @@ const WEBSITE_CONFIGS = {
         "hyacinthbloom.com": {
             grabber: "grabHyacinth",
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForPremiumContent",
+            preGrab: "GrabActions.checkForLockedContent",
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
@@ -114,7 +114,7 @@ const WEBSITE_CONFIGS = {
         "readhive.org": {
             grabber: "grabReadhive",
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForPremiumContent",
+            preGrab: "GrabActions.checkForLockedContent",
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next"] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
@@ -148,7 +148,7 @@ const WEBSITE_CONFIGS = {
         "storyseedling.com": {
             grabber: "grabStorySeedling",
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForPremiumContent",
+            preGrab: "GrabActions.checkForLockedContent",
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
@@ -179,7 +179,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
             preGrab: {
-                fn: "GrabActions.checkForPremiumContent",
+                fn: "GrabActions.checkForLockedContent",
                 args: [["h1, h2, h3, .mycred-sell-this-wrapper, .cmppp-plan-card"]] },
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
@@ -189,7 +189,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabLilyonthevalley",
             useFirstHeadingTitle: true,
             preGrab: {
-                fn: "GrabActions.checkForPageErrorsAndPremiumContent",
+                fn: "GrabActions.checkForPageErrorsAndLockedContent",
                 args: [
                     null,
                     ["h1", "h2", "h3", ".mycred-sell-this-wrapper"],
@@ -211,7 +211,7 @@ const WEBSITE_CONFIGS = {
         lightNovelWPThemeSites: {
             domains: ["blume-verse.com", "transweaver.com"],
             grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForPremiumContent",
+            preGrab: "GrabActions.checkForLockedContent",
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 18, defaultDelay: 10 }
         },
@@ -219,7 +219,7 @@ const WEBSITE_CONFIGS = {
             domains: ["nhvnovels.com", "pienovels.com"],
             grabber: { fn: "grabStandard", args: [".chapter-text"] },
             useFirstHeadingTitle: true,
-            preGrab: "GrabActions.checkForPremiumContent",
+            preGrab: "GrabActions.checkForLockedContent",
             postGrab: { fn: "GrabActions.clickElementBySelector", args: ["[aria-label*=\"Next\"]"] },
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 },
             useStoryTitleInFilename: true

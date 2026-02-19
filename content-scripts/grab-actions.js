@@ -80,10 +80,10 @@ async function peachTeaClickAllOnOnePageButton() {
     return false;
 }
 
-// Function to check for premium/locked content and abort if found
-async function checkForPremiumContent(selectors = ["h2, h3"], premiumText = null) {
-    if (!premiumText) {
-        premiumText = [
+// Function to check for locked content and abort if found
+async function checkForLockedContent(selectors = ["h2, h3"], lockText = null) {
+    if (!lockText) {
+        lockText = [
             "Advanced Chapter",
             "Premium Content",
             "Locked Chapter",
@@ -103,9 +103,9 @@ async function checkForPremiumContent(selectors = ["h2, h3"], premiumText = null
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
-            if (premiumText.some(indicator => text.includes(indicator))) {
-                console.log(`Premium content detected: "${text}" - aborting grab`);
-                return { abort: true, reason: `Premium content detected: ${text}` };
+            if (lockText.some(indicator => text.includes(indicator))) {
+                console.log(`Locked content: "${text}" - aborting grab`);
+                return { abort: true, reason: `Locked content: ${text}` };
             }
         }
     }
@@ -160,19 +160,19 @@ async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message
     return { abort: false };
 }
 
-// Combined function to check for both page errors and premium content
+// Combined function to check for both page errors and locked content
 // Pass null/undefined to use defaults for any parameter
-async function checkForPageErrorsAndPremiumContent(errorSelectors, premiumSelectors, premiumText) {
+async function checkForPageErrorsAndLockedContent(errorSelectors, lockedSelectors, lockedText) {
     // Check for page errors first (use undefined to trigger default if null passed)
     const errorResult = await checkForPageErrors(errorSelectors ?? undefined);
     if (errorResult.abort) {
         return errorResult;
     }
 
-    // Then check for premium content (use undefined to trigger defaults if null passed)
-    const premiumResult = await checkForPremiumContent(premiumSelectors ?? undefined, premiumText ?? undefined);
-    if (premiumResult.abort) {
-        return premiumResult;
+    // Then check for locked content (use undefined to trigger defaults if null passed)
+    const lockedResult = await checkForLockedContent(lockedSelectors ?? undefined, lockedText ?? undefined);
+    if (lockedResult.abort) {
+        return lockedResult;
     }
 
     return { abort: false };
@@ -486,10 +486,10 @@ window.GrabActions = {
     scrollToTop,
     waitForElement,
     peachTeaClickAllOnOnePageButton,
-    checkForPremiumContent,
+    checkForLockedContent,
     checkForUrlText,
     checkForPageErrors,
-    checkForPageErrorsAndPremiumContent,
+    checkForPageErrorsAndLockedContent,
     googleTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,
