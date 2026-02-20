@@ -91,6 +91,16 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "medium.com": { grabber: { fn: "grabStandard", args: ["section", null] } },
+        "mistminthaven.com": {
+            grabber: { fn: "grabStandard", args: ["#chapter-content-text", ".reader-header h1"] },
+            preGrab: "GrabActions.checkForLockedContent",
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: ["div[title='Next chapter']"]
+            },
+            autoNav: { enabled: true, defaultCount: 20, defaultDelay: 10 },
+            useStoryTitleInFilename: true
+        },
         "novelingua.com": {
             grabber: "grabNovelingua",
             useFirstHeadingTitle: true,
