@@ -83,7 +83,7 @@ class FictioneerParser extends Parser {
         let summary = dom.querySelector(".story__summary");
         if (summary === null) return "";
         summary = summary.cloneNode(true);
-        util.removeElements(summary.querySelectorAll(".related-stories-block"));
+        util.removeElements(summary.querySelectorAll(".related-stories-block, .code-block"));
         return summary.textContent.trim();
     }
 
@@ -131,7 +131,7 @@ class FictioneerParser extends Parser {
     getInformationEpubItemChildNodes(dom) {
         return [...dom.querySelectorAll(".story__header, .story__summary")].map(node => {
             const clone = node.cloneNode(true);
-            util.removeElements(clone.querySelectorAll(".related-stories-block"));
+            util.removeElements(clone.querySelectorAll(".related-stories-block, .code-block"));
             return clone;
         });
     }
