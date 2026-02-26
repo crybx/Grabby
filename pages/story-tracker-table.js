@@ -27,6 +27,7 @@ class StoryTrackerTable {
         this.populateDomainFilter();
         this.renderTable();
         this.updateTagFilterDisplay();
+        this.initAutoCheckToggle();
     }
 
     async loadStories() {
@@ -270,7 +271,12 @@ class StoryTrackerTable {
         document.getElementById("edit-tags-modal").addEventListener("click", (e) => {
             if (e.target.id === "edit-tags-modal") this.hideEditTagsModal();
         });
-        
+
+        // Auto-check toggle
+        document.getElementById("auto-check-toggle").addEventListener("click", () => {
+            this.toggleAutoCheck();
+        });
+
         // Add event delegation for chapter links and story title links
         document.getElementById("stories-table").addEventListener("click", (e) => {
             // Check if clicked element is a chapter link or story title link
@@ -1886,6 +1892,26 @@ class StoryTrackerTable {
             
             container.appendChild(storyElement);
         });
+    }
+
+    initAutoCheckToggle() {
+        const btn = document.getElementById("auto-check-toggle");
+        const label = document.getElementById("auto-check-label");
+        chrome.storage.local.get(["autoQueueEnabled"], (result) => {
+            const enabled = result.autoQueueEnabled !== false;
+            btn.classList.toggle("active", enabled);
+            label.textContent = enabled ? "ON" : "OFF";
+        });
+    }
+
+    toggleAutoCheck() {
+        const btn = document.getElementById("auto-check-toggle");
+        const label = document.getElementById("auto-check-label");
+        const isActive = btn.classList.contains("active");
+        const newState = !isActive;
+        btn.classList.toggle("active", newState);
+        label.textContent = newState ? "ON" : "OFF";
+        chrome.storage.local.set({ autoQueueEnabled: newState });
     }
 }
 

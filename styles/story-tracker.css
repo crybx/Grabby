@@ -215,6 +215,33 @@ h1 {
     gap: 12px;
 }
 
+/* Auto-Check Toggle Button */
+.auto-check-btn {
+    margin-left: 4px;
+    border-left: 1px solid #dadce0;
+    padding-left: 16px;
+    opacity: 0.55;
+}
+
+.auto-check-btn:hover {
+    opacity: 0.75;
+}
+
+.auto-check-btn.active {
+    opacity: 1;
+    background-color: #e8f0fe;
+    color: #1a73e8;
+    border-color: #1a73e8;
+}
+
+.auto-check-btn.active:hover {
+    background-color: #d2e3fc;
+}
+
+#auto-check-label {
+    font-weight: 600;
+}
+
 /* Buttons */
 .primary-btn, .secondary-btn, .danger-btn {
     padding: 8px 16px;
