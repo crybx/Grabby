@@ -94,6 +94,10 @@ class QidianParser extends Parser {
 
     cleanRawDom(content)
     {
+        // I don't remember why I removed this cleanup. Did it limit ability to do other cleanup??
+        // //Remove repeating & unused metadata from document. Approximately halves body length.
+        // content.querySelectorAll("i.para-comment_num, i.para-comment").forEach(i => i.remove());
+        // content.querySelectorAll("div.db").forEach(i => i.removeAttribute("data-ejs"));
         let tempTitle = this.ChacheChapterTitle.get(content.baseURI);
         let newTitleNode = document.createElement("h1");
         if (!tempTitle || tempTitle === "[placeholder]") {
@@ -196,6 +200,7 @@ class QidianParser extends Parser {
  
     removeUnwantedElementsFromContentElement(content) {
         util.removeChildElementsMatchingSelector(content, "pirate");
+        //util.removeChildElementsMatchingSelector(content, "form.cha-score, div.cha-bts, pirate, div.cha-content div.user-links-wrap, div.tac");
         this.tagAuthorNotesBySelector(content, "div.m-thou");
         //Remove repeat & unused metadata from document. Approximately halves body length.
         content.querySelectorAll("*").forEach(element => {

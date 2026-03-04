@@ -26,7 +26,21 @@ const util = (function() {
     }
 
     function isFirefox() {
-        return (typeof (browser) !== "undefined");
+        if (navigator.brave && navigator.brave.isBrave)
+        {
+            return false;
+        }
+        else if (typeof (browser) === "undefined")
+        {
+            // old version of chrome
+            return false;
+        }
+        else
+        {
+            // this only works as long as firefox hasn't implemented this 
+            // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/PlatformNaclArch
+            return (typeof (browser.runtime.PlatformNaclArch) == "undefined");
+        }
     }
 
     function extensionVersion() {
@@ -1050,7 +1064,7 @@ const util = (function() {
     function detectMimeType(b64) {
         let b64b = atob(b64);
         for (var s in MIME_TYPE_SIGNATURES) {
-            if (b64b.indexOf(atob(s)) === 0) {
+            if (b64b.indexOf(atob(s)) === 0 || b64.indexOf(s) === 0) {
                 return MIME_TYPE_SIGNATURES[s][0];
             }
         }
@@ -1121,7 +1135,7 @@ const util = (function() {
         "iVBORw0KGgo=": ["image/png", "image/apng"],
         "R0lGODdh": ["image/gif"],
         "R0lGODlh": ["image/gif"],
-        "UklGR": ["image/webp"],
+        "UklGRg": ["image/webp"],
         "Qk0=": ["image/bmp"],
         "SUkqAA==": ["image/tiff"],
         "TU0AKg==": ["image/tiff"],

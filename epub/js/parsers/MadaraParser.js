@@ -17,6 +17,7 @@ parserFactory.register("mangasushi.net", () => new MadaraParser());
 parserFactory.register("mangabob.com", () => new MadaraParser());
 parserFactory.register("greenztl2.com", () => new MadaraVariantParser());
 
+parserFactory.register("indratranslations.com", () => new KdtnovelsParser());
 parserFactory.register("kdtnovels.com", () => new KdtnovelsParser());
 
 parserFactory.registerRule(
@@ -68,9 +69,8 @@ class MadaraParser extends WordpressBaseParser {
         return descriptionElement === null ? "" : descriptionElement.textContent.trim();
     }
     
-
     removeUnwantedElementsFromContentElement(element) {
-        util.removeChildElementsMatchingSelector(element, "div.addtoany_share_save_container");
+        util.removeChildElementsMatchingSelector(element, "div.addtoany_share_save_container, div.code-block");
         super.removeUnwantedElementsFromContentElement(element);
     }
 
@@ -86,6 +86,9 @@ class MadaraParser extends WordpressBaseParser {
         let nodes = [...dom.querySelectorAll("div.summary__content")];
         if (nodes.length === 0) {
             nodes = [...dom.querySelectorAll("div.manga-summary p")];
+        }
+        if (nodes.length === 0) {
+            nodes = [...dom.querySelectorAll("div.excerpt-content p")];
         }
         return nodes;
     }

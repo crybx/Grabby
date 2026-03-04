@@ -194,20 +194,22 @@ const main = (function() {
         // Sync current checkbox states from UI back to parser state before EPUB generation
         syncCheckboxStatesToParser();
 
-        await parser.fetchContent().then(async () => {
-            return await packEpub(metaInfo);
-        }).then((content) => {
-            // Enable button here.  If user cancels save dialog
-            // the promise never returns
-            setProcessingButtonsState(false);
-            let overwriteExisting = userPreferences.overwriteExistingEpub.value;
-            let backgroundDownload = userPreferences.noDownloadPopup.value;
-            let fileName = Download.CustomFilename();
-            if (this.dataset.libclick === "yes") {
-                return LibraryStorage.LibAddToLibrary(content, fileName, document.getElementById("startingUrlInput").value, overwriteExisting, backgroundDownload, userPreferences);
-            }
-            return Download.save(content, fileName, overwriteExisting, backgroundDownload);
-        }).then(() => {
+        await parser.fetchContent();
+        let content = await packEpub(metaInfo);
+
+        // Enable button here.  If user cancels save dialog
+        // the promise never returns
+        setProcessingButtonsState(false);
+
+        let overwriteExisting = userPreferences.overwriteExistingEpub.value;
+        let backgroundDownload = userPreferences.noDownloadPopup.value;
+        let fileName = Download.CustomFilename();
+        if (this.dataset.libclick === "yes") {
+            return LibraryStorage.LibAddToLibrary(content, fileName, document.getElementById("startingUrlInput").value, overwriteExisting, backgroundDownload, userPreferences);
+        } else {
+            await Download.save(content, fileName, overwriteExisting, backgroundDownload);
+        }
+        try {
             // Update Reading List if user has manually checked the checkbox
             if (document.getElementById("includeInReadingListCheckbox")?.checked) {
                 parser.updateReadingList();
@@ -223,7 +225,7 @@ const main = (function() {
                 ErrorLog.showLogToUser();
                 dumpErrorLogToFile();
             }
-        }).catch((err) => {
+        } catch (err) {
             setProcessingButtonsState(false);
             if (util.sleepController.signal.aborted) {
                 util.sleepController = new AbortController;
@@ -231,7 +233,7 @@ const main = (function() {
                 return;
             }
             ErrorLog.showErrorMessage(err);
-        });
+        }
     }
 
     async function downloadChapters() {
@@ -273,7 +275,8 @@ const main = (function() {
             }
         } else {
             // Normal Mode: download chapters to cache
-            await ChapterCache.downloadChaptersToCache().then(() => {
+            try {
+                await ChapterCache.downloadChaptersToCache();
                 setProcessingButtonsState(false);
                 if (util.sleepController.signal.aborted) {
                     util.sleepController = new AbortController;
@@ -282,14 +285,14 @@ const main = (function() {
                 parser.updateReadingList();
                 ErrorLog.showLogToUser();
                 dumpErrorLogToFile();
-            }).catch((err) => {
+            } catch (err) {
                 setProcessingButtonsState(false);
                 if (util.sleepController.signal.aborted) {
                     util.sleepController = new AbortController;
                     return;
                 }
                 ErrorLog.showErrorMessage(err);
-            });
+            }
         }
     }
 
@@ -431,7 +434,7 @@ const main = (function() {
         util.setBaseTag(url, initialWebPage);
         await processInitialHtml(url, initialWebPage);
         if (document.getElementById("autosearchmetadataCheckbox")?.checked) {
-            autosearchadditionalmetadata();
+            await autosearchadditionalmetadata();
         }
     }
 
@@ -524,19 +527,19 @@ const main = (function() {
         userPreferences.readFromUi();
     }
 
-    function openTabWindow() {
+    async function openTabWindow() {
         // open new tab window, passing ID of open tab with content to convert to epub as query parameter.
-        getActiveTab().then((tabId) => {
-            let url = chrome.runtime.getURL("epub/details.html") + "?id=";
-            url += tabId;
-            try {
-                chrome.tabs.create({ url: url, openerTabId: tabId });
-            } catch (err) {
-                //firefox android catch
-                chrome.tabs.create({ url: url });
-            }
-            window.close();
-        });
+        let tabId = await getActiveTab();
+        let url = chrome.runtime.getURL("epub/details.html") + "?id=";
+        url += tabId;
+        try {
+            chrome.tabs.create({ url: url, openerTabId: tabId });
+        }
+        catch (err) {
+            //firefox android catch
+            chrome.tabs.create({ url: url });
+        }
+        window.close();
     }
 
     function getActiveTab() {
@@ -555,13 +558,14 @@ const main = (function() {
         // load page via XmlHTTPRequest
         let url = getValueFromUiField("startingUrlInput");
         getLoadAndAnalyseButton().disabled = true;
-        return HttpClient.wrapFetch(url).then(async (xhr) => {
+        try {
+            let xhr = await HttpClient.wrapFetch(url);
             await populateControlsWithDom(url, xhr.responseXML);
             getLoadAndAnalyseButton().disabled = false;
-        }).catch((error) => {
+        } catch (error) {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
-        });
+        }
     }
 
     function configureForTabMode() {
@@ -862,7 +866,7 @@ const main = (function() {
     }
 
     // Additional metadata
-    function autosearchadditionalmetadata() {
+    async function autosearchadditionalmetadata() {
         setMetadataButtonsState(true);
         let titlename = getValueFromUiField("titleInput");
         let url = "https://www.novelupdates.com/series-finder/?sf=1&sh=" + titlename;
@@ -872,37 +876,39 @@ const main = (function() {
         setMetadataButtonsState(false);
     }
 
-    function autosearchnovelupdates(url, titlename) {
-        return HttpClient.wrapFetch(url).then((xhr) => {
-            findnovelupdatesurl(url, xhr.responseXML, titlename);
-        }).catch((error) => {
+    async function autosearchnovelupdates(url, titlename) {
+        try {
+            let xhr = await HttpClient.wrapFetch(url);
+            await findnovelupdatesurl(url, xhr.responseXML, titlename);
+        } catch (error) {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
-        });
+        }
     }
 
-    function findnovelupdatesurl(url, dom, titlename) {
+    async function findnovelupdatesurl(url, dom, titlename) {
         try {
             let searchurl = [...dom.querySelectorAll("a")].filter(a => a.textContent == titlename)[0];
             setUiFieldToValue("metadataUrlInput", searchurl.href);
             url = getValueFromUiField("metadataUrlInput");
             if (url.includes("novelupdates.com") == true) {
-                onLoadMetadataButtonClick();
+                await onLoadMetadataButtonClick();
             }
         } catch {
             //
         }
     }
 
-    function onLoadMetadataButtonClick() {
+    async function onLoadMetadataButtonClick() {
         setMetadataButtonsState(true);
         let url = getValueFromUiField("metadataUrlInput");
-        return HttpClient.wrapFetch(url).then((xhr) => {
+        try {
+            let xhr = await HttpClient.wrapFetch(url);
             populateMetadataAddWithDom(url, xhr.responseXML);
-        }).catch((error) => {
+        } catch (error) {
             getLoadAndAnalyseButton().disabled = false;
             ErrorLog.showErrorMessage(error);
-        });
+        }
     }
 
     function populateMetadataAddWithDom(url, dom) {
@@ -943,7 +949,7 @@ const main = (function() {
     }
 
     // actions to do when window opened
-    window.onload = () => {
+    window.onload = async () => {
         userPreferences = UserPreferences.readFromLocalStorage();
         if (isRunningInTabMode()) {
             ErrorLog.SuppressErrorLog = false;
@@ -962,7 +968,7 @@ const main = (function() {
                 Firefox.startWebRequestListeners();
             }
         } else {
-            openTabWindow();
+            await openTabWindow();
         }
     };
 
