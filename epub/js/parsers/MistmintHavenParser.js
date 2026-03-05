@@ -1,12 +1,11 @@
 "use strict";
 
-// Parser for mistminthaven.com - a Next.js novel translation site
-
 parserFactory.register("mistminthaven.com", () => new MistmintHavenParser());
 
 class MistmintHavenParser extends Parser {
     constructor() {
         super();
+        this.chapterTitles = new Map();
     }
 
     async getChapterUrls(dom) {
@@ -29,11 +28,48 @@ class MistmintHavenParser extends Parser {
                 }));
         }
 
+        for (let c of chapters) {
+            this.chapterTitles.set(c.sourceUrl, c.title);
+        }
         return chapters;
     }
 
+    async fetchChapter(url) {
+        let dom = (await HttpClient.wrapFetch(url)).responseXML;
+        let startString = "self.__next_f.push(";
+        let scriptElements = [...dom.querySelectorAll("script")]
+            .map(el => el.textContent)
+            .filter(text => text.includes(startString));
+
+        let parsedChunks = scriptElements
+            .map(script => {
+                let jsonText = script.slice(startString.length, -1);
+                try {
+                    return JSON.parse(jsonText);
+                } catch {
+                    return null;
+                }
+            })
+            .filter(Boolean);
+
+        let htmlChunk = parsedChunks.find(
+            ([type, data]) =>
+                type === 1 &&
+                typeof data === "string" &&
+                /<p\b[^>]*>/i.test(data) &&
+                data.length > 1000
+        );
+
+        if (!htmlChunk) throw new Error("No HTML chapter content found.");
+
+        let newDoc = Parser.makeEmptyDocForContent(url);
+        let content = util.sanitize(htmlChunk[1]);
+        util.moveChildElements(content.body, newDoc.content);
+        return newDoc.dom;
+    }
+
     findContent(dom) {
-        return dom.querySelector("#chapter-content-text");
+        return Parser.findConstrutedContent(dom);
     }
 
     extractTitleImpl(dom) {
@@ -67,10 +103,8 @@ class MistmintHavenParser extends Parser {
         return altName + "\n\n" + desc;
     }
 
-    findChapterTitle(dom) {
-        // On chapter pages, the h1 in the reader header has the chapter title
-        let h1 = dom.querySelector(".reader-header h1");
-        return h1 || dom.querySelector("h1");
+    findChapterTitle(dom, webPage) {
+        return this.chapterTitles.get(webPage.sourceUrl);
     }
 
     findCoverImageUrl(dom) {
@@ -91,9 +125,7 @@ class MistmintHavenParser extends Parser {
     }
 
     removeUnwantedElementsFromContentElement(element) {
-        // Remove ads
         util.removeElements(element.querySelectorAll("ins.adsbygoogle, section:has(ins.adsbygoogle)"));
-        // Remove tooltip/footnote icons (inline SVGs with data-state)
         util.removeElements(element.querySelectorAll("span.inline-block:has(svg)"));
         super.removeUnwantedElementsFromContentElement(element);
     }
@@ -102,12 +134,12 @@ class MistmintHavenParser extends Parser {
         let nodes = [];
 
         // Build a clean info block with title, metadata, and synopsis
-        let infoDiv = dom.ownerDocument.createElement("div");
+        let infoDiv = document.createElement("div");
 
         // Title
         let title = dom.querySelector("h1.text-text-primary-button");
         if (title) {
-            let h2 = dom.ownerDocument.createElement("h2");
+            let h2 = document.createElement("h2");
             h2.textContent = title.textContent.trim();
             infoDiv.appendChild(h2);
         }
@@ -115,7 +147,7 @@ class MistmintHavenParser extends Parser {
         // Other name / alt title
         let altName = dom.querySelector(".text-text-badge");
         if (altName) {
-            let p = dom.ownerDocument.createElement("p");
+            let p = document.createElement("p");
             p.textContent = altName.textContent.trim();
             infoDiv.appendChild(p);
         }
@@ -123,7 +155,7 @@ class MistmintHavenParser extends Parser {
         // Author, status, and metadata from the info line
         let metaItems = dom.querySelectorAll("h1.text-text-primary-button ~ div .flex.items-center.gap-1 span");
         if (metaItems.length > 0) {
-            let p = dom.ownerDocument.createElement("p");
+            let p = document.createElement("p");
             let texts = [...metaItems].map(s => s.textContent.trim()).filter(t => t);
             p.textContent = texts.join(" | ");
             infoDiv.appendChild(p);
@@ -132,7 +164,7 @@ class MistmintHavenParser extends Parser {
         // Translator badge
         let translator = dom.querySelector("span.bg-\\[\\#5EA0FE\\]");
         if (translator) {
-            let p = dom.ownerDocument.createElement("p");
+            let p = document.createElement("p");
             p.textContent = "Translator: " + translator.textContent.trim();
             infoDiv.appendChild(p);
         }
@@ -140,7 +172,7 @@ class MistmintHavenParser extends Parser {
         // Genres
         let genres = [...dom.querySelectorAll("a[href*='?genres=']")];
         if (genres.length > 0) {
-            let p = dom.ownerDocument.createElement("p");
+            let p = document.createElement("p");
             p.textContent = "Genres: " + genres.map(g => g.textContent.trim()).join(", ");
             infoDiv.appendChild(p);
         }
@@ -152,12 +184,18 @@ class MistmintHavenParser extends Parser {
         // Synopsis
         let synopsis = dom.querySelector(".whitespace-pre-line");
         if (synopsis) {
-            let synDiv = dom.ownerDocument.createElement("div");
-            let h3 = dom.ownerDocument.createElement("h3");
+            let synDiv = document.createElement("div");
+            let h3 = document.createElement("h3");
             h3.textContent = "Synopsis";
             synDiv.appendChild(h3);
-            let content = synopsis.cloneNode(true);
-            synDiv.appendChild(content);
+            for (let line of synopsis.textContent.split("\n")) {
+                let trimmed = line.trim();
+                if (trimmed) {
+                    let p = document.createElement("p");
+                    p.textContent = trimmed;
+                    synDiv.appendChild(p);
+                }
+            }
             nodes.push(synDiv);
         }
 
@@ -167,9 +205,5 @@ class MistmintHavenParser extends Parser {
     extractSubject(dom) {
         let tags = [...dom.querySelectorAll("a[href*='?genres=']")];
         return tags.map(t => t.textContent?.trim()).join(", ");
-    }
-
-    extractLanguage() {
-        return "en";
     }
 }
