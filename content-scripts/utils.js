@@ -370,6 +370,12 @@ const utils = (function() {
         element.parentNode.removeChild(element);
     }
 
+    function unwrapSingleChildDivs(content) {
+        while (content.children.length === 1 && content.children[0].tagName === "DIV") {
+            unwrapTag(content.children[0]);
+        }
+    }
+
     function wrapInnerContentInTag(element, tagName) {
         const wrapper = document.createElement(tagName);
         while (element.firstChild) {
@@ -631,6 +637,7 @@ const utils = (function() {
         replaceTag: replaceTag,
         unwrapAllOfTag: unwrapAllOfTag,
         unwrapTag: unwrapTag,
+        unwrapSingleChildDivs: unwrapSingleChildDivs,
         wrapInnerContentInTag: wrapInnerContentInTag,
         wrapRawTextInPTags: wrapRawTextInPTags,
         replaceSemanticInlineStylesWithTags: replaceSemanticInlineStylesWithTags,

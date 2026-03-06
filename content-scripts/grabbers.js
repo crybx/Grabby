@@ -12,24 +12,18 @@ function grabKakaoPage() {
 }
 
 function grabRidi() {
-    let title = document.querySelector("title").textContent;
+    const dom = document.cloneNode(true);
+    let title = dom.querySelector("title").textContent;
     // remove " – Ridi" from the title
     title = title.replace(" - Ridibooks", "");
-
-    // Ridi can have multiple articles, create a container
-    const content = document.createElement("div");
-    // move all children of articles to the container
-    document.querySelectorAll("article").forEach(article => {
-        article.childNodes.forEach(node => {
-            content.appendChild(node.cloneNode(true));
-        });
-    });
+    const content = dom.querySelector("#viewer_contents");
 
     utils.removeComments(content);
     content.querySelectorAll("*").forEach(element => {
         utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
         utils.removeClassesThatStartWith(element, "block_");
         utils.removeClasses(element, ["body", "story_part_header_title"]);
+        utils.removeElementWithClasses(element, ["contents_dummy_mask"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeEmptyParagraphAndHeadings(element);
     });
@@ -41,6 +35,7 @@ function grabRidi() {
         return { abort: true, reason: "Page loaded with no content - will retry on next check" };
     }
 
+    utils.unwrapSingleChildDivs(content);
     utils.ensureHeading(content, title);
 
     return content.innerHTML;
