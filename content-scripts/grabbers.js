@@ -788,6 +788,92 @@ function grabWebnovel() {
     return content.innerHTML.trim();
 }
 
+function grabClaude() {
+    const dom = document.cloneNode(true);
+    const title = dom.querySelector("title")?.textContent?.replace(/ - Claude$/, "")?.trim() || "Claude Conversation";
+    let result = `<h1>${title}</h1>\n\n`;
+
+    const messageBlocks = dom.querySelectorAll("[data-test-render-count]");
+
+    for (const block of messageBlocks) {
+        const userMsg = block.querySelector("[data-testid='user-message']");
+        const claudeResponse = block.querySelector(".font-claude-response");
+
+        if (userMsg) {
+            result += "<h2>User</h2>\n";
+            cleanClaudeConversationContent(userMsg);
+            result += userMsg.innerHTML.trim() + "\n\n";
+        } else if (claudeResponse) {
+            result += "<h2>Claude</h2>\n";
+
+            // Convert tool-use indicators to visible text before cleanup strips aria attributes
+            claudeResponse.querySelectorAll("span[aria-live]").forEach(span => {
+                const text = span.textContent.trim();
+                if (text) {
+                    const p = dom.createElement("p");
+                    p.innerHTML = `<em>[${text}]</em>`;
+                    span.replaceWith(p);
+                }
+            });
+
+            cleanClaudeConversationContent(claudeResponse);
+            result += claudeResponse.innerHTML.trim() + "\n\n";
+        }
+    }
+
+    return result;
+}
+
+function cleanClaudeConversationContent(container) {
+    const keepTags = new Set([
+        "P", "H1", "H2", "H3", "H4", "H5", "H6",
+        "UL", "OL", "LI", "PRE", "CODE",
+        "STRONG", "EM", "I", "B", "U", "S",
+        "A", "BLOCKQUOTE", "HR", "BR",
+        "TABLE", "THEAD", "TBODY", "TR", "TH", "TD",
+        "IMG", "FIGURE", "FIGCAPTION"
+    ]);
+
+    // Remove non-content elements
+    utils.removeTagsFromContent(container, [
+        "BUTTON", "SVG", "PATH", "INPUT", "FORM",
+        "HEADER", "FOOTER", "NAV", "SCRIPT", "STYLE", "LINK", "META"
+    ]);
+
+    // Strip all attributes, preserving href on links and src/alt on images
+    container.querySelectorAll("*").forEach(el => {
+        const preserved = {};
+        if (el.tagName === "A") preserved.href = el.getAttribute("href");
+        if (el.tagName === "IMG") {
+            preserved.src = el.getAttribute("src");
+            preserved.alt = el.getAttribute("alt");
+        }
+
+        while (el.attributes.length > 0) {
+            el.removeAttribute(el.attributes[0].name);
+        }
+
+        for (const [attr, val] of Object.entries(preserved)) {
+            if (val) el.setAttribute(attr, val);
+        }
+    });
+
+    // Unwrap non-semantic elements bottom-up to handle nesting
+    const allElements = Array.from(container.querySelectorAll("*")).reverse();
+    for (const el of allElements) {
+        if (!keepTags.has(el.tagName) && el.parentNode) {
+            utils.unwrapTag(el);
+        }
+    }
+
+    // Clean up empty elements
+    container.querySelectorAll("p, h1, h2, h3, h4, h5, h6").forEach(el => {
+        if (el.textContent.trim() === "") {
+            el.remove();
+        }
+    });
+}
+
 /**
  * Creates a standard grabber function
  * @param {string} [contentSelector="body"] - Selector for content

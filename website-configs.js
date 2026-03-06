@@ -25,6 +25,7 @@ const WEBSITE_CONFIGS = {
     singleDomains: {
         "archiveofourown.org": { grabber: "grabAO3", useFirstHeadingTitle: true },
         "blogspot.com": { grabber: "grabBlogspot" },
+        "claude.ai": { grabber: "grabClaude" },
         "chrysanthemumgarden.com": {
             grabber: "grabChrysanthemum",
             postGrab: {
