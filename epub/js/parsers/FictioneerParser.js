@@ -83,8 +83,11 @@ class FictioneerParser extends Parser {
         let summary = dom.querySelector(".story__summary");
         if (summary === null) return "";
         summary = summary.cloneNode(true);
-        util.removeElements(summary.querySelectorAll(".related-stories-block, .code-block, .jp-relatedposts"));
-        return summary.textContent.trim();
+        util.removeElements(summary.querySelectorAll("figure, .story__thumbnail, .story__thumbnail-ribbon, .related-stories-block, .code-block, .jp-relatedposts"));
+        return [...summary.querySelectorAll("p")]
+            .map(p => p.textContent.trim())
+            .filter(t => t)
+            .join("\n\n");
     }
 
     findChapterTitle(dom) {
