@@ -17,7 +17,7 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 - **Site-specific extraction** - Custom logic for 50+ sites, plus WebToEpub parser fallback for 500+ additional sites
 - **Content cleaning** - Removes ads, navigation, and other clutter
 - **File naming** - Consistent naming pattern with chapter numbers and story titles
-- **Epub creation** - Embedded [WebToEpub-Codex](https://github.com/crybx/WebToEpub-Codex) for converting web stories to epub format
+- **Epub creation** - Embedded [WebToEpub-Folio](https://github.com/crybx/WebToEpub-Folio) for converting web stories to epub format
 
 ## Installation
 
@@ -76,11 +76,11 @@ For developers or those who want to modify the extension:
 ### Epub Creation
 1. Navigate to any webpage or story you want to convert
 2. Click "Create Epub" from the extension popup
-3. Use the embedded WebToEpub-Codex interface to:
+3. Use the embedded WebToEpub-Folio interface to:
    - Parse and extract content from supported websites
    - Customize metadata, cover images, and formatting
    - Generate epub files for e-readers
-   - Access WebToEpub-Codex fork features
+   - Access WebToEpub-Folio fork features
 
 *Note: Bulk grabbing and automatic new chapter checking require site-specific configuration. (More details below.)
 These features are available for sites with navigation support. Single-page grabbing works on any webpage and epub creation does not require navigation support.
