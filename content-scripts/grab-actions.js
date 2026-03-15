@@ -16,7 +16,7 @@ function waitForElement(selector, timeout = 5000) {
             resolve(element);
             return;
         }
-        
+
         const observer = new MutationObserver(() => {
             const element = document.querySelector(selector);
             if (element) {
@@ -24,9 +24,9 @@ function waitForElement(selector, timeout = 5000) {
                 resolve(element);
             }
         });
-        
+
         observer.observe(document.body, { childList: true, subtree: true });
-        
+
         setTimeout(() => {
             observer.disconnect();
             resolve(null);
@@ -65,14 +65,14 @@ function loadAllImages() {
 async function peachTeaClickAllOnOnePageButton() {
     // Look for buttons/links with "All on one page?" text
     const allElements = document.querySelectorAll("button, a, [role=\"button\"]");
-    
+
     for (const element of allElements) {
         if (element.textContent.trim() === "All on one page?") {
             clickElement(element);
-            
+
             // Wait half a second for the page to load the full content
             await new Promise(resolve => setTimeout(resolve, 500));
-            
+
             return true;
         }
     }
@@ -98,7 +98,7 @@ async function checkForLockedContent(selectors = ["h2, h3"], lockText = null) {
             "🔒"
         ];
     }
-    
+
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
@@ -109,7 +109,7 @@ async function checkForLockedContent(selectors = ["h2, h3"], lockText = null) {
             }
         }
     }
-    
+
     return { abort: false };
 }
 
@@ -119,9 +119,9 @@ async function checkForUrlText(urlText = []) {
         console.log("No URL text patterns provided for checking");
         return { abort: false };
     }
-    
+
     const currentUrl = window.location.href.toLowerCase();
-    
+
     for (const textToCheck of urlText) {
         const searchText = textToCheck.toLowerCase();
         if (currentUrl.includes(searchText)) {
@@ -129,7 +129,7 @@ async function checkForUrlText(urlText = []) {
             return { abort: true, reason: `URL contains restricted text: "${textToCheck}"` };
         }
     }
-    
+
     return { abort: false };
 }
 
@@ -145,7 +145,7 @@ async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message
         "Uncaught Error: Call to undefined function wp_cache_get()",
         "Error establishing a database connection"
     ];
-    
+
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
@@ -156,7 +156,7 @@ async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message
             }
         }
     }
-    
+
     return { abort: false };
 }
 
@@ -188,7 +188,7 @@ async function googleTranslate() {
 async function peachTeaClickNextChapterLink() {
     // Find all links that contain "Next chapter" as exact text
     const allLinks = document.querySelectorAll("a");
-    
+
     for (const link of allLinks) {
         // Check if the link text is exactly "Next chapter"
         if (link.textContent.trim() === "Next chapter") {
@@ -214,7 +214,7 @@ function isElementValid(element, excludeClasses = [], excludeStyles = {}) {
     if (excludeClasses.some(cls => element.classList.contains(cls))) {
         return false;
     }
-    
+
     // Check excluded styles
     const styles = window.getComputedStyle(element);
     const hasExcludedStyle = Object.entries(excludeStyles).some(([prop, value]) => styles[prop] === value);
@@ -241,7 +241,7 @@ function clickElementWithText(text, options = {}) {
             return clickElementWithText("Next", { exact: false });
         };
     }
-    
+
     const {
         exact = false, // Whether to match exact text or just contain
         excludeClasses = [], // Array of classes to exclude
@@ -249,19 +249,19 @@ function clickElementWithText(text, options = {}) {
         selector = "a, button, [role=\"button\"]", // CSS selector for elements to check (default to clickable elements)
         abortIfNotFound = false // Whether to abort bulk grab sequence if no element is found
     } = options;
-    
+
     // Convert text to array if it's a string
     const textArray = Array.isArray(text) ? text : [text];
     const elements = document.querySelectorAll(selector);
-    
+
     for (const element of elements) {
         const elementText = element.textContent.trim();
-        
+
         // Check if element text matches any of the target texts
-        const textMatches = textArray.some(targetText => 
+        const textMatches = textArray.some(targetText =>
             exact ? elementText === targetText : elementText.includes(targetText)
         );
-        
+
         if (textMatches) {
             if (isElementValid(element, excludeClasses, excludeStyles)) {
                 clickElement(element);
@@ -269,7 +269,7 @@ function clickElementWithText(text, options = {}) {
             }
         }
     }
-    
+
     const textDescription = Array.isArray(text) ? `any of [${text.join(", ")}]` : `"${text}"`;
     if (abortIfNotFound) {
         return { abort: true, reason: `No valid element found with text: ${textDescription}` };
@@ -285,9 +285,9 @@ function clickElementBySelector(selector, options = {}) {
         abortIfNotFound = false, // Whether to abort bulk grab sequence if no element is found
         index = null // Index of element to click (0-based), if null clicks first valid element
     } = options;
-    
+
     const elements = document.querySelectorAll(selector);
-    
+
     // If index is specified, try to click that specific element
     if (index !== null) {
         if (index >= 0 && index < elements.length) {
@@ -302,7 +302,7 @@ function clickElementBySelector(selector, options = {}) {
         }
         return false;
     }
-    
+
     // Default behavior: click first valid element
     for (const element of elements) {
         if (isElementValid(element, excludeClasses, excludeStyles)) {
@@ -310,7 +310,7 @@ function clickElementBySelector(selector, options = {}) {
             return true;
         }
     }
-    
+
     if (abortIfNotFound) {
         return { abort: true, reason: `No valid element found with selector: ${selector}` };
     }
@@ -319,19 +319,19 @@ function clickElementBySelector(selector, options = {}) {
 
 function clickPreviousChapterLink() {
     const previousTexts = ["Previous chapter", "Previous", "Prev", "← Previous", "‹ Previous"];
-    
+
     for (const text of previousTexts) {
         if (clickElementWithText(text, { exact: true, selector: "a" })) {
             return true;
         }
     }
-    
+
     return false;
 }
 
 function clickNextPageLink() {
     const nextTexts = ["Next chapter", "Next page", "Next", "→", "Continue", "Read more"];
-    
+
     for (const text of nextTexts) {
         if (clickElementWithText(text, { exact: false, selector: "a" })) {
             return true;
@@ -350,7 +350,7 @@ function simulateKeyPress(key, options = {}) {
         metaKey = false,
         target = document.body  // Element to dispatch the event on
     } = options;
-    
+
     // Create the key events
     const keydownEvent = new KeyboardEvent("keydown", {
         key: key,
@@ -364,7 +364,7 @@ function simulateKeyPress(key, options = {}) {
         bubbles: true,
         cancelable: true
     });
-    
+
     const keyupEvent = new KeyboardEvent("keyup", {
         key: key,
         code: getKeyCode(key),
@@ -377,7 +377,7 @@ function simulateKeyPress(key, options = {}) {
         bubbles: true,
         cancelable: true
     });
-    
+
     // Dispatch the events
     target.dispatchEvent(keydownEvent);
     target.dispatchEvent(keyupEvent);
@@ -387,7 +387,7 @@ function simulateKeyPress(key, options = {}) {
 function getKeyCode(key) {
     const keyCodes = {
         "ArrowLeft": "ArrowLeft",
-        "ArrowRight": "ArrowRight", 
+        "ArrowRight": "ArrowRight",
         "ArrowUp": "ArrowUp",
         "ArrowDown": "ArrowDown",
         "Enter": "Enter",
@@ -462,9 +462,24 @@ async function ridiNext() {
         "watch for free",
         "다음화 보기",
         "watch the next episode",
-        "view the next episode"
+        "view the next episode",
     ];
-    
+    let expiredFreeText = [
+        "다시 보기",
+        "watch again"
+    ];
+
+    // Check if expired free text is present - if so, click to watch again and check buttons again
+    for (let button of checkoutButtons) {
+        const buttonText = button.textContent?.trim()?.toLowerCase() || "";
+        if (expiredFreeText.some(t => buttonText.includes(t))) {
+            clickElement(button);
+            await new Promise(r => setTimeout(r, 3100));
+            checkoutButtons = document.querySelectorAll(".checkout_buttons button, .checkout_buttons a");
+            break;
+        }
+    }
+
     // No check button found, so look for real checkout buttons
     for (let button of checkoutButtons) {
         const buttonText = button.textContent?.trim()?.toLowerCase() || "";
