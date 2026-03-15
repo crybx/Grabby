@@ -12,7 +12,7 @@
 //   - activeTab: boolean to open tabs as active/focused (defaults to false)
 //
 // Example usage:
-// "example.com": { 
+// "example.com": {
 //     grabber: grabExample,
 //     useFirstHeadingTitle: true,
 //     runActionsOnDirectGrab: false,  // Disable pre/post actions for direct grabs (shortcut/button)
@@ -51,7 +51,7 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultCount: 15, defaultDelay: 5 }
         },
         "fanfiction.com": { grabber: { fn: "grabStandard", args: [".storytext"] } },
-        "fenrirealm.com": { 
+        "fenrirealm.com": {
             grabber: "grabFenrir",
             preGrab: { fn: "GrabActions.checkForUrlText", args: [["auth/login"]] },
             postGrab: "GrabActions.pressRightArrow",
@@ -116,8 +116,8 @@ const WEBSITE_CONFIGS = {
         },
         "noveltranslation.net": { grabber: "grabNovelTranslationNet" },
         "patreon.com": { grabber: "grabPatreon" },
-        "peachtea.agency": { 
-            grabber: "grabPeachTeaAgency", 
+        "peachtea.agency": {
+            grabber: "grabPeachTeaAgency",
             useFirstHeadingTitle: true,
             postGrab: "GrabActions.peachTeaClickNextChapterLink",
             autoNav: { enabled: true, defaultCount: 5, defaultDelay: 60, activeTab: true }
@@ -140,8 +140,8 @@ const WEBSITE_CONFIGS = {
             filenameCleanupPatterns: [" - Ridibooks"]
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
-        "publang.com": { 
-            grabber: "grabPublang", 
+        "publang.com": {
+            grabber: "grabPublang",
             useFirstHeadingTitle: true,
             postGrab: {
                 fn: "GrabActions.clickElementBySelector",
@@ -163,7 +163,7 @@ const WEBSITE_CONFIGS = {
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next", { exact: true }] },
             autoNav: { enabled: true, defaultCount: 20, defaultDelay: 15, activeTab: true }
         },
-        "syosetu.com": { 
+        "syosetu.com": {
             grabber: "grabSyosetu",
             preGrab: "GrabActions.googleTranslate",
             postGrab: { fn: "GrabActions.clickElementBySelector", args: [".c-pager__item--next"] },
@@ -185,8 +185,8 @@ const WEBSITE_CONFIGS = {
     multiDomains: {
         fictioneerSites: {
             domains: ["blossomtranslation.com", "bythebai.com", "emberlib731.xyz",
-                "floraegarden.com",
-                "novelib.com", "springofromance.com", "smeraldogarden.com"],
+                "floraegarden.com", "flyonthewalls.blog", "novelib.com", "puffberry.top",
+                "springofromance.com", "smeraldogarden.com", "smutbee.top"],
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
             preGrab: {
@@ -266,7 +266,7 @@ function findMatchingConfig(url) {
 // Function to resolve string/object function references to actual functions
 function resolveFunctionReference(ref, dependencies = {}) {
     if (!ref) return undefined;
-    
+
     // Handle string references
     if (typeof ref === "string") {
         if (ref.startsWith("GrabActions.")) {
@@ -276,7 +276,7 @@ function resolveFunctionReference(ref, dependencies = {}) {
         // Direct grabber function reference
         return dependencies.grabbers?.[ref];
     }
-    
+
     // Handle object with function name and arguments
     if (typeof ref === "object" && ref.fn) {
         const fn = resolveFunctionReference(ref.fn, dependencies);
@@ -289,36 +289,36 @@ function resolveFunctionReference(ref, dependencies = {}) {
         // Return a function that calls the resolved function with the provided arguments
         return ref.args ? () => fn(...ref.args) : fn;
     }
-    
+
     // Handle arrays (for multiple actions)
     if (Array.isArray(ref)) {
         return ref.map(r => resolveFunctionReference(r, dependencies));
     }
-    
+
     return ref;
 }
 
 // Function to resolve all function references in a config object
 function resolveConfigFunctions(config, dependencies) {
     if (!config) return null;
-    
+
     const resolved = { ...config };
-    
+
     // Resolve grabber
     if (config.grabber) {
         resolved.grabber = resolveFunctionReference(config.grabber, dependencies);
     }
-    
+
     // Resolve preGrab
     if (config.preGrab) {
         resolved.preGrab = resolveFunctionReference(config.preGrab, dependencies);
     }
-    
+
     // Resolve postGrab
     if (config.postGrab) {
         resolved.postGrab = resolveFunctionReference(config.postGrab, dependencies);
     }
-    
+
     return resolved;
 }
 
