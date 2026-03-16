@@ -318,41 +318,29 @@ function grabRequiemtls() {
 }
 
 function grabFictioneer() {
-    let storyName = document.querySelector(".chapter__story-link")?.textContent;
-    let title = document.querySelector(".chapter__title")?.textContent;
-    let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
-        document.querySelector(".chapter__group")?.textContent;
-    if (subtitle) { title += ": " + subtitle; }
-    if (storyName) { title = storyName + ": " + title; }
-
+    let title = getFictioneerTitle();
     let content = document.querySelector(".chapter-formatting") ||
         document.querySelector("#chapter-content");
-
-    const footnotes = document.querySelector(".chapter__footnotes");
 
     content.querySelectorAll("*").forEach(element => {
         utils.removeSpansInsideParagraph(element);
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
         utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
     });
-    content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
-    if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
 
-    return content;
+    return prepFictioneerContent(content, title);
 }
 
 function grabLilyonthevalley() {
-    let storyName = document.querySelector(".chapter__story-link")?.textContent;
-    let title = document.querySelector(".chapter__title")?.textContent;
-    let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
-        document.querySelector(".chapter__group")?.textContent;
-    if (subtitle) { title += ": " + subtitle; }
-    if (storyName) { title = storyName + ": " + title; }
-
+    let title = getFictioneerTitle();
     let content = document.querySelector(".chapter-formatting") ||
         document.querySelector("#chapter-content");
 
-    const footnotes = document.querySelector(".chapter__footnotes");
+    // Check for empty/loading content (site sometimes hangs showing a loading spinner)
+    const textContent = content?.textContent.trim();
+    if (!textContent || textContent.length < 50) {
+        return { abort: true, reason: "Page loaded with no content - will retry on next check" };
+    }
 
     utils.removeTagsFromContent(content, ["BDI", "CODE", "RUBY", "SAMP", "KBD", "RT", "RP", "WBR"]);
     content.querySelectorAll("*").forEach(element => {
@@ -375,7 +363,23 @@ function grabLilyonthevalley() {
         utils.removeElementWithClasses(element, ["encryptedPayload", "eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
     });
     utils.unwrapAllOfTag(content, "span");
+
+    return prepFictioneerContent(content, title);
+}
+
+function getFictioneerTitle() {
+    let storyName = document.querySelector(".chapter__story-link")?.textContent;
+    let title = document.querySelector(".chapter__title")?.textContent;
+    let subtitle = document.querySelector(".chapter__second-title")?.textContent ||
+        document.querySelector(".chapter__group")?.textContent;
+    if (subtitle) { title += ": " + subtitle; }
+    if (storyName) { title = storyName + ": " + title; }
+    return title;
+}
+
+function prepFictioneerContent(content, title) {
     content = `<h1>${title.trim()}</h1>\n\n${content.innerHTML.trim()}`;
+    const footnotes = document.querySelector(".chapter__footnotes");
     if (footnotes) { content += "\n\n" + footnotes.innerHTML; }
 
     return content;
