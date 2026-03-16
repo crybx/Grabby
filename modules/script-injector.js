@@ -17,7 +17,7 @@ export class ScriptInjector {
         });
     }
 
-    // Function to inject scripts sequentially without executing grab
+    // Function to inject scripts without executing grab
     async injectScriptsSequentially(tabId) {
         const scripts = [
             "content-scripts/utils.js",
@@ -29,14 +29,13 @@ export class ScriptInjector {
             "content-scripts/grabber-core.js"
         ];
 
-        // Check what scripts are already available
+        // Single check for all essential scripts
         const availabilityCheck = await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: () => {
                 return {
                     grabbyCore: typeof GrabbyCore !== "undefined",
                     grabActions: typeof GrabActions !== "undefined",
-                    storyManager: typeof StoryManager !== "undefined",
                     websiteConfigs: typeof findMatchingConfig !== "undefined"
                 };
             }
@@ -44,64 +43,16 @@ export class ScriptInjector {
 
         const availability = availabilityCheck[0].result;
 
-        // If all essential scripts are available, we can skip injection
+        // If all essential scripts are available, skip injection
         if (availability.grabbyCore && availability.grabActions && availability.websiteConfigs) {
             return;
         }
 
-        // Helper function to inject scripts sequentially
-        const injectSequentially = async (index) => {
-            if (index >= scripts.length) {
-                // All scripts injected
-                return;
-            }
-
-            // Check if this script needs to be injected
-            // Extract just the filename without path or extension
-            const scriptName = scripts[index].match(/([^/]+?)(?:\.min)?\.js$/)?.[1] || scripts[index];
-            const variablesToCheck = {
-                "website-configs": ["WEBSITE_CONFIGS", "findMatchingConfig"], // Objects from website-configs.js
-                "utils": ["removeTag", "unwrapTag"], // Functions from utils.js
-                "grab-actions": ["GrabActions"], // Object from grab-actions.js
-                "grabbers": ["grabRidi", "grabPatreon"], // Functions from grabbers.js
-                "parser-registry": ["PARSER_REGISTRY"], // Object from parser-registry.js
-                "purify": ["DOMPurify"], // DOMPurify library
-                "grabber-core": ["GrabbyCore"] // Object from grabber-core.js
-            };
-
-            const checkResult = await chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                func: (vars) => {
-                    // For each variable to check, see if it exists in the global scope
-                    return vars.some(v => typeof window[v] !== "undefined" ||
-                        (typeof window.GrabbyCore !== "undefined" &&
-                            typeof window.GrabbyCore[v] !== "undefined"));
-                },
-                args: [variablesToCheck[scriptName] || []]
-            });
-
-            const scriptExists = checkResult[0].result;
-
-            if (scriptExists) {
-                // Skip to the next script
-                return injectSequentially(index + 1);
-            }
-
-            // Inject the current script
-            return chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                files: [scripts[index]]
-            }).then(() => {
-                // Move to the next script
-                return injectSequentially(index + 1);
-            }).catch(error => {
-                console.error(`Failed to inject ${scripts[index]}:`, error);
-                throw error;
-            });
-        };
-
-        // Start the injection sequence with the first script
-        return injectSequentially(0);
+        // Inject all scripts in one call (Chrome executes them in array order)
+        await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: scripts
+        });
     }
 
     // Function to inject scripts sequentially and then execute a callback function

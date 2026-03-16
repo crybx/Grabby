@@ -378,30 +378,28 @@ export class StoryManager {
     static async isDuplicateChapter(tabId) {
         // Get the current status for this tab
         const status = await this.getOpenStoryStatus(tabId);
-        
+
         if (!status.url) { return false; }
 
-        // Get story either by ID or by chapter URL
+        // Get story by ID (fast targeted read) or fall back to URL search
+        // (needed when story was added to tracker after the tab's cache was created)
         const story = status.storyId
             ? await this.getStory(status.storyId)
             : await this.findStoryByChapterUrl(status.url);
 
         // Check if duplicate
         const isDuplicate = story?.lastChapterUrl ? this.areUrlsEqual(status.url, story.lastChapterUrl) : false;
-        
-        // Update the status
+
+        // Update the status and session storage (non-blocking)
+        const wasPreviouslyDuplicate = status.duplicateDetected;
         status.duplicateDetected = isDuplicate;
-        
+
         if (isDuplicate) {
-            // Store in session storage for popup to access
-            await chrome.storage.session.set({ 
-                [`duplicateTab_${tabId}`]: true 
-            });
-        } else {
-            // Clear if not duplicate
-            await chrome.storage.session.remove([`duplicateTab_${tabId}`]);
+            chrome.storage.session.set({ [`duplicateTab_${tabId}`]: true });
+        } else if (wasPreviouslyDuplicate) {
+            chrome.storage.session.remove([`duplicateTab_${tabId}`]);
         }
-        
+
         return isDuplicate;
     }
 }

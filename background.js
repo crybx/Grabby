@@ -38,70 +38,80 @@ async function showNotificationOnActiveTab(message, type = "success") {
 // Handle grab content (for direct grabs)
 async function handleGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
-    if (tabId) {
-        // Verify the tab still exists before proceeding
-        try {
-            await chrome.tabs.get(tabId);
-        } catch (error) {
-            console.log("Tab", tabId, "no longer exists, skipping grab");
-            return;
-        }
+    if (!tabId) return;
 
-        if (!message?.ignoreDuplicateCheck && await StoryManager.isDuplicateChapter(tabId)) {
-            // Don't inject scripts for duplicate - show notification instead
+    // Verify the tab still exists before proceeding
+    try {
+        await chrome.tabs.get(tabId);
+    } catch (error) {
+        console.log("Tab", tabId, "no longer exists, skipping grab");
+        return;
+    }
+
+    try {
+        // Run duplicate check and script injection in parallel
+        const [isDuplicate] = await Promise.all([
+            !message?.ignoreDuplicateCheck
+                ? StoryManager.isDuplicateChapter(tabId)
+                : Promise.resolve(false),
+            scriptInjector.injectScriptsSequentially(tabId)
+        ]);
+
+        if (isDuplicate) {
             await showNotificationOnActiveTab("Duplicate chapter", "error");
             return;
         }
-        
-        try {
-            // Proceed with normal grab
-            await scriptInjector.injectGrabbingScriptsAndExecute(tabId, false);
-        } catch (error) {
-            console.error("Error during grab content:", error);
-        }
+
+        await scriptInjector.executeGrabbingFunction(tabId, false);
+    } catch (error) {
+        console.error("Error during grab content:", error);
     }
 }
 
 // Handle grab content for bulk grabs
 async function handleBulkGrabContent(message, sender) {
     const tabId = await scriptInjector.getTabId(message, sender);
-    if (tabId) {
-        // Verify the tab still exists before proceeding
-        try {
-            await chrome.tabs.get(tabId);
-        } catch (error) {
-            console.log("Tab", tabId, "no longer exists, skipping bulk grab");
-            // Notify bulk grab manager that this tab is gone
-            if (bulkGrabManager) {
-                await bulkGrabManager.cleanupTab(tabId);
-            }
-            return;
-        }
+    if (!tabId) return;
 
-        if (!message?.ignoreDuplicateCheck && await StoryManager.isDuplicateChapter(tabId)) {
-            // Get status to check if from tracker
+    // Verify the tab still exists before proceeding
+    try {
+        await chrome.tabs.get(tabId);
+    } catch (error) {
+        console.log("Tab", tabId, "no longer exists, skipping bulk grab");
+        if (bulkGrabManager) {
+            await bulkGrabManager.cleanupTab(tabId);
+        }
+        return;
+    }
+
+    try {
+        // Run duplicate check and script injection in parallel
+        const [isDuplicate] = await Promise.all([
+            !message?.ignoreDuplicateCheck
+                ? StoryManager.isDuplicateChapter(tabId)
+                : Promise.resolve(false),
+            scriptInjector.injectScriptsSequentially(tabId)
+        ]);
+
+        if (isDuplicate) {
             const status = StoryManager.openStoryStatuses.get(tabId);
-            
+
             // Check if this is from story tracker (ALL story tracker grabs are bulk)
             if (status?.isFromTracker && status?.storyId) {
-                // Notify queue manager so it can continue processing
                 queueManager.handleBulkGrabComplete(
-                    tabId, 
+                    tabId,
                     false,
-                    "Duplicate chapter", 
-                    false, // not an error, just a duplicate
+                    "Duplicate chapter",
+                    false,
                     0,
                     false
                 );
-                
-                // Update story tracker status
                 await StoryManager.updateLastCheckStatus(
-                    status.url, 
-                    "Duplicate chapter", 
+                    status.url,
+                    "Duplicate chapter",
                     status.storyId
                 );
             } else {
-                // Regular manual bulk grab - just show notification
                 await showNotificationOnActiveTab(
                     "Cannot start bulk grab from duplicate",
                     "error"
@@ -109,21 +119,16 @@ async function handleBulkGrabContent(message, sender) {
             }
             return;
         }
-        
-        try {
-            // Proceed with normal bulk grab
-            await scriptInjector.injectGrabbingScriptsAndExecute(tabId, true);
-        } catch (error) {
-            // Check if it's a frame removal error (tab was closed)
-            if (error.message && error.message.includes("Frame with ID")) {
-                console.log("Tab was closed during bulk grab, likely the last chapter completed");
-                // Notify bulk grab manager to handle cleanup
-                if (bulkGrabManager) {
-                    await bulkGrabManager.cleanupTab(tabId);
-                }
-            } else {
-                console.error("Error during bulk grab content:", error);
+
+        await scriptInjector.executeGrabbingFunction(tabId, true);
+    } catch (error) {
+        if (error.message && error.message.includes("Frame with ID")) {
+            console.log("Tab was closed during bulk grab, likely the last chapter completed");
+            if (bulkGrabManager) {
+                await bulkGrabManager.cleanupTab(tabId);
             }
+        } else {
+            console.error("Error during bulk grab content:", error);
         }
     }
 }
