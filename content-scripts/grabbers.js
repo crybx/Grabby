@@ -23,11 +23,12 @@ function grabRidi() {
         utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
         utils.removeClassesThatStartWith(element, "block_");
         utils.removeClasses(element, ["body", "story_part_header_title"]);
-        utils.removeElementWithClasses(element, ["contents_dummy_mask"]);
+        utils.removeElementWithClasses(element, ["contents_dummy_mask", "content_footer"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeEmptyParagraphAndHeadings(element);
     });
     utils.unwrapAllOfTag(content, "font");
+    utils.unwrapAllOfTag(content, "article");
 
     // Check for empty content before adding heading (page may have loaded without content)
     const textContent = content.textContent.trim();
@@ -276,7 +277,7 @@ function grabStorySeedling() {
     const originalContent = document.querySelector("div[x-html=\"content\"]");
     let title = document.querySelector("title").textContent.trim();
     let storyTitle = document.querySelector(".font-medium.max-w-2xl")?.textContent?.trim();
-    
+
     // Clone the content to avoid triggering site's DOM change detection
     const content = originalContent.cloneNode(true);
     const cipher = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -571,15 +572,15 @@ async function grabPeachTeaAgency() {
     let lastContentSnapshot = ""; // Track content to detect changes
     let noNewContentIterations = 0;
     const maxIterations = 25; // Max iterations to prevent infinite loops
-    
+
     // Keep scrolling until we reach the bottom or stop finding new content
     for (let i = 0; i < maxIterations; i++) {
         // Check if we've reached the bottom of the page
         const isAtBottom = (window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 10;
-        
+
         dom = document.cloneNode(true);
         const contentDivs = dom.querySelectorAll(".transition-all > div > div");
-        
+
         // Store all divs from this loop with their loop number
         const divsFromThisLoop = [];
         contentDivs.forEach(div => {
@@ -589,14 +590,14 @@ async function grabPeachTeaAgency() {
                 textContent: div.textContent.trim()
             });
         });
-        
+
         // Create a snapshot of current content to compare
         const currentContentSnapshot = divsFromThisLoop.map(d => d.textContent).join("|");
 
         // Check if the content has changed from last iteration
         if (currentContentSnapshot === lastContentSnapshot && i > 0) {
             noNewContentIterations++;
-            
+
             // If no new content for 2 iterations or we're at the bottom, stop
             if (noNewContentIterations >= 2 || isAtBottom) {
                 break;
@@ -605,33 +606,33 @@ async function grabPeachTeaAgency() {
             noNewContentIterations = 0;
             lastContentSnapshot = currentContentSnapshot;
         }
-        
+
         // Always add the divs we found (we'll dedupe later)
         collectedDivs.push(...divsFromThisLoop);
-        
+
         // If we're already at the bottom, no need to scroll more
         if (isAtBottom) {
             break;
         }
-        
+
         window.scrollBy({
             top: window.innerHeight * 0.75,
             behavior: "smooth"
         });
-        
+
         // Wait for content to load
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    
-    
+
+
     // First, remove items with no textContent and elements containing aria-label="Continue reading section"
     let filteredDivs = collectedDivs.filter(item => {
-        return item.textContent !== "" && 
+        return item.textContent !== "" &&
                !item.element.querySelector("[aria-label=\"Continue reading section\"]");
     });
     // Now remove duplicates that overlap between loops only
     let finalDivs = [];
-    
+
     // Group divs by loop number for easier processing
     const divsByLoop = {};
     filteredDivs.forEach(div => {
@@ -640,14 +641,14 @@ async function grabPeachTeaAgency() {
         }
         divsByLoop[div.loopNumber].push(div);
     });
-    
+
     // Process each loop
     const loopNumbers = Object.keys(divsByLoop).map(n => parseInt(n)).sort((a, b) => a - b);
-    
+
     for (let loopIdx = 0; loopIdx < loopNumbers.length; loopIdx++) {
         const currentLoopNum = loopNumbers[loopIdx];
         const currentLoopDivs = divsByLoop[currentLoopNum];
-        
+
         if (loopIdx === 0) {
             // First loop - keep everything
             finalDivs.push(...currentLoopDivs);
@@ -655,16 +656,16 @@ async function grabPeachTeaAgency() {
             // For subsequent loops, remove items that appeared at the end of previous loop
             const previousLoopNum = loopNumbers[loopIdx - 1];
             const previousLoopDivs = divsByLoop[previousLoopNum];
-            
+
             // Find the longest overlap between end of previous loop and start of current loop
             let overlapLength = 0;
-            
+
             // Start from the largest possible overlap and work down
             const maxOverlap = Math.min(currentLoopDivs.length, previousLoopDivs.length);
-            
+
             for (let checkLength = maxOverlap; checkLength > 0; checkLength--) {
                 let isMatch = true;
-                
+
                 // Check if the last 'checkLength' items of previous loop match
                 // the first 'checkLength' items of current loop
                 for (let j = 0; j < checkLength; j++) {
@@ -674,13 +675,13 @@ async function grabPeachTeaAgency() {
                         break;
                     }
                 }
-                
+
                 if (isMatch) {
                     overlapLength = checkLength;
                     break;
                 }
             }
-            
+
             // Add non-overlapping divs from current loop
             if (overlapLength > 0) {
                 // Keep only items after the overlap
@@ -691,7 +692,7 @@ async function grabPeachTeaAgency() {
             }
         }
     }
-    
+
     // Extract just the elements for further processing
     let allContentDivs = finalDivs.map(item => item.element);
 

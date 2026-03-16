@@ -15,7 +15,7 @@ async function tryWebToEpubParser(url) {
         if (!parserInfo) {
             return null;
         }
-        
+
         console.log(`Found WebToEpub parser for ${domain}: ${parserInfo.parserClass}`);
 
         // Request background script to inject WebToEpub infrastructure and parser
@@ -24,7 +24,7 @@ async function tryWebToEpubParser(url) {
             type: "injectWebToEpubParser",
             parserInfo: parserInfo
         });
-        
+
         // Wait a bit for injection to complete
         await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -38,11 +38,11 @@ async function tryWebToEpubParser(url) {
         } catch (e) {
             console.log("Error using parserFactory:", e);
         }
-        
+
         if (!parser) {
             console.log("Parser not found via parserFactory, waiting longer...");
             await new Promise(resolve => setTimeout(resolve, 1000));
-            
+
             try {
                 if (typeof parserFactory !== "undefined" && parserFactory.fetchByUrl) {
                     parser = parserFactory.fetchByUrl(window.location.href);
@@ -50,12 +50,12 @@ async function tryWebToEpubParser(url) {
             } catch (e) {
                 console.log("Error using parserFactory after wait:", e);
             }
-            
+
             if (!parser) {
                 throw new Error(`Parser for ${window.location.href} not available after injection`);
             }
         }
-        
+
         // Execute the parser instance directly
         return parser.extractGrabbyFormat(document);
     } catch (error) {
@@ -164,7 +164,7 @@ async function grabFromWebsite(isBulkGrab = false) {
         }
 
         copyToClipboard(content);
-        
+
         // Extract title based on config
         const title = extractTitle(content, matchingConfig?.useFirstHeadingTitle);
 
@@ -196,7 +196,7 @@ async function grabFromWebsite(isBulkGrab = false) {
             // Default to true if runActionsOnDirectGrab is not specified
             const configAllowsDirectActions = matchingConfig?.runActionsOnDirectGrab !== false;
             const shouldRunActions = isBulkGrab || configAllowsDirectActions;
-            
+
             if (matchingConfig?.postGrab && shouldRunActions) {
                 try {
                     // Resolve function references
@@ -205,7 +205,7 @@ async function grabFromWebsite(isBulkGrab = false) {
                         GrabActions: window.GrabActions
                     });
                     const postGrabResult = await config.postGrab();
-                    
+
                     // Check if postGrab returned an abort signal
                     if (postGrabResult && postGrabResult.abort) {
                         console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
