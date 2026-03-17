@@ -134,7 +134,7 @@ async function checkForUrlText(urlText = []) {
 }
 
 // Function to check for page errors and abort if found
-async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".blog-post-title-font"]) {
+async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".title", ".blog-post-title-font"]) {
     const errorIndicators = [
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",

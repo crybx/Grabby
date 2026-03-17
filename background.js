@@ -239,9 +239,26 @@ async function performAutoGrabSequence(tabId, storyInfo) {
         const initialTab = await chrome.tabs.get(tabId);
         const initialUrl = initialTab.url;
         
-        // Inject scripts and run postGrab action to navigate to next chapter
+        // Inject scripts and check for page errors before navigating
         await scriptInjector.injectScriptsSequentially(tabId);
-        
+
+        // Check if the page is a 404 or error page before trying postGrab
+        const errorCheck = await chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: () => GrabActions.checkForPageErrors()
+        });
+
+        const errorResult = errorCheck[0]?.result;
+        if (errorResult?.abort) {
+            const reason = errorResult.reason || "Page error detected";
+            await StoryManager.updateLastCheckStatus(initialUrl, reason, storyInfo.storyId);
+            if (storyInfo.storyId) {
+                queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, reason);
+            }
+            await chrome.tabs.remove(tabId);
+            return;
+        }
+
         // Run postGrab action to navigate to next chapter and get delay from config
         const configResult = await chrome.scripting.executeScript({
             target: { tabId: tabId },
