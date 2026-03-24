@@ -9,7 +9,7 @@
  * - file: The filename in epub/js/parsers/ directory
  * 
  * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 583
+ * Total supported domains: 584
  */
 
 let PARSER_REGISTRY = {
@@ -215,6 +215,7 @@ let PARSER_REGISTRY = {
     "literotica.com": { parserClass: "LiteroticaParser", file: "LiteroticaParser.js" },
     "lnmtl.com": { parserClass: "LnmtlParser", file: "LnmtlParser.js" },
     "lnreader.org": { parserClass: "LightnovelreaderParser", file: "LightnovelreaderParser.js" },
+    "lunoxscans.com": { parserClass: "LunoxParser", file: "LunoxParser.js" },
     "lorenovels.com": { parserClass: "LoreNovelsParser", file: "LoreNovelsParser.js" },
     "m.38xs.com": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "m.88xiaoshuo.net": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
