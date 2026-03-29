@@ -1890,11 +1890,19 @@ class StoryTrackerTable {
             
             storyElement.appendChild(titleElement);
             storyElement.appendChild(statusElement);
-            
+
             if (story.message && story.status !== "error") {
                 storyElement.title = story.message;
             }
-            
+
+            const storyUrl = story.lastChapterUrl || story.mainStoryUrl;
+            if (storyUrl) {
+                storyElement.style.cursor = "pointer";
+                storyElement.addEventListener("click", () => {
+                    window.open(storyUrl, "_blank");
+                });
+            }
+
             container.appendChild(storyElement);
         });
     }
