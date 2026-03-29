@@ -440,6 +440,14 @@ h1 {
     background: #f8f9fa;
 }
 
+.stories-table tbody tr.page-error {
+    background: #fff0f0;
+}
+
+.stories-table tbody tr.page-error:hover {
+    background: #ffe0e0;
+}
+
 .sortable {
     cursor: pointer;
     user-select: none;
@@ -861,6 +869,10 @@ h1 {
     margin-top: 4px;
     font-size: 12px;
     color: #5f6368;
+}
+
+.field-note.page-error {
+    color: #d93025;
 }
 
 .now-btn {

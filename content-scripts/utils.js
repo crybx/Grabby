@@ -590,6 +590,15 @@ const utils = (function() {
         wrapRawTextInPTags(content); // do after unwrapping spans in case we created raw text
     }
 
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     function cipherSubstitution(element, cipher, alphab = null) {
         if (!alphab) {
             alphab = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -643,6 +652,7 @@ const utils = (function() {
         replaceSemanticInlineStylesWithTags: replaceSemanticInlineStylesWithTags,
         standardElementCleanup: standardElementCleanup,
         standardContentCleanup: standardContentCleanup,
-        cipherSubstitution: cipherSubstitution
+        cipherSubstitution: cipherSubstitution,
+        escapeHtml: escapeHtml
     };
 })();

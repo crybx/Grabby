@@ -564,7 +564,11 @@ class StoryTrackerTable {
             ? this.formatDate(story.dateLastChecked)
             : "Never";
 
-        const lastCheckStatus = story.lastCheckStatus || "Unknown";
+        const lastCheckStatus = utils.escapeHtml(story.lastCheckStatus || "Unknown");
+
+        if (story.lastCheckStatus?.startsWith("Page error:")) {
+            row.classList.add("page-error");
+        }
 
         const tagsDisplay = story.tags && story.tags.length > 0 
             ? story.tags.map(tag => {
@@ -1058,6 +1062,7 @@ class StoryTrackerTable {
 
         const statusEl = document.getElementById("last-check-status");
         statusEl.textContent = story.lastCheckStatus || "";
+        statusEl.classList.toggle("page-error", story.lastCheckStatus?.startsWith("Page error:") || false);
 
         document.getElementById("story-modal").style.display = "flex";
     }
