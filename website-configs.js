@@ -136,7 +136,7 @@ const WEBSITE_CONFIGS = {
             runActionsOnDirectGrab: false,
             preGrab: "GrabActions.googleTranslate",
             postGrab: "GrabActions.ridiNext",
-            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 15, activeTab: true },
+            autoNav: { enabled: true, defaultCount: 10, defaultDelay: 15 },
             filenameCleanupPatterns: [" - Ridibooks"]
         },
         "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
