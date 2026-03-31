@@ -325,7 +325,7 @@ function grabFictioneer() {
     content.querySelectorAll("*").forEach(element => {
         utils.removeSpansInsideParagraph(element);
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
-        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools"]);
+        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "code-block"]);
     });
 
     return prepFictioneerContent(content, title);
