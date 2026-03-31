@@ -1,19 +1,28 @@
 
 const utils = (function() {
     function ensureHeading(content, title) {
-        if (!content.querySelector("h1, h2, h3, h4, h5, h6")) {
-            const firstP = content.querySelector("p");
-
-            if (firstP && /chapter|episode|#/i.test(firstP.textContent || "")) {
-                // convert first paragraph to heading
-                const h1 = document.createElement("h1");
-                replaceTag(firstP, h1);
-            } else if (title && title.trim()) {
-                // add h1 with title
-                const h1 = document.createElement("h1");
-                h1.textContent = title;
-                content.insertBefore(h1, content.firstChild);
+        // Check if any of the first few elements are already headings
+        const children = content.children;
+        const checkCount = Math.min(children.length, 5);
+        for (let i = 0; i < checkCount; i++) {
+            if (/^H[1-6]$/.test(children[i].tagName)) {
+                return;
             }
+        }
+
+        // If first <p> looks like a chapter heading, convert it
+        const firstP = content.querySelector("p");
+        if (firstP && /chapter|episode|#|화|편|장|話|章/i.test(firstP.textContent || "")) {
+            const h1 = document.createElement("h1");
+            replaceTag(firstP, h1);
+            return;
+        }
+
+        // No heading near the top, add one with the title
+        if (title && title.trim()) {
+            const h1 = document.createElement("h1");
+            h1.textContent = title;
+            content.insertBefore(h1, content.firstChild);
         }
     }
 
