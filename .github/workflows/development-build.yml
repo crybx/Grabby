@@ -58,50 +58,35 @@ jobs:
         fi
     
     - name: Delete existing Latest Development Release
-      uses: dev-drprasad/delete-tag-and-release@v1.0
-      with:
-        tag_name: latest-dev
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        delete_release: true
-      continue-on-error: true
-    
-    - name: Create Latest Development Release
-      id: create_release
-      uses: actions/create-release@v1
+      run: gh release delete latest-dev --yes --cleanup-tag || true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Latest Development Release
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: latest-dev
-        release_name: Latest Development Build (${{ steps.version.outputs.version }})
+        name: Latest Development Build (${{ steps.version.outputs.version }})
         body: |
           This is an automated development build from the latest commit on the main branch.
-          
+
           ### Important Notes:
           - This is a development build and may contain unstable features, but also the latest fixes
           - This release is automatically updated with each push to the main branch
           - For release versions, see the [releases page](https://github.com/crybx/Grabby/releases)
-          
+
           ### Chrome Installation:
           1. Download the ZIP file below
-          2. Extract the ZIP file  
+          2. Extract the ZIP file
           3. Open chrome://extensions/
           4. Enable "Developer mode"
           5. Click "Load unpacked" and select the extracted folder
-          
-          ### Full Changelog: 
+
+          ### Full Changelog:
           [${{ steps.prev_version.outputs.prev_tag }}...latest-dev](https://github.com/crybx/Grabby/compare/${{ steps.prev_version.outputs.prev_tag }}...latest-dev)
         draft: false
         prerelease: true
-    
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./grabby-${{ steps.version.outputs.version }}-latest-dev.zip
-        asset_name: grabby-${{ steps.version.outputs.version }}-latest-dev.zip
-        asset_content_type: application/zip
+        files: grabby-${{ steps.version.outputs.version }}-latest-dev.zip
     
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4

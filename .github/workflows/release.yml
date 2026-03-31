@@ -102,41 +102,29 @@ jobs:
         fi
     
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: release-${{ steps.current_version.outputs.version }}
-        release_name: Release ${{ steps.current_version.outputs.version }}
+        name: Release ${{ steps.current_version.outputs.version }}
         body: |
           ### Installation:
-          
+
           **Chrome Web Store:** [Install Grabby](https://chromewebstore.google.com/detail/grabby/inibchdkflhanjekaochnidojoienfbp)
-          
+
           **Chrome Manual Installation:**
           1. Download the `grabby-${{ steps.current_version.outputs.version }}.zip` file below
           2. Extract the ZIP file
           3. Open chrome://extensions/
           4. Enable "Developer mode"
           5. Click "Load unpacked" and select the extracted folder
-          
+
           ### Release Notes:
           ${{ github.event.inputs.release_notes }}
-          
+
           **Full Changelog:** [${{ steps.prev_version.outputs.prev_tag }}...release-${{ steps.current_version.outputs.version }}](https://github.com/crybx/Grabby/compare/${{ steps.prev_version.outputs.prev_tag }}...release-${{ steps.current_version.outputs.version }})
         draft: false
         prerelease: false
-    
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./grabby-${{ steps.current_version.outputs.version }}.zip
-        asset_name: grabby-${{ steps.current_version.outputs.version }}.zip
-        asset_content_type: application/zip
+        files: grabby-${{ steps.current_version.outputs.version }}.zip
     
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
