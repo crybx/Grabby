@@ -62,10 +62,12 @@ export class StoryUpdateChecker {
     // Load settings from chrome.storage.local
     async loadSettings() {
         try {
-            const result = await chrome.storage.local.get(["autoQueueSettings", "autoQueueEnabled"]);
+            const result = await chrome.storage.local.get(["autoQueueSettings", "autoQueueEnabled", "autoQueueBackground"]);
             this.domainSettings = result.autoQueueSettings || {};
             // Default to true if not set
             this.enabled = result.autoQueueEnabled !== false;
+            // Default to false if not set
+            this.backgroundEnabled = result.autoQueueBackground === true;
         } catch (error) {
             console.error("Error loading auto-queue settings:", error);
             this.domainSettings = {};
@@ -139,11 +141,13 @@ export class StoryUpdateChecker {
                 return;
             }
 
-            // Check if story tracker is the active tab
-            const isTrackerActive = await this.isStoryTrackerActive();
-            if (!isTrackerActive) {
-                // Skip this check - user is actively using the browser
-                return;
+            // Check if story tracker is the active tab (unless background mode is enabled)
+            if (!this.backgroundEnabled) {
+                const isTrackerActive = await this.isStoryTrackerActive();
+                if (!isTrackerActive) {
+                    // Skip this check - user is actively using the browser
+                    return;
+                }
             }
             
             // Get tracked stories through StoryManager

@@ -288,6 +288,10 @@ footer {
     font-style: italic;
 }
 
+#open-story-tracker-btn {
+    margin-bottom: 20px;
+}
+
 /* Disabled state for auto-queue settings */
 #auto-queue-settings-wrapper.disabled {
     opacity: 0.5;

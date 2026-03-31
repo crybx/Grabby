@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const showFloatingButtonCheckbox = document.getElementById("show-floating-button");
     const exportUsernameInput = document.getElementById("export-username");
     const autoQueueEnabledCheckbox = document.getElementById("auto-queue-enabled");
+    const autoQueueBackgroundCheckbox = document.getElementById("auto-queue-background");
     const autoQueueSettingsWrapper = document.getElementById("auto-queue-settings-wrapper");
     const autoQueueDomainsContainer = document.getElementById("auto-queue-domains");
     const addAutoQueueDomainBtn = document.getElementById("add-auto-queue-domain");
@@ -92,6 +93,21 @@ document.addEventListener("DOMContentLoaded", function() {
                 autoQueueEnabled: enabled
             });
             updateAutoQueueSettingsVisibility(enabled);
+        });
+    }
+
+    // Auto-Queue Background Setting
+    if (autoQueueBackgroundCheckbox) {
+        // Load current setting
+        chrome.storage.local.get(["autoQueueBackground"], function(result) {
+            autoQueueBackgroundCheckbox.checked = result.autoQueueBackground === true;
+        });
+
+        // Save setting when changed
+        autoQueueBackgroundCheckbox.addEventListener("change", function() {
+            chrome.storage.local.set({
+                autoQueueBackground: this.checked
+            });
         });
     }
 
