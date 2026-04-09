@@ -746,7 +746,7 @@ function grabLocalFile() {
 }
 
 function grabFenrir() {
-    const content = document.querySelector("#reader-area");
+    const content = document.querySelector(".reader-area");
     const title = document.querySelector("h1")?.textContent
     ??  document.querySelector("title").textContent;
 
