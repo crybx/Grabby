@@ -13,7 +13,8 @@ class StoryTrackerTable {
         this.tagFilter = ""; // Active tag filter
         this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
         this.filterDebounceTimer = null; // Timer for debouncing filter input
-        
+        this.queueActive = false;
+
         // Pagination settings
         this.currentPage = 1;
         this.storiesPerPage = 50;
@@ -750,12 +751,9 @@ class StoryTrackerTable {
         deleteSelectedBtn.disabled = count === 0;
         
         // Check if queue is active to handle Auto Grab button specially
-        const queueProgress = document.getElementById("queue-progress");
-        if (queueProgress && queueProgress.style.display === "block") {
-            // Queue is active, use special handling for Auto Grab button
+        if (this.queueActive) {
             this.updateAutoGrabButtonForActiveQueue();
         } else {
-            // No queue active, normal behavior
             grabChaptersBtn.disabled = count === 0;
             grabChaptersBtn.textContent = "Grab New Chapters";
         }
@@ -1700,12 +1698,7 @@ class StoryTrackerTable {
     updateAutoGrabButtonForActiveQueue() {
         const grabChaptersBtn = document.getElementById("grab-chapters-btn");
         grabChaptersBtn.disabled = this.selectedStories.size === 0;
-        
-        if (this.selectedStories.size === 0) {
-            grabChaptersBtn.textContent = "Queue Processing...";
-        } else {
-            grabChaptersBtn.textContent = "Add to Queue";
-        }
+        grabChaptersBtn.textContent = "Add to Queue";
     }
 
     hideQueueProgress() {
@@ -1733,6 +1726,7 @@ class StoryTrackerTable {
     }
 
     closeQueueProgress() {
+        this.queueActive = false;
         this.hideQueueProgress();
         
         // Clear completed queue status in background
@@ -1753,6 +1747,8 @@ class StoryTrackerTable {
             // Only hide if no queue was ever started, otherwise keep summary visible
             return;
         }
+
+        this.queueActive = !!status.isActive;
 
         // Show progress section if queue is active or completed
         if (status.isActive) {
