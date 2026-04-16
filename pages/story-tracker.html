@@ -66,9 +66,16 @@
             </div>
 
             <!-- Queue Progress -->
-            <div id="queue-progress" class="queue-progress" style="display: none;">
+            <div id="queue-progress" class="queue-progress collapsed" style="display: none;">
                 <div class="queue-progress-header">
-                    <h3>Queue Progress</h3>
+                    <div class="queue-progress-title">
+                        <button id="toggle-queue-details-btn" class="queue-toggle-btn" aria-expanded="false" title="Expand queue details">
+                            <svg class="queue-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </button>
+                        <h3>Queue Progress</h3>
+                    </div>
                     <div class="queue-controls">
                         <button id="pause-queue-btn" class="btn secondary-btn">Pause</button>
                         <button id="resume-queue-btn" class="btn secondary-btn" style="display: none;">Resume</button>

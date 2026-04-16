@@ -47,10 +47,52 @@ header {
     gap: 12px;
 }
 
+.queue-progress-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .queue-progress-header h3 {
     color: #007bff;
     font-size: 1.2em;
     margin: 0;
+}
+
+.queue-toggle-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #007bff;
+    border-radius: 4px;
+}
+
+.queue-toggle-btn:hover {
+    background: #e3f2fd;
+}
+
+.queue-toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.queue-progress.collapsed .queue-toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.queue-progress.collapsed {
+    padding-bottom: 16px;
+}
+
+.queue-progress.collapsed .queue-progress-stats {
+    margin-bottom: 0;
+}
+
+.queue-progress.collapsed .queue-stories-list {
+    display: none;
 }
 
 .queue-controls {

@@ -77,6 +77,12 @@ class StoryTrackerTable {
             this.closeQueueProgress();
         });
 
+        document.getElementById("toggle-queue-details-btn").addEventListener("click", () => {
+            this.toggleQueueDetails();
+        });
+
+        this.applyQueueCollapsedState();
+
         // Add message listener for queue progress updates
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.type === "queueUpdate") {
@@ -1705,6 +1711,25 @@ class StoryTrackerTable {
     hideQueueProgress() {
         const queueProgress = document.getElementById("queue-progress");
         queueProgress.style.display = "none";
+    }
+
+    toggleQueueDetails() {
+        const queueProgress = document.getElementById("queue-progress");
+        const collapsed = queueProgress.classList.toggle("collapsed");
+        const toggleBtn = document.getElementById("toggle-queue-details-btn");
+        toggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        toggleBtn.title = collapsed ? "Expand queue details" : "Collapse queue details";
+        localStorage.setItem("queueDetailsCollapsed", collapsed ? "1" : "0");
+    }
+
+    applyQueueCollapsedState() {
+        const stored = localStorage.getItem("queueDetailsCollapsed");
+        const collapsed = stored === null ? true : stored === "1";
+        const queueProgress = document.getElementById("queue-progress");
+        const toggleBtn = document.getElementById("toggle-queue-details-btn");
+        queueProgress.classList.toggle("collapsed", collapsed);
+        toggleBtn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        toggleBtn.title = collapsed ? "Expand queue details" : "Collapse queue details";
     }
 
     closeQueueProgress() {
