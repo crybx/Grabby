@@ -33,38 +33,6 @@
         </header>
 
         <main>
-            <div class="table-controls">
-                <div class="controls-left">
-                    <input type="text" id="filter-input" placeholder="Filter stories..." class="filter-input">
-                    <select id="domain-filter" class="domain-filter">
-                        <option value="">All Domains</option>
-                    </select>
-                    <button id="clear-filters-btn" class="secondary-btn">Clear Filters</button>
-                    <div class="total-count">
-                        <span id="total-stories-count">0 stories</span>
-                        <span id="active-tag-filter" class="active-tag-filter" style="display: none;">
-                            <span class="tag-label">Tag:</span>
-                            <span id="active-tag-name" class="tag clickable-tag active"></span>
-                            <button id="clear-tag-filter" class="clear-tag-btn" title="Clear tag filter">×</button>
-                        </span>
-                    </div>
-                </div>
-                <div class="controls-right">
-                    <div class="selection-info">
-                        <span id="selection-count">0 selected</span>
-                        <button id="select-all-btn" class="btn secondary-btn">Select All</button>
-                        <button id="clear-selection-btn" class="btn secondary-btn">Clear</button>
-                    </div>
-                    <div class="bulk-actions">
-                        <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
-                        <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Story URLs</button>
-                        <button id="grab-chapters-btn" class="btn primary-btn" disabled>Grab New Chapters</button>
-                        <button id="edit-tags-btn" class="btn secondary-btn" disabled>Edit Tags</button>
-                        <button id="refresh-btn" class="btn secondary-btn">Refresh</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Queue Progress -->
             <div id="queue-progress" class="queue-progress collapsed" style="display: none;">
                 <div class="queue-progress-header">
@@ -117,6 +85,38 @@
                     <div class="stories-section">
                         <h4>Completed</h4>
                         <div id="completed-stories" class="story-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-controls">
+                <div class="controls-left">
+                    <input type="text" id="filter-input" placeholder="Filter stories..." class="filter-input">
+                    <select id="domain-filter" class="domain-filter">
+                        <option value="">All Domains</option>
+                    </select>
+                    <button id="clear-filters-btn" class="secondary-btn">Clear Filters</button>
+                    <div class="total-count">
+                        <span id="total-stories-count">0 stories</span>
+                        <span id="active-tag-filter" class="active-tag-filter" style="display: none;">
+                            <span class="tag-label">Tag:</span>
+                            <span id="active-tag-name" class="tag clickable-tag active"></span>
+                            <button id="clear-tag-filter" class="clear-tag-btn" title="Clear tag filter">×</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="controls-right">
+                    <div class="selection-info">
+                        <span id="selection-count">0 selected</span>
+                        <button id="select-all-btn" class="btn secondary-btn">Select All</button>
+                        <button id="clear-selection-btn" class="btn secondary-btn">Clear</button>
+                    </div>
+                    <div class="bulk-actions">
+                        <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
+                        <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Story URLs</button>
+                        <button id="grab-chapters-btn" class="btn primary-btn" disabled>Grab New Chapters</button>
+                        <button id="edit-tags-btn" class="btn secondary-btn" disabled>Edit Tags</button>
+                        <button id="refresh-btn" class="btn secondary-btn">Refresh</button>
                     </div>
                 </div>
             </div>
