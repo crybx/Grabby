@@ -266,29 +266,27 @@ export class StoryManager {
         });
     }
 
-    // Clean chapter title
-    static cleanTitle(chapterTitle) {
+    // Clean chapter title: extract all digit sequences and join with "."
+    // e.g. "216_-_(_2)" -> "216.2", "chapter_100" -> "100"
+    // Strips leading digit sequences that come from the story title (e.g.
+    // "99.99% Lover") so "99_99_Lover_Chapter_164_2" -> "164.2" rather than
+    // "99.99.164.2". Only strips when remaining numbers exist, so chapter 99
+    // of "99.99% Lover" still resolves to "99".
+    static cleanTitle(chapterTitle, storyTitle) {
         if (!chapterTitle) return chapterTitle;
-        
-        // Remove all letters
-        let cleanedTitle = chapterTitle.replace(/[a-zA-Z]/g, "");
-        
-        // Collapse multiple spaces to single space
-        cleanedTitle = cleanedTitle.replace(/\s+/g, " ");
-        
-        // Remove leading/trailing whitespace
-        cleanedTitle = cleanedTitle.trim();
-        
-        // Trim any non-numbers from the start position
-        cleanedTitle = cleanedTitle.replace(/^[^0-9]+/, "");
-        
-        // Trim any non-numbers from the end, but allow ) and ] to remain
-        cleanedTitle = cleanedTitle.replace(/[^0-9)\]]+$/, "");
 
-        // collapse multiple consecutive underscores to single underscore
-        cleanedTitle = cleanedTitle.replace(/_+/g, "_");
+        let numbers = chapterTitle.match(/\d+/g) || [];
 
-        return cleanedTitle;
+        if (storyTitle) {
+            const storyNumbers = storyTitle.match(/\d+/g) || [];
+            if (storyNumbers.length > 0
+                && numbers.length > storyNumbers.length
+                && storyNumbers.every((n, i) => n === numbers[i])) {
+                numbers = numbers.slice(storyNumbers.length);
+            }
+        }
+
+        return numbers.length > 0 ? numbers.join(".") : "";
     }
 
     // Update last check status for a story (used for aborts or other check results)
