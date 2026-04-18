@@ -453,11 +453,6 @@ const main = (function() {
         // Make parser globally accessible for refresh functionality
         window.parser = parser;
         getLoadAndAnalyseButton().hidden = true;
-        let disabledMessage = parser.disabled();
-        if (disabledMessage !== null) {
-            ErrorLog.showErrorMessage(disabledMessage);
-            return false;
-        }
         return true;
     }
 
@@ -1002,6 +997,7 @@ const main = (function() {
         fetchContentAndPackEpub: fetchContentAndPackEpub,
         downloadChapters: downloadChapters,
         resetUI: resetUI,
+        getCurrentParser: () => parser,
         setUiFieldToValue: setUiFieldToValue,
         getValueFromUiField: getValueFromUiField,
         getUserPreferences: () => userPreferences,

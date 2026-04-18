@@ -8,6 +8,10 @@ class ComrademaoParser extends Parser {
         super();
     }
 
+    disabled() {
+        return UIText.Warning.parserDisabledNotification;
+    }
+
     populateUIImpl() {
         document.getElementById("removeOriginalRow").hidden = false; 
     }

@@ -7,6 +7,10 @@ class MtlnationParser extends MadaraParser {
         super();
     }
 
+    disabled() {
+        return UIText.Warning.parserDisabledNotification;
+    }
+
     findContent(dom) {
         if (dom.querySelector("div.reading-content") === null) {
             let content = dom.querySelector("div[data-position='footer']")?.previousElementSibling;
