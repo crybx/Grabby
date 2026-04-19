@@ -9,7 +9,7 @@
  * - file: The filename in epub/js/parsers/ directory
  * 
  * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 613
+ * Total supported domains: 614
  */
 
 let PARSER_REGISTRY = {
@@ -53,6 +53,7 @@ let PARSER_REGISTRY = {
     "b.faloo.com": { parserClass: "FalooParser", file: "FalooParser.js" },
     "babelnovel.com": { parserClass: "BabelChainParser", file: "BabelChainParser.js" },
     "bakapervert.wordpress.com": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
+    "beastnovels.com": { parserClass: "BeastnovelsParser", file: "BeastnovelsParser.js" },
     "bednovel.com": { parserClass: "FreeWebNovelParser", file: "FreeWebNovelParser.js" },
     "bestlightnovel.com": { parserClass: "NovelOnlineFreeParser", file: "NovelOnlineFreeParser.js" },
     "betwixtedbutterfly.com": { parserClass: "BetwixtedbutterflyParser", file: "BetwixtedbutterflyParser.js" },
