@@ -15,12 +15,12 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    
+
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 'lts/*'
         cache: 'npm'
@@ -63,7 +63,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Latest Development Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: latest-dev
         name: Latest Development Build (${{ steps.version.outputs.version }})
@@ -89,7 +89,7 @@ jobs:
         files: grabby-${{ steps.version.outputs.version }}-latest-dev.zip
     
     - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: grabby-latest-dev-${{ steps.version.outputs.version }}
         path: grabby-${{ steps.version.outputs.version }}-latest-dev.zip
