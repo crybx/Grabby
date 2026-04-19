@@ -1,6 +1,6 @@
 # Grabby
 
-A Chrome extension that saves web pages as clean, readable files and tracks your reading progress across ongoing stories.
+A Chrome extension that saves web pages as clean, readable files and tracks releases across ongoing stories.
 
 <a href='https://ko-fi.com/crybx' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi1.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
@@ -11,7 +11,7 @@ A Chrome extension that saves web pages as clean, readable files and tracks your
 ## Features
 
 - **One-click content download** - Save any web page as a clean, readable file with Alt+G or the floating clipboard button
-- **Story tracking** - Track your reading progress across ongoing web serials and stories
+- **Story tracking** - Track ongoing web serials and stories
 - **Bulk grabbing** - Download entire stories or selected chapter ranges automatically
 - **Queue management** - Process multiple stories simultaneously with pause/resume controls
 - **Site-specific extraction** - Custom logic for 50+ sites, plus WebToEpub parser fallback for 500+ additional sites
@@ -64,7 +64,7 @@ For developers or those who want to modify the extension:
 ### Story Tracking
 1. Click the Grabby icon and select "Open Story Tracker"
 2. Add stories you want to track
-3. Your reading progress updates automatically when you grab chapters
+3. Tracking updates automatically when you grab chapters
 4. Use the queue system to check multiple stories for new chapters (if autoNav is supported for the sites)
 
 ### Bulk Grabbing
@@ -104,7 +104,7 @@ When no custom support exists, Grabby uses [WebToEpub's](https://github.com/dtev
 For sites with navigation support, look for ones with `autoNav: { enabled: true }` in their configuration.
 
 ### General Extraction
-For other webpages, Grabby extracts the main text while removing ads and navigation. This works for:
+For other webpages, Grabby extracts the main text while removing what ads and navigation it can. This works for:
 - News articles and blog posts
 - Documentation and wikis
 - Local HTML files (useful for grabbing Chrome's automatic Google Translate translations)
@@ -151,8 +151,8 @@ If you find Grabby useful, consider supporting the project:
 ## License
 
 ```
-Grabby, a browser extension that saves web pages as clean, readable files 
-and tracks your reading progress across ongoing stories.
+Grabby, a browser extension that saves web pages as clean, 
+readable files and tracks ongoing stories.
 Copyright (C) 2024  crybx
 
 This program is free software: you can redistribute it and/or modify
