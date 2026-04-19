@@ -144,7 +144,7 @@ class FictioneerParser extends Parser {
     }
 
     removeUnwantedElementsFromContentElement(element) {
-        util.removeElements(element.querySelectorAll("iframe, .eoc-chapter-groups, .chapter-nav, .related-stories-block, .code-block"));
+        util.removeElements(element.querySelectorAll("iframe, .eoc-chapter-groups, .chapter-nav, .related-stories-block, .code-block, .jp-relatedposts"));
         super.removeUnwantedElementsFromContentElement(element);
     }
 
