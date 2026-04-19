@@ -1,6 +1,6 @@
 {
   "name": "grabby",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Make reading stories online easier. Save chapters as clean, readable files and track reading progress across ongoing stories.",
   "scripts": {
     "lint": "eslint . && npm run build",
