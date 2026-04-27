@@ -135,7 +135,7 @@ async function checkForUrlText(urlText = []) {
 }
 
 // Function to check for page errors and abort if found
-async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".title", ".blog-post-title-font"]) {
+async function checkForPageErrors(selectors = ["title", "h1", "h2", "h3", ".error-message", ".not-found", ".page-title", ".title", ".blog-post-title-font"]) {
     const errorIndicators = [
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
@@ -144,7 +144,8 @@ async function checkForPageErrors(selectors = ["h1", "h2", "h3", ".error-message
         "This page does not exist",
         "The page you requested could not be found",
         "Uncaught Error: Call to undefined function wp_cache_get()",
-        "Error establishing a database connection"
+        "Error establishing a database connection",
+        "503 Service Unavailable"
     ];
 
     for (const selector of selectors) {
