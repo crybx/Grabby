@@ -180,6 +180,7 @@ const WEBSITE_CONFIGS = {
                 fn: "GrabActions.clickElementBySelector",
                 args: ["main div div a", { index: 1 }]
             },
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 15 }
         },
     },
     multiDomains: {
