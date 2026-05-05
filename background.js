@@ -393,7 +393,6 @@ function waitForTabComplete(tabId, timeoutMs) {
 
 async function handleLiveModeGrab(message) {
     if (liveModeInFlight) {
-        console.warn("[LiveMode] busy, rejecting", message.url);
         return { success: false, error: "Live Mode busy: another chapter is in flight" };
     }
 
@@ -404,18 +403,15 @@ async function handleLiveModeGrab(message) {
 
     let tabId = null;
     try {
-        console.log("[LiveMode] opening tab for", url);
         const tab = await chrome.tabs.create({ url, active: true });
         tabId = tab.id;
         liveModeInFlight = { tabId, url };
 
         await waitForTabComplete(tabId, timeoutMs);
-        console.log("[LiveMode] tab loaded, waiting", postLoadDelayMs, "ms");
         await new Promise(resolve => setTimeout(resolve, postLoadDelayMs));
 
         await scriptInjector.injectWebToEpubDependencies(tabId);
         await scriptInjector.injectWebToEpubParser(tabId, parserFile);
-        console.log("[LiveMode] parser injected, executing extract");
 
         const result = await chrome.scripting.executeScript({
             target: { tabId },
@@ -437,13 +433,10 @@ async function handleLiveModeGrab(message) {
         });
         const grabResult = result?.[0]?.result;
         if (!grabResult) {
-            console.error("[LiveMode] no result from in-tab script");
             return { success: false, error: "Live Mode: no result from in-tab script" };
         }
-        console.log("[LiveMode] extract result:", grabResult.success, grabResult.error || `title="${grabResult.title}"`);
         return grabResult;
     } catch (error) {
-        console.error("[LiveMode] handleLiveModeGrab error:", error);
         return { success: false, error: error.message };
     } finally {
         if (tabId !== null) {

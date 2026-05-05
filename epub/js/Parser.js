@@ -919,16 +919,13 @@ class Parser {
 
         let result;
         try {
-            console.log("[LiveMode] requesting", webPage.sourceUrl);
             result = await chrome.runtime.sendMessage({
                 target: "background",
                 type: "liveModeGrab",
                 url: webPage.sourceUrl,
                 parserFile: entry.file
             });
-            console.log("[LiveMode] response:", result);
         } catch (e) {
-            console.error("[LiveMode] sendMessage threw:", e);
             await ChapterCache.storeChapterError(webPage.sourceUrl, "Live Mode: " + e.message);
             return;
         }
@@ -959,7 +956,6 @@ class Parser {
         }
 
         await ChapterCache.set(webPage.sourceUrl, contentEl);
-        console.log("[LiveMode] cached", webPage.sourceUrl);
     }
 
     // Lightweight title-dedupe helper (the instance method titleAlreadyPresent isn't
