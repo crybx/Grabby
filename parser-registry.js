@@ -9,7 +9,7 @@
  * - file: The filename in epub/js/parsers/ directory
  * 
  * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 614
+ * Total supported domains: 615
  */
 
 let PARSER_REGISTRY = {
@@ -396,6 +396,7 @@ let PARSER_REGISTRY = {
     "novlove.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "ntruyen.vn": { parserClass: "NtruyenParser", file: "NtruyenParser.js" },
     "nyantl.wordpress.com": { parserClass: "NyantlParser", file: "NyantlParser.js" },
+    "oceanstale.com": { parserClass: "OceanstaleParser", file: "OceanstaleParser.js" },
     "octopii.co": { parserClass: "OctopiiParser", file: "OctopiiParser.js" },
     "old.ranobelib.me": { parserClass: "OldranobelibParser", file: "OldranobelibParser.js" },
     "onlinenovelbook.com": { parserClass: "OnlinenovelbookParser", file: "OnlinenovelbookParser.js" },
