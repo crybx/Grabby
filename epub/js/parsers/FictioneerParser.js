@@ -136,10 +136,11 @@ class FictioneerParser extends Parser {
                 element.removeAttribute("id");
                 element.removeAttribute("data-paragraph-id");
             }
-            // remove style attribute if style="font-weight: 400;" - it"s just noise
+            // remove style attribute if style="font-weight: 400;" - it's just noise
             if (element.hasAttribute("style") && element.getAttribute("style") === "font-weight: 400;") {
                 element.removeAttribute("style");
             }
+            util.replaceSemanticInlineStylesWithTags(element, true);
         });
     }
 
