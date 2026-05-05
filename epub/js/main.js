@@ -305,6 +305,12 @@ const main = (function() {
         }
 
         util.sleepController.abort();
+
+        // Tell Grabby to close any in-flight live-mode tab. Best-effort; ignore
+        // failures (e.g. running outside the extension).
+        try {
+            chrome.runtime.sendMessage({ target: "background", type: "liveModeCancel" });
+        } catch { /* not in extension context */ }
     }
 
     function epubVersionFromPreferences() {

@@ -361,6 +361,106 @@ async function performAutoGrabSequence(tabId, storyInfo) {
     }
 }
 
+// Live Mode: open the chapter URL in an active tab, run extractGrabbyFormat,
+// close the tab, and return {title, content}. Used by EPUB packing for sites
+// that only render content after JS / anti-bot checks. See Live-Mode-Plan.md.
+let liveModeInFlight = null; // { tabId, url } when a live-mode tab is open
+
+function waitForTabComplete(tabId, timeoutMs) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            chrome.tabs.onUpdated.removeListener(listener);
+            reject(new Error(`Live Mode: tab load timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+        const listener = (updatedTabId, changeInfo) => {
+            if (updatedTabId === tabId && changeInfo.status === "complete") {
+                clearTimeout(timer);
+                chrome.tabs.onUpdated.removeListener(listener);
+                resolve();
+            }
+        };
+        chrome.tabs.onUpdated.addListener(listener);
+        // Catch the case where the tab finished loading before we attached the listener
+        chrome.tabs.get(tabId).then(tab => {
+            if (tab.status === "complete") {
+                clearTimeout(timer);
+                chrome.tabs.onUpdated.removeListener(listener);
+                resolve();
+            }
+        }).catch(reject);
+    });
+}
+
+async function handleLiveModeGrab(message) {
+    if (liveModeInFlight) {
+        console.warn("[LiveMode] busy, rejecting", message.url);
+        return { success: false, error: "Live Mode busy: another chapter is in flight" };
+    }
+
+    const { url, parserFile, postLoadDelayMs = 5000, timeoutMs = 60000 } = message;
+    if (!url || !parserFile) {
+        return { success: false, error: "Live Mode: url and parserFile are required" };
+    }
+
+    let tabId = null;
+    try {
+        console.log("[LiveMode] opening tab for", url);
+        const tab = await chrome.tabs.create({ url, active: true });
+        tabId = tab.id;
+        liveModeInFlight = { tabId, url };
+
+        await waitForTabComplete(tabId, timeoutMs);
+        console.log("[LiveMode] tab loaded, waiting", postLoadDelayMs, "ms");
+        await new Promise(resolve => setTimeout(resolve, postLoadDelayMs));
+
+        await scriptInjector.injectWebToEpubDependencies(tabId);
+        await scriptInjector.injectWebToEpubParser(tabId, parserFile);
+        console.log("[LiveMode] parser injected, executing extract");
+
+        const result = await chrome.scripting.executeScript({
+            target: { tabId },
+            func: () => {
+                if (typeof parserFactory === "undefined" || !parserFactory.fetchByUrl) {
+                    return { success: false, error: "parserFactory not available in tab" };
+                }
+                const parser = parserFactory.fetchByUrl(window.location.href);
+                if (!parser) {
+                    return { success: false, error: "No parser registered for " + window.location.hostname };
+                }
+                try {
+                    const out = parser.extractGrabbyFormat(document);
+                    return { success: true, title: out.title, content: out.content };
+                } catch (e) {
+                    return { success: false, error: e.message };
+                }
+            }
+        });
+        const grabResult = result?.[0]?.result;
+        if (!grabResult) {
+            console.error("[LiveMode] no result from in-tab script");
+            return { success: false, error: "Live Mode: no result from in-tab script" };
+        }
+        console.log("[LiveMode] extract result:", grabResult.success, grabResult.error || `title="${grabResult.title}"`);
+        return grabResult;
+    } catch (error) {
+        console.error("[LiveMode] handleLiveModeGrab error:", error);
+        return { success: false, error: error.message };
+    } finally {
+        if (tabId !== null) {
+            try { await chrome.tabs.remove(tabId); } catch { /* tab may already be closed */ }
+        }
+        liveModeInFlight = null;
+    }
+}
+
+function handleLiveModeCancel() {
+    if (liveModeInFlight) {
+        const { tabId } = liveModeInFlight;
+        liveModeInFlight = null;
+        chrome.tabs.remove(tabId).catch(() => { /* may already be closed */ });
+    }
+}
+
 // Handle WebToEpub parser injection requests
 async function handleInjectWebToEpubParser(message, sender) {
     try {
@@ -529,6 +629,14 @@ async function handleMessages(message, sender, sendResponse) {
         case "injectWebToEpubParser":
             handleInjectWebToEpubParser(message, sender)
                 .catch(error => console.error("Error in handleInjectWebToEpubParser:", error));
+            break;
+        case "liveModeGrab":
+            // Returning the awaited result lets Chrome's MV3 message API use the
+            // resolved value as the response. This avoids the ambiguity of mixing
+            // "return true" with sendResponse inside an async listener.
+            return await handleLiveModeGrab(message);
+        case "liveModeCancel":
+            handleLiveModeCancel();
             break;
         case "addStoryToTracker":
             try {

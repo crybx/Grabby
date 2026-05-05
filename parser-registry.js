@@ -1,13 +1,17 @@
 /**
  * Parser Registry - Maps domains to WebToEpub parser classes
- * 
+ *
  * This static registry maps domain names to their corresponding WebToEpub parser
  * information. Used as a fallback when Grabby doesn't have a native grabber for a site.
- * 
+ *
  * Structure:
  * - parserClass: The class name of the parser
  * - file: The filename in epub/js/parsers/ directory
- * 
+ * - liveMode (optional): true if the site requires content to be loaded in an active
+ *   tab (JS execution, anti-bot checks, etc.) before content is in the DOM. When set,
+ *   EPUB packing routes per-chapter fetches through Grabby's live-mode background
+ *   handler instead of HttpClient. See Live-Mode-Plan.md.
+ *
  * This file should be updated when syncing WebToEpub parser updates from upstream.
  * Total supported domains: 615
  */
@@ -76,7 +80,7 @@ let PARSER_REGISTRY = {
     "cangji.net": { parserClass: "CangjiParser", file: "CangjiParser.js" },
     "cclawtranslations.home.blog": { parserClass: "CClawTranslationsParser", file: "CClawTranslationsParser.js" },
     "chaleuria.com": { parserClass: "ChaleuriaParser", file: "ChaleuriaParser.js" },
-    "cherrymist.cafe": { parserClass: "FictioneerParser", file: "FictioneerParser.js" },
+    "cherrymist.cafe": { parserClass: "FictioneerParser", file: "FictioneerParser.js", liveMode: true },
     "chichipeph.com": { parserClass: "ChichipephParser", file: "ChichipephParser.js" },
     "chickengege.org": { parserClass: "ChickengegeParser", file: "ChickengegeParser.js" },
     "chinesewuxia.world": { parserClass: "NovelOnlineFreeParser", file: "NovelOnlineFreeParser.js" },
@@ -632,3 +636,18 @@ let PARSER_REGISTRY = {
 
 // Make PARSER_REGISTRY available globally for content script injection
 window.PARSER_REGISTRY = PARSER_REGISTRY;
+
+// Look up a registry entry by URL, stripping a leading "www." to match registrations.
+// Returns the {parserClass, file, liveMode?} entry or undefined.
+function getParserRegistryEntryForUrl(url) {
+    try {
+        let hostname = new URL(url).hostname;
+        if (hostname.startsWith("www.")) {
+            hostname = hostname.substring(4);
+        }
+        return PARSER_REGISTRY[hostname];
+    } catch (e) {
+        return undefined;
+    }
+}
+window.getParserRegistryEntryForUrl = getParserRegistryEntryForUrl;

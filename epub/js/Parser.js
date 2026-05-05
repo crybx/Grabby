@@ -596,6 +596,10 @@ class Parser {
             return Promise.reject(new Error("No chapters found."));
         }
 
+        if (!Parser.confirmLiveModeIfNeeded(pagesToFetch)) {
+            return Promise.reject(new Error("Live Mode cancelled by user."));
+        }
+
         this.setUiToShowLoadingProgress(pagesToFetch.length);
 
         this.imageCollector.reset();
@@ -638,6 +642,12 @@ class Parser {
 
     async fetchWebPageContent(webPage) {
         let pageParser = webPage.parser;
+
+        // Live Mode: for sites that only render content in an active tab (JS / anti-bot
+        // checks), route through Grabby's background to open a real tab and run the
+        // parser there. Pre-populate ChapterCache so the cache-hit path below handles
+        // the rest. See Live-Mode-Plan.md.
+        await Parser.maybePrefetchLiveMode(webPage);
 
         // Check cache first (checks persistent or session storage based on settings)
         {
@@ -840,6 +850,124 @@ class Parser {
         } else {
             this.tagAuthorNotes(notes);
         }
+    }
+
+    // Live Mode confirmation. If any chapter in the batch belongs to a live-mode
+    // domain, warn the user before opening tabs. Returns true if the user confirmed
+    // (or no live-mode chapters are present); false if they cancelled.
+    static confirmLiveModeIfNeeded(pagesToFetch) {
+        if (typeof getParserRegistryEntryForUrl !== "function") {
+            return true;
+        }
+        const liveModeDomains = new Set();
+        for (const webPage of pagesToFetch) {
+            const entry = getParserRegistryEntryForUrl(webPage.sourceUrl);
+            if (entry?.liveMode) {
+                try {
+                    liveModeDomains.add(new URL(webPage.sourceUrl).hostname);
+                } catch { /* ignore malformed URL */ }
+            }
+        }
+        if (liveModeDomains.size === 0) {
+            return true;
+        }
+        const message =
+            "This site requires loading each chapter in an active tab.\n\n" +
+            "WebToEpub will open and close tabs automatically. Don't click, type, or " +
+            "close those tabs while it runs — interfering may cause chapters to fail.\n\n" +
+            "This may take a while if there are many chapters.\n\n" +
+            "Domains: " + [...liveModeDomains].join(", ") + "\n\n" +
+            "Continue?";
+        return window.confirm(message);
+    }
+
+    // Live Mode prefetch. If the URL's domain is flagged liveMode in PARSER_REGISTRY
+    // and the chapter isn't already cached, ask Grabby's background to open a real
+    // tab, run extractGrabbyFormat there, and store the result in ChapterCache. The
+    // existing cache-hit path in fetchWebPageContent then satisfies the fetch with
+    // no further network call.
+    static async maybePrefetchLiveMode(webPage) {
+        if (typeof getParserRegistryEntryForUrl !== "function") {
+            return; // PARSER_REGISTRY not loaded (e.g. running outside Grabby)
+        }
+        const entry = getParserRegistryEntryForUrl(webPage.sourceUrl);
+        if (!entry?.liveMode) {
+            return;
+        }
+        if (util.sleepController.signal.aborted) {
+            return; // User cancelled before this chapter started
+        }
+        try {
+            const cached = await ChapterCache.get(webPage.sourceUrl);
+            if (cached) {
+                return; // Already cached from a prior run
+            }
+        } catch (e) {
+            console.error("Live Mode: cache check failed:", e);
+        }
+
+        // Apply the user's "Delay per chapter (ms)" preference. The normal fetch
+        // path does this in fetchWebPageContent before HttpClient.wrapFetch, but
+        // live-mode bypasses that branch by pre-filling the cache, so do it here.
+        if (webPage.parser && typeof webPage.parser.rateLimitDelay === "function") {
+            ChapterUrlsUI.showChapterStatus(webPage.row, ChapterUrlsUI.CHAPTER_STATUS_SLEEPING, webPage.sourceUrl, webPage.title);
+            await webPage.parser.rateLimitDelay();
+            if (util.sleepController.signal.aborted) {
+                return;
+            }
+        }
+
+        let result;
+        try {
+            console.log("[LiveMode] requesting", webPage.sourceUrl);
+            result = await chrome.runtime.sendMessage({
+                target: "background",
+                type: "liveModeGrab",
+                url: webPage.sourceUrl,
+                parserFile: entry.file
+            });
+            console.log("[LiveMode] response:", result);
+        } catch (e) {
+            console.error("[LiveMode] sendMessage threw:", e);
+            await ChapterCache.storeChapterError(webPage.sourceUrl, "Live Mode: " + e.message);
+            return;
+        }
+
+        if (!result?.success) {
+            const msg = result?.error || "Live Mode failed (no/invalid response)";
+            await ChapterCache.storeChapterError(webPage.sourceUrl, msg);
+            return;
+        }
+
+        // result.content is the HTML string produced by extractGrabbyFormat (outerHTML
+        // of the content element). Parse it back into an Element for ChapterCache.set.
+        const doc = new DOMParser().parseFromString(result.content, "text/html");
+        const contentEl = doc.body.firstElementChild;
+        if (!contentEl) {
+            await ChapterCache.storeChapterError(webPage.sourceUrl, "Live Mode: empty content");
+            return;
+        }
+
+        // Folio's normal flow caches content AFTER addTitleToContent has prepended
+        // an <h1>. The cache-hit branch then skips title processing. Match that
+        // shape here so chapter HTML pages have proper titles.
+        const titleText = (result.title || webPage.title || "").trim();
+        if (titleText && !Parser.titleAlreadyPresentIn(contentEl, titleText)) {
+            const h1 = doc.createElement("h1");
+            h1.appendChild(doc.createTextNode(titleText));
+            contentEl.insertBefore(h1, contentEl.firstChild);
+        }
+
+        await ChapterCache.set(webPage.sourceUrl, contentEl);
+        console.log("[LiveMode] cached", webPage.sourceUrl);
+    }
+
+    // Lightweight title-dedupe helper (the instance method titleAlreadyPresent isn't
+    // available from this static context).
+    static titleAlreadyPresentIn(contentEl, titleText) {
+        const heading = contentEl.querySelector("h1, h2, h3");
+        if (!heading) return false;
+        return heading.textContent.trim() === titleText;
     }
 
     static makeEmptyDocForContent(baseUrl) {
