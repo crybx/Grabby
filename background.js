@@ -16,7 +16,9 @@ const scriptInjector = new ScriptInjector();
 async function showNotificationOnActiveTab(message, type = "success") {
     try {
         const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (activeTab && !activeTab.url.startsWith("chrome-extension://")) {
+        const restrictedSchemes = ["chrome://", "chrome-extension://", "devtools://", "edge://", "about:"];
+        const isRestricted = !activeTab?.url || restrictedSchemes.some(s => activeTab.url.startsWith(s));
+        if (activeTab && !isRestricted) {
             await chrome.scripting.executeScript({
                 target: { tabId: activeTab.id },
                 func: (msg, notificationType) => {
