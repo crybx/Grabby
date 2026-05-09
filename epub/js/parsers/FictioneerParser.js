@@ -8,7 +8,7 @@ parserFactory.register("igniforge.com", () => new FictioneerParser());
 parserFactory.register("lilyonthevalley.com", () => new FictioneerParser());
 parserFactory.register("razentl.com", () => new FictioneerParser());
 //these still exist
-parserFactory.register("cherrymist.cafe", () => new FictioneerParser());
+parserFactory.register("cherrymist.cafe", () => new CherryMistParser());
 parserFactory.register("emberlib731.xyz", () => new FictioneerParser());
 parserFactory.register("flyonthewalls.blog", () => new FictioneerParser());
 parserFactory.register("novelib.com", () => new FictioneerParser());
@@ -160,6 +160,45 @@ class FictioneerParser extends Parser {
     extractSubject(dom) {
         let tags = ([...dom.querySelectorAll(".story__taxonomies .tag-pill")]);
         return tags.map(t => t.textContent?.trim()).join(", ");
+    }
+}
+
+class CherryMistParser extends FictioneerParser {
+    constructor() {
+        super();
+    }
+
+    // Cherry Mist obfuscates chapter content: a placeholder #cherry-content-host
+    // shows "Loading..." while a sibling <script id="ghost_xxxxx" data-poly data-total
+    // data-{poly}-{0..N}> carries the payload. Concatenate the chunks, ROT13, base64,
+    // URI-decode to recover the chapter HTML, then splice it in where the host sat.
+    preprocessRawDom(chapterDom) {
+        let ghost = chapterDom.querySelector("script[id^='ghost_'][data-poly][data-total]");
+        let host = chapterDom.getElementById("cherry-content-host");
+        if (ghost && host) {
+            let poly = ghost.getAttribute("data-poly");
+            let total = parseInt(ghost.getAttribute("data-total") || "0", 10);
+            let payload = "";
+            for (let i = 0; i < total; i++) {
+                payload += ghost.getAttribute(`data-${poly}-${i}`) || "";
+            }
+            if (payload) {
+                let rot13 = payload.replace(/[A-Za-z]/g, c => {
+                    let base = c <= "Z" ? 65 : 97;
+                    return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+                });
+                let html = decodeURIComponent(atob(rot13));
+                let tmp = chapterDom.createElement("div");
+                tmp.innerHTML = html;
+                let parent = host.parentNode;
+                while (tmp.firstChild) {
+                    parent.insertBefore(tmp.firstChild, host);
+                }
+                host.remove();
+                ghost.remove();
+            }
+        }
+        super.preprocessRawDom(chapterDom);
     }
 }
 
