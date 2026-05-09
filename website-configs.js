@@ -76,6 +76,16 @@ const WEBSITE_CONFIGS = {
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultCount: 10, defaultDelay: 10 }
         },
+        "indratranslations.com": {
+            grabber: "madaraWpTheme",
+            useFirstHeadingTitle: true,
+            preGrab: "GrabActions.checkForPageErrorsAndLockedContent",
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: [".reading-sticky-menu a:has(svg.lucide-chevron-right)"]
+            },
+            autoNav: { enabled: true, defaultCount: 15, defaultDelay: 10 }
+        },
         "jjwxc.net": { grabber: "grabJjwxc" },
         "joara.com": { grabber: "grabJoara" },
         "karistudio.com": { grabber: "grabKaristudio" },
