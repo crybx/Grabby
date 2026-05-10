@@ -321,20 +321,20 @@ export class StoryManager {
         }
         
         if (story) {
-            // Check if this is the same chapter as before (potential loop detection)
+            // Same URL as last grabbed chapter — postGrab failed to advance,
+            // meaning we've reached the end of available chapters.
             if (this.areUrlsEqual(chapterUrl, story.lastChapterUrl)) {
-                // Update story tracker status and send stop grabbing message
-                const duplicateMessage = "Duplicate chapter detected - stopping to prevent loop";
-                await this.updateLastCheckStatus(chapterUrl, duplicateMessage);
-                
+                const endOfStoryMessage = "Reached end of available chapters";
+                await this.updateLastCheckStatus(chapterUrl, endOfStoryMessage);
+
                 // Send message to stop grabbing
                 await chrome.runtime.sendMessage({
                     target: "background",
                     type: "stopGrabbing",
                     url: chapterUrl,
-                    status: duplicateMessage
+                    status: endOfStoryMessage
                 });
-                
+
                 return; // Don't update anything, just return
             }
             

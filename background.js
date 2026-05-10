@@ -103,14 +103,14 @@ async function handleBulkGrabContent(message, sender) {
                 queueManager.handleBulkGrabComplete(
                     tabId,
                     false,
-                    "Duplicate chapter",
+                    "Reached end of available chapters",
                     false,
                     0,
                     false
                 );
                 await StoryManager.updateLastCheckStatus(
                     status.url,
-                    "Duplicate chapter",
+                    "Reached end of available chapters",
                     status.storyId
                 );
             } else {
