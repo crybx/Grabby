@@ -299,8 +299,14 @@ document.addEventListener("DOMContentLoaded", async function() {
                     // Restore UI state
                     if (state.isRunning) {
                         updateUIForBulkGrabbing(true);
-                        const progress = Math.round((state.currentPage / state.totalPages) * 100);
-                        updateStatus(`Grabbing page ${state.currentPage} of ${state.totalPages}`, progress);
+                        const isBounded = state.totalPages !== null && state.totalPages !== undefined;
+                        const progress = isBounded
+                            ? Math.round((state.currentPage / state.totalPages) * 100)
+                            : 0;
+                        const status = isBounded
+                            ? `Grabbing page ${state.currentPage} of ${state.totalPages}`
+                            : `Grabbing page ${state.currentPage}`;
+                        updateStatus(status, progress);
                     } else if (state.lastStatus && state.lastStatus !== "Ready") {
                         statusDisplay.style.display = "block";
                         updateStatus(state.lastStatus, state.lastProgress || 0);

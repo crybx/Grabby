@@ -323,14 +323,14 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                         return;
                     }
                     
-                    const defaultCount = autoNavConfig.defaultCount;
                     const defaultDelay = autoNavConfig.defaultDelay;
-                    
-                    // Start bulk grab on this tab
-                    await bulkGrabManager.startBulkGrab(defaultCount, defaultDelay, tabId, storyInfo.storyId);
-                    
+
+                    // Start bulk grab on this tab in unbounded mode; the loop
+                    // exits via abort signal or duplicate-driven tab close.
+                    await bulkGrabManager.startBulkGrab(null, defaultDelay, tabId, storyInfo.storyId);
+
                     // Update story tracker with bulk grab start status
-                    await StoryManager.updateLastCheckStatus(newUrl, `Bulk grabbing ${defaultCount} chapters...`, storyInfo.storyId);
+                    await StoryManager.updateLastCheckStatus(newUrl, "Bulk grabbing...", storyInfo.storyId);
                     
                     // Note: Don't mark as completed here - wait for bulk grab to finish
                 } else {

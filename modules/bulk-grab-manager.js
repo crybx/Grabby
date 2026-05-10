@@ -101,13 +101,16 @@ export class BulkGrabManager {
                 delaySeconds: state.delaySeconds
             };
         }
-        
+
+        const isBounded = state.totalPages !== null && state.totalPages !== undefined;
         return {
             isRunning: state.isRunning,
-            status: `Grabbing page ${state.currentPage} of ${state.totalPages}`,
-            progress: state.totalPages > 0 ? 
-                Math.round((state.currentPage / state.totalPages) * 100) : 
-                0,
+            status: isBounded
+                ? `Grabbing page ${state.currentPage} of ${state.totalPages}`
+                : `Grabbing page ${state.currentPage}`,
+            progress: isBounded && state.totalPages > 0
+                ? Math.round((state.currentPage / state.totalPages) * 100)
+                : 0,
             pageCount: state.totalPages,
             delaySeconds: state.delaySeconds
         };
@@ -157,25 +160,27 @@ export class BulkGrabManager {
         await chrome.alarms.clear(this.getBulkGrabAlarmName(tabId));
     }
 
-    // Start bulk grab process
+    // Start bulk grab process. Pass pageCount=null for unbounded mode
+    // (auto-grab from tracker); the loop will run until an abort signal,
+    // duplicate-driven tab close, or manual stop.
     async startBulkGrab(pageCount, delaySeconds, tabId, storyId = null) {
         if (!tabId) {
             console.error("No tab ID available for bulk grab");
             return;
         }
-        
+
         // Check if this tab already has a running bulk grab
         const existingState = await this.loadBulkGrabState(tabId);
         if (existingState && existingState.isRunning) {
             return;
         }
-        
+
         // Initialize state for this tab
         const state = {
             isRunning: true,
             shouldStop: false,
             currentPage: 0,
-            totalPages: pageCount,
+            totalPages: pageCount, // null = unbounded
             delaySeconds: delaySeconds,
             startTime: Date.now(),
             tabId: tabId,
@@ -230,9 +235,11 @@ export class BulkGrabManager {
             await this.clearBulkGrabState(tabId);
             return;
         }
-        
-        // Check if we're done
-        if (state.currentPage >= state.totalPages) {
+
+        const isBounded = state.totalPages !== null && state.totalPages !== undefined;
+
+        // Check if we're done (only meaningful in bounded mode)
+        if (isBounded && state.currentPage >= state.totalPages) {
             const duration = Math.round((Date.now() - state.startTime) / 1000);
             
             // Update story tracker with successful completion status
@@ -264,9 +271,12 @@ export class BulkGrabManager {
         }
         
         const attemptNumber = state.currentPage + 1;
-        const progress = Math.round((attemptNumber / state.totalPages) * 100);
-        
-        this.sendStatusToPopup(`Grabbing page ${attemptNumber} of ${state.totalPages}`, progress);
+        const progress = isBounded ? Math.round((attemptNumber / state.totalPages) * 100) : 0;
+        const grabStatus = isBounded
+            ? `Grabbing page ${attemptNumber} of ${state.totalPages}`
+            : `Grabbing page ${attemptNumber}`;
+
+        this.sendStatusToPopup(grabStatus, progress);
         
         try {
             // Check if tab still exists before attempting grab
@@ -291,14 +301,19 @@ export class BulkGrabManager {
             // Save updated state
             await this.saveBulkGrabState(tabId, state);
             
-            // Schedule next grab if not the last page
-            if (state.currentPage < state.totalPages) {
-                this.sendStatusToPopup(`Waiting ${state.delaySeconds}s (page ${state.currentPage} of ${state.totalPages})`, progress);
-                
+            // Schedule next grab. In unbounded mode there's always a next iteration;
+            // in bounded mode, fall through to the completion check when totalPages is reached.
+            const moreToGrab = !isBounded || state.currentPage < state.totalPages;
+            if (moreToGrab) {
+                const waitStatus = isBounded
+                    ? `Waiting ${state.delaySeconds}s (page ${state.currentPage} of ${state.totalPages})`
+                    : `Waiting ${state.delaySeconds}s (page ${state.currentPage})`;
+                this.sendStatusToPopup(waitStatus, progress);
+
                 // Use Chrome alarms API for delays >= 60s, setTimeout with keepalive for shorter delays
                 if (state.delaySeconds >= 60) {
-                    chrome.alarms.create(this.getBulkGrabAlarmName(tabId), { 
-                        delayInMinutes: state.delaySeconds / 60 
+                    chrome.alarms.create(this.getBulkGrabAlarmName(tabId), {
+                        delayInMinutes: state.delaySeconds / 60
                     });
                 } else {
                     // For delays < 60s, use setTimeout with keepalive to prevent service worker timeout
@@ -308,20 +323,21 @@ export class BulkGrabManager {
                 // This was the last page, finish up
                 setTimeout(() => this.performNextBulkGrab(tabId), 100);
             }
-            
+
         } catch (error) {
             console.error(`Error during bulk grab page ${attemptNumber} for tab ${tabId}:`, error);
             this.sendStatusToPopup(`Error on page ${attemptNumber}, continuing...`, progress);
-            
+
             // Increment currentPage but NOT downloadsCompleted for errors
             state.currentPage++;
             await this.saveBulkGrabState(tabId, state);
-            
+
             // Continue to next page even after error
-            if (state.currentPage < state.totalPages) {
+            const moreToGrab = !isBounded || state.currentPage < state.totalPages;
+            if (moreToGrab) {
                 if (state.delaySeconds >= 60) {
-                    chrome.alarms.create(this.getBulkGrabAlarmName(tabId), { 
-                        delayInMinutes: state.delaySeconds / 60 
+                    chrome.alarms.create(this.getBulkGrabAlarmName(tabId), {
+                        delayInMinutes: state.delaySeconds / 60
                     });
                 } else {
                     this.keepAliveAndSchedule(tabId, state.delaySeconds);
