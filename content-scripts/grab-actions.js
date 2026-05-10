@@ -162,6 +162,29 @@ async function checkForPageErrors(selectors = ["title", "h1", "h2", "h3", ".erro
     return { abort: false };
 }
 
+// Abort if the current URL doesn't match the story this tab is grabbing.
+// Catches the case where a site's "next chapter" link cycles into an unrelated
+// story once the end of available chapters is reached. Background uses the
+// tab's launching storyId (set when the tracker opened the tab) to compare
+// against the matched story, so cycling into another tracked story still aborts.
+// For ad-hoc tabs with no launching story it falls back to "any tracked match".
+async function checkUrlMatchesTrackedStory() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            target: "background",
+            type: "findStoryByUrl",
+            url: window.location.href
+        });
+        if (!response?.found) {
+            return { abort: true, reason: "Reached end of available chapters" };
+        }
+        return { abort: false };
+    } catch (error) {
+        console.error("Error checking tracked story match:", error);
+        return { abort: false };
+    }
+}
+
 // Combined function to check for both page errors and locked content
 // Pass null/undefined to use defaults for any parameter
 async function checkForPageErrorsAndLockedContent(errorSelectors, lockedSelectors, lockedText) {
@@ -507,6 +530,7 @@ window.GrabActions = {
     checkForUrlText,
     checkForPageErrors,
     checkForPageErrorsAndLockedContent,
+    checkUrlMatchesTrackedStory,
     googleTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,

@@ -650,6 +650,32 @@ async function handleMessages(message, sender, sendResponse) {
                 console.warn("Could not update story tracker status:", error);
             }
             break;
+        case "findStoryByUrl": {
+            // Return the resolved response directly. handleMessages is async,
+            // so returning a value from the case becomes the listener's resolved
+            // Promise — which Chrome uses as the response. The `void IIFE +
+            // return true` pattern is broken inside async listeners because
+            // Chrome would close the channel with response=true before the
+            // IIFE could call sendResponse.
+            try {
+                const matched = await StoryManager.findStoryByChapterUrl(message.url);
+                // If the tab was launched for a specific story (tracker auto-grab,
+                // queue-driven grab), require the URL to match THAT story so a
+                // navigation cycle into a different tracked story doesn't pass
+                // the check. For ad-hoc tabs without a launching story, fall back
+                // to "matches any tracked story".
+                const launchingStoryId = sender?.tab?.id
+                    ? await getStoryIdFromTab(sender.tab.id)
+                    : null;
+                const found = launchingStoryId
+                    ? matched?.id === launchingStoryId
+                    : !!matched;
+                return { found, storyId: matched?.id };
+            } catch (error) {
+                console.error("Error finding story by URL:", error);
+                return { found: false };
+            }
+        }
         default:
             console.warn(`Unexpected message type received: '${message.type}'.`);
     }

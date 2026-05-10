@@ -117,7 +117,9 @@ const WEBSITE_CONFIGS = {
         "novelingua.com": {
             grabber: "grabNovelingua",
             useFirstHeadingTitle: true,
+            preGrab: "GrabActions.checkUrlMatchesTrackedStory",
             postGrab: { fn: "GrabActions.clickElementWithText", args: ["Next Chapter"] },
+            autoNav: { enabled: true, defaultDelay: 10 }
         },
         "novelpia.com": {
             grabber: { fn: "grabStandard", args: ["#book-box", ["title", ".in-ch-txt"]] },
