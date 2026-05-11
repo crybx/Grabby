@@ -1523,6 +1523,7 @@ class ChapterUrlsUI {
     static async addToStoryTracker(chapters) {
         try {
             const storyData = ChapterUrlsUI.buildStoryData(chapters);
+            delete storyData.tags;
 
             // Send message to background script to add to story tracker
             chrome.runtime.sendMessage({
