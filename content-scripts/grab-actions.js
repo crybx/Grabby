@@ -96,6 +96,7 @@ async function checkForLockedContent(selectors = ["h2, h3"], lockText = null) {
             "Login to buy access to the advanced chapters.",
             "This is a premium chapter",
             "Unlock this chapter",
+            "This chapter is locked",
             "🔒"
         ];
     }
