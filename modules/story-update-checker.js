@@ -81,7 +81,13 @@ export class StoryUpdateChecker {
         if (!story.lastChapterUrl) {
             return false;
         }
-        
+
+        // Stop auto-queueing once the last grabbed chapter matches the
+        // user-configured "Stop At" title (null/empty means no stop point)
+        if (story.stopAt && story.lastChapterTitle === story.stopAt) {
+            return false;
+        }
+
         // Check if domain has auto-queue configured
         const domain = this.extractDomain(story.lastChapterUrl);
         if (!domain || !this.domainSettings[domain]) {

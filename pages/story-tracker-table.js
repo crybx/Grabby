@@ -317,7 +317,7 @@ class StoryTrackerTable {
         this.filteredStories = this.stories.filter(story => {
             // Text filter
             const matchesText = !this.filterText ||
-                story.title.toLowerCase().includes(this.filterText) ||
+                this.getDisplayTitle(story).toLowerCase().includes(this.filterText) ||
                 story.mainStoryUrl.toLowerCase().includes(this.filterText) ||
                 (story.lastChapterTitle && story.lastChapterTitle.toLowerCase().includes(this.filterText)) ||
                 (story.lastCheckStatus && story.lastCheckStatus.toLowerCase().includes(this.filterText)) ||
@@ -400,8 +400,8 @@ class StoryTrackerTable {
 
             switch (this.sortColumn) {
                 case "title":
-                    aValue = a.title.toLowerCase();
-                    bValue = b.title.toLowerCase();
+                    aValue = this.getDisplayTitle(a).toLowerCase();
+                    bValue = this.getDisplayTitle(b).toLowerCase();
                     break;
                 case "domain":
                     aValue = a.domain || this.extractDomain(a.mainStoryUrl);
@@ -511,6 +511,13 @@ class StoryTrackerTable {
         }
     }
 
+    // Title shown in the table - prefixes the "Stop At" value when set,
+    // e.g. "(295) I'm a Villain, So Can't I Quit?". Used for display,
+    // sorting, and search so all three stay consistent.
+    getDisplayTitle(story) {
+        return story.stopAt ? `(${story.stopAt}) ${story.title}` : story.title;
+    }
+
     renderTable() {
         // Use requestAnimationFrame to optimize rendering
         requestAnimationFrame(() => {
@@ -577,6 +584,11 @@ class StoryTrackerTable {
             row.classList.add("page-error");
         }
 
+        // Highlight stories that have reached their configured "Stop At" point
+        if (story.stopAt && story.lastChapterTitle === story.stopAt) {
+            row.classList.add("stop-reached");
+        }
+
         const tagsDisplay = story.tags && story.tags.length > 0 
             ? story.tags.map(tag => {
                 const isActive = this.tagFilter && tag.toLowerCase() === this.tagFilter.toLowerCase();
@@ -590,7 +602,7 @@ class StoryTrackerTable {
                 <input type="checkbox" class="story-checkbox" data-story-id="${story.id}" ${this.selectedStories.has(story.id) ? "checked" : ""}>
             </td>
             <td class="title-col">
-                <a href="${story.mainStoryUrl}" target="_blank" class="story-title-link">${story.title}</a>
+                <a href="${story.mainStoryUrl}" target="_blank" class="story-title-link">${this.getDisplayTitle(story)}</a>
             </td>
             <td class="domain-col" title="${domain}">${domain}</td>
             <td class="chapter-col">${lastChapterDisplay}</td>
@@ -1035,6 +1047,7 @@ class StoryTrackerTable {
         document.getElementById("main-story-url").value = story.mainStoryUrl;
         document.getElementById("last-chapter-url").value = story.lastChapterUrl || "";
         document.getElementById("last-chapter-title").value = story.lastChapterTitle || "";
+        document.getElementById("stop-at").value = story.stopAt || "";
         document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
         
@@ -1106,6 +1119,7 @@ class StoryTrackerTable {
         const mainUrl = document.getElementById("main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
         const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
+        const stopAt = document.getElementById("stop-at").value.trim();
         const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("story-tags").value.trim();
 
@@ -1125,6 +1139,7 @@ class StoryTrackerTable {
             domain: this.extractDomain(mainUrl),
             lastChapterUrl: lastChapterUrl,
             lastChapterTitle: lastChapterTitle,
+            stopAt: stopAt || null,
             secondaryUrlMatches,
             tags,
             dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
@@ -1145,6 +1160,7 @@ class StoryTrackerTable {
         const mainUrl = document.getElementById("main-story-url").value.trim();
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
         const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
+        const stopAt = document.getElementById("stop-at").value.trim();
         const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("story-tags").value.trim();
 
@@ -1169,6 +1185,7 @@ class StoryTrackerTable {
             domain: this.extractDomain(mainUrl),
             lastChapterUrl,
             lastChapterTitle,
+            stopAt: stopAt || null,
             secondaryUrlMatches,
             tags
         };

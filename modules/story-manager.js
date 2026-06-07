@@ -25,6 +25,7 @@ export class StoryManager {
     //   lastChapterUrl: string | null,  // URL of the last grabbed/visited chapter
     //   lastChapterTitle: string | null,// Title of the last grabbed chapter (cleaned)
     //   secondaryUrlMatches: string[],  // Additional URL patterns to match this story
+    //   stopAt: string | null,          // Stop auto-queueing when lastChapterTitle matches this value (null = no stop point)
     //   
     //   // Timestamps (ISO strings)
     //   dateAdded: string,              // When story was added to tracker

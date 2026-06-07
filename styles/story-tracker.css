@@ -489,6 +489,14 @@ h1 {
     background: #ffe0e0;
 }
 
+.stories-table tbody tr.stop-reached {
+    background: #fffbe0;
+}
+
+.stories-table tbody tr.stop-reached:hover {
+    background: #fff5c0;
+}
+
 .sortable {
     cursor: pointer;
     user-select: none;
