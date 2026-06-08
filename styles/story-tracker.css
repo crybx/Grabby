@@ -903,6 +903,39 @@ h1 {
     box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
+/* Tag autocomplete dropdown */
+.tag-autocomplete-group {
+    position: relative;
+}
+
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    margin-top: 2px;
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.tag-suggestion {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.tag-suggestion:hover,
+.tag-suggestion.active {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
 .datetime-input-group {
     display: flex;
     gap: 8px;

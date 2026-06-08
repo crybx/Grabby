@@ -106,6 +106,12 @@ class StoryTrackerTable {
             this.updateTagFilterDisplay();
         });
 
+        // Autocomplete (from existing tags) on the comma-separated tag inputs
+        ["story-tags", "tags-to-add", "tags-to-remove"].forEach(id => {
+            const input = document.getElementById(id);
+            if (input) this.attachTagAutocomplete(input);
+        });
+
         // Selection controls
         document.getElementById("select-all-checkbox").addEventListener("change", (e) => {
             this.handleSelectAll(e.target.checked);
@@ -523,14 +529,17 @@ class StoryTrackerTable {
         }
     }
 
-    populateTagFilter() {
-        // Collect unique tags across all stories
+    // Unique tags across all stories, sorted case-insensitively.
+    getAllTags() {
         const uniqueTags = [...new Set(
             this.stories.flatMap(story => story.tags || [])
         )];
-
-        // Sort case-insensitively for a friendly dropdown order
         uniqueTags.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        return uniqueTags;
+    }
+
+    populateTagFilter() {
+        const uniqueTags = this.getAllTags();
 
         const select = document.getElementById("tag-filter");
         select.innerHTML = "<option value=\"\">All Tags</option>";
@@ -549,6 +558,113 @@ class StoryTrackerTable {
             tag => tag.toLowerCase() === this.tagFilter.toLowerCase()
         );
         select.value = match || "";
+    }
+
+    // Attach a custom autocomplete to a comma-separated tag input. Suggestions
+    // come from existing tags and only replace the segment currently being
+    // typed (appending ", " so the user can keep adding) rather than
+    // overwriting the whole field like the native browser autocomplete does.
+    attachTagAutocomplete(input) {
+        const group = input.closest(".tag-autocomplete-group");
+        if (!group) return;
+
+        const dropdown = document.createElement("div");
+        dropdown.className = "tag-suggestions";
+        dropdown.style.display = "none";
+        group.appendChild(dropdown);
+
+        let matches = [];
+        let activeIndex = -1;
+
+        // The last comma-separated piece is the one being typed.
+        const currentSegment = () => {
+            const parts = input.value.split(",");
+            return parts[parts.length - 1].trim();
+        };
+
+        // Tags already entered (every piece except the one being typed).
+        const usedTags = () => input.value
+            .split(",")
+            .slice(0, -1)
+            .map(part => part.trim().toLowerCase())
+            .filter(Boolean);
+
+        const closeDropdown = () => {
+            dropdown.style.display = "none";
+            dropdown.innerHTML = "";
+            matches = [];
+            activeIndex = -1;
+        };
+
+        const highlight = () => {
+            [...dropdown.children].forEach((el, i) => {
+                el.classList.toggle("active", i === activeIndex);
+                if (i === activeIndex) el.scrollIntoView({ block: "nearest" });
+            });
+        };
+
+        const applySuggestion = (tag) => {
+            const parts = input.value.split(",");
+            parts[parts.length - 1] = tag;
+            // Normalize spacing and drop empty pieces, then leave a trailing
+            // ", " ready for the next tag.
+            const tags = parts.map(part => part.trim()).filter(Boolean);
+            input.value = tags.join(", ") + ", ";
+            closeDropdown();
+            input.focus();
+        };
+
+        const update = () => {
+            const segment = currentSegment().toLowerCase();
+            const used = usedTags();
+            matches = this.getAllTags().filter(tag => {
+                const lower = tag.toLowerCase();
+                return !used.includes(lower) && lower.includes(segment);
+            });
+
+            if (matches.length === 0) {
+                closeDropdown();
+                return;
+            }
+
+            activeIndex = -1;
+            dropdown.innerHTML = "";
+            matches.forEach(tag => {
+                const item = document.createElement("div");
+                item.className = "tag-suggestion";
+                item.textContent = tag;
+                // mousedown (not click) so it fires before the input blurs.
+                item.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
+                    applySuggestion(tag);
+                });
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = "block";
+        };
+
+        input.addEventListener("input", update);
+        input.addEventListener("focus", update);
+        input.addEventListener("blur", closeDropdown);
+
+        input.addEventListener("keydown", (e) => {
+            if (dropdown.style.display === "none" || matches.length === 0) return;
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                activeIndex = (activeIndex + 1) % matches.length;
+                highlight();
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                activeIndex = (activeIndex - 1 + matches.length) % matches.length;
+                highlight();
+            } else if (e.key === "Enter" && activeIndex >= 0) {
+                e.preventDefault(); // accept suggestion instead of submitting
+                applySuggestion(matches[activeIndex]);
+            } else if (e.key === "Escape") {
+                closeDropdown();
+            }
+        });
     }
 
     extractDomain(url) {
