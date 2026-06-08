@@ -146,6 +146,23 @@ class StoryTrackerTable {
             this.deleteSelectedStories().then();
         });
 
+        // Kebab "more actions" menu
+        document.getElementById("bulk-actions-menu-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.toggleBulkActionsMenu();
+        });
+
+        // Close the menu after selecting any item in it
+        document.getElementById("bulk-actions-menu").addEventListener("click", () => {
+            this.closeBulkActionsMenu();
+        });
+
+        // Close the menu when clicking elsewhere or pressing Escape
+        document.addEventListener("click", () => this.closeBulkActionsMenu());
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") this.closeBulkActionsMenu();
+        });
+
         // Sort headers
         document.querySelectorAll(".sortable").forEach(header => {
             header.addEventListener("click", () => {
@@ -895,6 +912,25 @@ class StoryTrackerTable {
         this.lastClickedStoryIndex = -1;
     }
 
+    toggleBulkActionsMenu() {
+        const menu = document.getElementById("bulk-actions-menu");
+        const isOpen = menu.style.display !== "none";
+        if (isOpen) {
+            this.closeBulkActionsMenu();
+        } else {
+            menu.style.display = "block";
+            document.getElementById("bulk-actions-menu-btn").setAttribute("aria-expanded", "true");
+        }
+    }
+
+    closeBulkActionsMenu() {
+        const menu = document.getElementById("bulk-actions-menu");
+        if (menu.style.display !== "none") {
+            menu.style.display = "none";
+            document.getElementById("bulk-actions-menu-btn").setAttribute("aria-expanded", "false");
+        }
+    }
+
     updateSelectionUI() {
         const count = this.selectedStories.size;
         document.getElementById("selection-count").textContent = `${count} selected`;
@@ -915,15 +951,11 @@ class StoryTrackerTable {
             selectAllCheckbox.indeterminate = true;
         }
 
-        // Enable/disable bulk action buttons
-        const openChaptersBtn = document.getElementById("open-last-chapters-btn");
-        const openMainBtn = document.getElementById("open-main-stories-btn");
+        // Enable/disable bulk action buttons. The kebab menu items
+        // (open chapters/stories, edit tags) handle an empty selection
+        // themselves, so they stay enabled rather than looking broken.
         const grabChaptersBtn = document.getElementById("grab-chapters-btn");
-        const editTagsBtn = document.getElementById("edit-tags-btn");
         const deleteSelectedBtn = document.getElementById("delete-selected-btn");
-        openChaptersBtn.disabled = count === 0;
-        openMainBtn.disabled = count === 0;
-        editTagsBtn.disabled = count === 0;
         deleteSelectedBtn.disabled = count === 0;
         
         // Check if queue is active to handle Auto Grab button specially

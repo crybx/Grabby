@@ -115,11 +115,22 @@
                         <button id="clear-selection-btn" class="btn secondary-btn">Clear</button>
                     </div>
                     <div class="bulk-actions">
-                        <button id="open-last-chapters-btn" class="btn primary-btn" disabled>Open Last Chapters</button>
-                        <button id="open-main-stories-btn" class="btn secondary-btn" disabled>Open Story URLs</button>
                         <button id="grab-chapters-btn" class="btn primary-btn" disabled>Grab New Chapters</button>
-                        <button id="edit-tags-btn" class="btn secondary-btn" disabled>Edit Tags</button>
                         <button id="refresh-btn" class="btn secondary-btn">Refresh</button>
+                        <div class="kebab-menu">
+                            <button id="bulk-actions-menu-btn" class="btn secondary-btn kebab-btn" aria-haspopup="true" aria-expanded="false">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <circle cx="12" cy="5" r="2"/>
+                                    <circle cx="12" cy="12" r="2"/>
+                                    <circle cx="12" cy="19" r="2"/>
+                                </svg>
+                            </button>
+                            <div id="bulk-actions-menu" class="kebab-dropdown" style="display: none;">
+                                <button id="open-last-chapters-btn" class="kebab-item">Open Last Chapters</button>
+                                <button id="open-main-stories-btn" class="kebab-item">Open Story URLs</button>
+                                <button id="edit-tags-btn" class="kebab-item">Edit Tags</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

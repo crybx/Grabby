@@ -270,13 +270,13 @@ h1 {
 
 .auto-check-btn.active {
     opacity: 1;
-    background-color: #e8f0fe;
-    color: #1a73e8;
-    border-color: #1a73e8;
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
 }
 
 .auto-check-btn.active:hover {
-    background-color: #d2e3fc;
+    background-color: #bbdefb;
 }
 
 #auto-check-label {
@@ -444,6 +444,57 @@ h1 {
 .bulk-actions {
     display: flex;
     gap: 8px;
+}
+
+/* Kebab (more actions) menu */
+.kebab-menu {
+    position: relative;
+    display: flex;
+}
+
+/* Stretch to match the height of the sibling buttons (no vertical padding;
+   height comes from the flex row's align-items: stretch). */
+.kebab-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+.kebab-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 180px;
+    padding: 4px 0;
+    background: white;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.kebab-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+    cursor: pointer;
+}
+
+.kebab-item:hover:not(:disabled) {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.kebab-item:disabled {
+    color: #aaa;
+    cursor: not-allowed;
 }
 
 /* Table Styles */
