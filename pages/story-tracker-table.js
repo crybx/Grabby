@@ -25,7 +25,7 @@ class StoryTrackerTable {
     async init() {
         await this.loadStories();
         this.setupEventListeners();
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.renderTable();
         this.updateTagFilterDisplay();
         this.initAutoCheckToggle();
@@ -96,6 +96,14 @@ class StoryTrackerTable {
             this.domainFilter = e.target.value;
             this.applyFilters();
             this.renderTable();
+        });
+
+        // Tag filter dropdown
+        document.getElementById("tag-filter").addEventListener("change", (e) => {
+            this.tagFilter = e.target.value;
+            this.applyFilters();
+            this.renderTable();
+            this.updateTagFilterDisplay();
         });
 
         // Selection controls
@@ -392,6 +400,13 @@ class StoryTrackerTable {
         } else {
             activeTagFilter.style.display = "none";
         }
+
+        // Keep the dropdown in sync when the filter is set via pill/row clicks
+        // or cleared, so the selected option always reflects the active tag.
+        const tagSelect = document.getElementById("tag-filter");
+        if (tagSelect && tagSelect.value !== this.tagFilter) {
+            tagSelect.value = this.tagFilter;
+        }
     }
 
     applySorting() {
@@ -462,6 +477,11 @@ class StoryTrackerTable {
         }
     }
 
+    refreshFilterDropdowns() {
+        this.populateDomainFilter();
+        this.populateTagFilter();
+    }
+
     populateDomainFilter() {
         // Get unique domains using stored field or fallback
         const uniqueDomains = [...new Set(this.stories.map(story => 
@@ -501,6 +521,34 @@ class StoryTrackerTable {
         } else if (currentValue === "") {
             select.value = ""; // Keep "All Domains" selected
         }
+    }
+
+    populateTagFilter() {
+        // Collect unique tags across all stories
+        const uniqueTags = [...new Set(
+            this.stories.flatMap(story => story.tags || [])
+        )];
+
+        // Sort case-insensitively for a friendly dropdown order
+        uniqueTags.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        const select = document.getElementById("tag-filter");
+        select.innerHTML = "<option value=\"\">All Tags</option>";
+
+        uniqueTags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.textContent = tag;
+            select.appendChild(option);
+        });
+
+        // Keep the dropdown in sync with the active tag filter (set via pill,
+        // dropdown, or row tag clicks). Fall back to "All Tags" if the active
+        // tag no longer exists.
+        const match = uniqueTags.find(
+            tag => tag.toLowerCase() === this.tagFilter.toLowerCase()
+        );
+        select.value = match || "";
     }
 
     extractDomain(url) {
@@ -984,7 +1032,7 @@ class StoryTrackerTable {
         this.selectedStories.clear();
         
         // Update UI
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.applyFilters();
         this.renderTable();
         
@@ -1148,7 +1196,7 @@ class StoryTrackerTable {
 
         this.stories.push(story);
         await StoryManager.saveStory(story);
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.applyFilters();
         this.renderTable();
         this.hideStoryModal();
@@ -1201,7 +1249,7 @@ class StoryTrackerTable {
         this.stories[storyIndex] = updatedStory;
 
         await StoryManager.saveStory(this.stories[storyIndex]);
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.applyFilters();
         this.renderTable();
         this.hideStoryModal();
@@ -1216,7 +1264,7 @@ class StoryTrackerTable {
         await StoryManager.deleteStory(id);
         this.stories = this.stories.filter(s => s.id !== id);
         this.selectedStories.delete(id);
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.applyFilters();
         this.renderTable();
         this.hideStoryModal();
@@ -1331,7 +1379,7 @@ class StoryTrackerTable {
             }
 
             if (importedCount > 0) {
-                this.populateDomainFilter();
+                this.refreshFilterDropdowns();
                 this.applyFilters();
                 this.renderTable();
                 this.hideImportModal();
@@ -1503,7 +1551,7 @@ class StoryTrackerTable {
             }
 
             if (importedCount > 0) {
-                this.populateDomainFilter();
+                this.refreshFilterDropdowns();
                 this.applyFilters();
                 this.renderTable();
                 this.hideImportModal();
@@ -1674,7 +1722,7 @@ class StoryTrackerTable {
 
     async refresh() {
         await this.loadStories();
-        this.populateDomainFilter();
+        this.refreshFilterDropdowns();
         this.applyFilters();
         this.renderTable();
     }
