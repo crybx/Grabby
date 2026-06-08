@@ -78,8 +78,14 @@ class StoryTrackerTable {
             this.closeQueueProgress();
         });
 
-        document.getElementById("toggle-queue-details-btn").addEventListener("click", () => {
+        // Clicking anywhere on the header (chevron, title, or empty space)
+        // toggles the queue details. Clicks on the control buttons are
+        // excluded so they don't also toggle.
+        document.querySelector(".queue-progress-header").addEventListener("click", () => {
             this.toggleQueueDetails();
+        });
+        document.querySelector(".queue-controls").addEventListener("click", (e) => {
+            e.stopPropagation();
         });
 
         this.applyQueueCollapsedState();
