@@ -9,6 +9,10 @@ class WetriedTlsParser extends Parser {
         this.chaptersSourceTitleMap = new Map();
     }
 
+    populateUIImpl() {
+        document.getElementById("removeChapterNumberRow").hidden = false;
+    }
+
     async getChapterUrls() {
         const chapterJson = (
             await HttpClient.fetchJson(
@@ -22,9 +26,19 @@ class WetriedTlsParser extends Parser {
             const seriesUrl =
                 "https://wetriedtls.com/series/" + chapter.series.series_slug;
 
+            const removeNum = document.getElementById(
+                "removeChapterNumberCheckbox"
+            ).checked;
+            const titleParts = removeNum
+                ? [chapter.chapter_title]
+                : [chapter.chapter_name, chapter.chapter_title];
+            const title = titleParts
+                .filter((part) => part && part.trim())
+                .join(" - ");
+
             const mapObj = {
                 sourceUrl: `${seriesUrl}/${chapter.chapter_slug}`,
-                title: chapter.chapter_title,
+                title,
             };
             this.chaptersSourceTitleMap.set(mapObj.sourceUrl, mapObj.title);
             return mapObj;
