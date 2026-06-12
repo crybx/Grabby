@@ -104,13 +104,13 @@ class QidianParser extends Parser {
             let titleEl = content.querySelector("div.chapter_content h1");
             let titleDupChapRegex = new RegExp("(\\w+[\\s\\-]+\\d+):\\s*\\1:?(.*)", "i").exec(titleEl.textContent);
             if (titleDupChapRegex && titleDupChapRegex.length > 2) {
-                let newtitleText = document.createTextNode(titleDupChapRegex[1] + titleDupChapRegex[2]);
-                newTitleNode.appendChild(newtitleText);
+                let newTitleText = document.createTextNode(titleDupChapRegex[1] + titleDupChapRegex[2]);
+                newTitleNode.appendChild(newTitleText);
                 titleEl.replaceWith(newTitleNode);
             }
         } else {
-            let newtitleText = document.createTextNode(tempTitle);
-            newTitleNode.appendChild(newtitleText);
+            let newTitleText = document.createTextNode(tempTitle);
+            newTitleNode.appendChild(newTitleText);
             content.querySelector("div.chapter_content h1").replaceWith(newTitleNode);
         }
         return content;
