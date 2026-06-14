@@ -205,8 +205,8 @@ const WEBSITE_CONFIGS = {
             grabber: "grabFictioneer",
             useFirstHeadingTitle: true,
             preGrab: {
-                fn: "GrabActions.checkForLockedContent",
-                args: [["h1, h2, h3, .mycred-sell-this-wrapper, .cmppp-plan-card"]] },
+                fn: "GrabActions.checkForPageErrorsAndLockedContent",
+                args: [null, ["h1, h2, h3, .mycred-sell-this-wrapper, .cmppp-plan-card"]] },
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultDelay: 10 }
         },
@@ -237,7 +237,7 @@ const WEBSITE_CONFIGS = {
         lightNovelWPThemeSites: {
             domains: ["blume-verse.com", "transweaver.com"],
             grabber: { fn: "grabStandard", args: [".entry-content"] },
-            preGrab: "GrabActions.checkForLockedContent",
+            preGrab: "GrabActions.checkForPageErrorsAndLockedContent",
             postGrab: "GrabActions.pressRightArrow",
             autoNav: { enabled: true, defaultDelay: 10 }
         },
