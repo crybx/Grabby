@@ -1967,7 +1967,14 @@ class StoryTrackerTable {
             return;
         }
 
+        const wasQueueActive = this.queueActive;
         this.queueActive = !!status.isActive;
+
+        // Refresh the table data when the queue transitions from active to
+        // finished, so newly grabbed chapters show up without a manual refresh.
+        if (wasQueueActive && !this.queueActive) {
+            this.refresh().then();
+        }
 
         // Show progress section if queue is active or completed
         if (status.isActive) {
@@ -2135,13 +2142,14 @@ class StoryTrackerTable {
                 storyElement.title = story.message;
             }
 
-            const storyUrl = story.lastChapterUrl || story.mainStoryUrl;
-            if (storyUrl) {
-                storyElement.style.cursor = "pointer";
-                storyElement.addEventListener("click", () => {
-                    window.open(storyUrl, "_blank");
-                });
-            }
+            const resolveUrl = () => {
+                const s = this.stories.find(st => st.id === story.id) || story;
+                return s.lastChapterUrl || s.mainStoryUrl;
+            };
+            storyElement.style.cursor = "pointer";
+            storyElement.addEventListener("click", () => {
+                window.open(resolveUrl(), "_blank");
+            });
 
             container.appendChild(storyElement);
         });
