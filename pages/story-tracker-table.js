@@ -14,6 +14,8 @@ class StoryTrackerTable {
         this.lastClickedStoryIndex = -1; // Track last clicked story for shift+click selection
         this.filterDebounceTimer = null; // Timer for debouncing filter input
         this.queueActive = false;
+        this.lastCompletedCount = 0; // Track queue completions to know when to reload story data
+        this.queueUpdateChain = Promise.resolve(); // Serialize async queue updates so they render in order
 
         // Pagination settings
         this.currentPage = 1;
@@ -1960,8 +1962,18 @@ class StoryTrackerTable {
         grabChaptersBtn.textContent = "Grab New Chapters";
     }
 
-    // Handle queue progress updates from background script
+    // Handle queue progress updates from background script.
+    // Serialized through a promise chain so that an update which awaits a story
+    // reload can't be overtaken by a later update and then re-render stale data
+    // on resume (which briefly wiped the currently-processing tile).
     handleQueueProgressUpdate(status) {
+        this.queueUpdateChain = this.queueUpdateChain
+            .then(() => this.applyQueueProgressUpdate(status))
+            .catch(error => console.error("Error applying queue update:", error));
+        return this.queueUpdateChain;
+    }
+
+    async applyQueueProgressUpdate(status) {
         if (!status) {
             // Only hide if no queue was ever started, otherwise keep summary visible
             return;
@@ -2029,6 +2041,16 @@ class StoryTrackerTable {
         document.getElementById("queue-completed").textContent = status.stats.completed;
         document.getElementById("queue-failed").textContent = status.stats.failed;
 
+        // Reload story data before rendering so completed tiles can link to
+        // the freshly grabbed chapter (via a real anchor whose URL shows in the
+        // browser status bar on hover) rather than the snapshot taken when the
+        // story was queued.
+        const completedCount = status.completed ? status.completed.length : 0;
+        if (completedCount !== this.lastCompletedCount) {
+            this.lastCompletedCount = completedCount;
+            await this.loadStories();
+        }
+
         // Update story lists
         this.updateQueueStoryList("processing-stories", status.processing);
         this.updateQueueStoryList("queued-stories", status.queue);
@@ -2048,8 +2070,21 @@ class StoryTrackerTable {
         }
 
         stories.forEach(story => {
-            const storyElement = document.createElement("div");
+            // Link to the currently loaded story's newest chapter (this.stories
+            // is reloaded before rendering), falling back to the snapshot
+            // captured when the story was queued. A real anchor lets the
+            // browser show the target URL in the status bar on hover and handle
+            // the click natively.
+            const current = this.stories.find(st => st.id === story.id) || story;
+            const storyUrl = current.lastChapterUrl || current.mainStoryUrl;
+
+            const storyElement = document.createElement(storyUrl ? "a" : "div");
             storyElement.className = "story-item";
+            if (storyUrl) {
+                storyElement.href = storyUrl;
+                storyElement.target = "_blank";
+                storyElement.rel = "noopener";
+            }
             
             // Apply appropriate status class
             if (story.status) {
@@ -2084,7 +2119,11 @@ class StoryTrackerTable {
             // Create title and status elements
             const titleElement = document.createElement("div");
             titleElement.className = "story-item-title";
-            titleElement.textContent = story.title;
+            // Append the last grabbed chapter, e.g. "Turning (1241)", using the
+            // freshly-resolved story so it matches the linked chapter.
+            titleElement.textContent = current.lastChapterTitle
+                ? `${story.title} (${current.lastChapterTitle})`
+                : story.title;
             
             const statusElement = document.createElement("div");
             statusElement.className = "story-item-status";
@@ -2141,15 +2180,6 @@ class StoryTrackerTable {
             if (story.message && story.status !== "error") {
                 storyElement.title = story.message;
             }
-
-            const resolveUrl = () => {
-                const s = this.stories.find(st => st.id === story.id) || story;
-                return s.lastChapterUrl || s.mainStoryUrl;
-            };
-            storyElement.style.cursor = "pointer";
-            storyElement.addEventListener("click", () => {
-                window.open(resolveUrl(), "_blank");
-            });
 
             container.appendChild(storyElement);
         });

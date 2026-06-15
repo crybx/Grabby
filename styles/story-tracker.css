@@ -167,11 +167,18 @@ header {
 }
 
 .story-item {
+    display: block;
     background: #f8f9fa;
     border-radius: 4px;
     padding: 8px 12px;
     font-size: 0.9em;
     border-left: 3px solid transparent;
+    color: inherit;
+    text-decoration: none;
+}
+
+a.story-item:hover {
+    filter: brightness(0.97);
 }
 
 .story-item.processing {
