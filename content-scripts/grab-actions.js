@@ -160,6 +160,23 @@ async function checkForPageErrors(selectors = ["title", "h1", "h2", "h3", ".erro
         }
     }
 
+    // Severe server errors (PHP fatal errors, etc.) render at the body level
+    // rather than inside the usual title/heading selectors, so scan the body
+    // text directly for these. Kept separate from errorIndicators to avoid
+    // false positives from generic strings (e.g. "404") in legitimate content.
+    const serverErrorIndicators = [
+        "Fatal error",
+        "Allowed memory size of",
+        "Maximum execution time of"
+    ];
+
+    const bodyText = document.body?.textContent?.trim() ?? "";
+    const serverError = serverErrorIndicators.find(indicator => bodyText.includes(indicator));
+    if (serverError) {
+        console.log(`Server error detected: "${serverError}" - aborting grab`);
+        return { abort: true, reason: `Server error: "${serverError}"` };
+    }
+
     return { abort: false };
 }
 

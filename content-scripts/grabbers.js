@@ -336,8 +336,15 @@ function grabLilyonthevalley() {
     let content = document.querySelector(".chapter-formatting") ||
         document.querySelector("#chapter-content");
 
-    // Check for empty/loading content (site sometimes hangs showing a loading spinner)
-    const textContent = content?.textContent.trim();
+    // Check for empty/loading content (site sometimes hangs showing a loading spinner).
+    // Measure text excluding <style>/<script> so inline CSS (e.g. the spinner's
+    // @keyframes animation) doesn't inflate the length past the threshold.
+    let textContent = "";
+    if (content) {
+        const probe = content.cloneNode(true);
+        probe.querySelectorAll("style, script").forEach(element => element.remove());
+        textContent = probe.textContent.trim();
+    }
     if (!textContent || textContent.length < 50) {
         return { abort: true, reason: "Page loaded with no content - will retry on next check" };
     }
