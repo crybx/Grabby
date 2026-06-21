@@ -172,6 +172,15 @@
     display: none;
 }
 
+/* Only show failed-chapter actions when there are failed chapters */
+.menu-item.failed-only {
+    display: none;
+}
+
+.header-more-actions-menu.has-failed-chapters .menu-item.failed-only {
+    display: flex;
+}
+
 
 .error-state .more-actions-menu .menu-item:hover,
 .error-state .header-more-actions-menu .menu-item:hover,

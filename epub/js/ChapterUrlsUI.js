@@ -614,6 +614,14 @@ class ChapterUrlsUI {
             } else {
                 headerMoreActionsMenu.classList.add("cache-items-hidden");
             }
+
+            // Show/hide failed-only items based on whether any chapters are in an error state
+            let hasFailedChapters = document.querySelectorAll(".chapter-row.error-state").length > 0;
+            if (hasFailedChapters) {
+                headerMoreActionsMenu.classList.add("has-failed-chapters");
+            } else {
+                headerMoreActionsMenu.classList.remove("has-failed-chapters");
+            }
         }
     }
 
@@ -1236,6 +1244,11 @@ class ChapterUrlsUI {
             deleteAllChaptersIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.TRASH3_FILL));
         }
 
+        let refreshFailedChaptersIcon = document.getElementById("refreshFailedChaptersIcon");
+        if (refreshFailedChaptersIcon && refreshFailedChaptersIcon.children.length === 0) {
+            refreshFailedChaptersIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.ARROW_CLOCKWISE));
+        }
+
         if (downloadSelectedHtmlIcon && downloadSelectedHtmlIcon.children.length === 0) {
             downloadSelectedHtmlIcon.appendChild(SvgIcons.createSvgElement(SvgIcons.DOWNLOAD));
         }
@@ -1314,6 +1327,16 @@ class ChapterUrlsUI {
                 e.stopPropagation();
                 await ChapterCache.deleteAllCachedChapters(chapters);
                 ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
+            };
+        }
+
+        // Set up refresh all failed chapters handler
+        let refreshFailedChaptersItem = document.getElementById("refreshFailedChaptersMenuItem");
+        if (refreshFailedChaptersItem) {
+            refreshFailedChaptersItem.onclick = async (e) => {
+                e.stopPropagation();
+                ChapterUrlsUI.hideHeaderMoreActionsMenu(headerMoreActionsMenu);
+                await ChapterUrlsUI.refreshAllFailedChapters(chapters);
             };
         }
 
@@ -1619,6 +1642,34 @@ class ChapterUrlsUI {
         } catch (error) {
             console.error("Error deleting selected cached chapters:", error);
             alert("Failed to delete selected cached chapters: " + error.message);
+        }
+    }
+
+    /**
+     * Refresh all chapters that are currently in an error (failed download) state
+     */
+    static async refreshAllFailedChapters(chapters) {
+        try {
+            // Find chapters that have a stored download error
+            let failedChapters = [];
+            for (let chapter of chapters) {
+                let errorMessage = await ChapterCache.getChapterError(chapter.sourceUrl);
+                if (errorMessage) {
+                    failedChapters.push(chapter);
+                }
+            }
+
+            if (failedChapters.length === 0) {
+                return;
+            }
+
+            for (let chapter of failedChapters) {
+                let row = ChapterUrlsUI.findRowBySourceUrl(chapter.sourceUrl);
+                await ChapterCache.refreshChapter(chapter.sourceUrl, chapter.title, row);
+            }
+        } catch (error) {
+            console.error("Error refreshing failed chapters:", error);
+            alert("Failed to refresh failed chapters: " + error.message);
         }
     }
 
