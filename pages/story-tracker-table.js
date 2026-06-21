@@ -750,6 +750,13 @@ class StoryTrackerTable {
         });
     }
 
+    isErrorStatus(status) {
+        if (!status) {
+            return false;
+        }
+        return status.startsWith("Page error:") || status.startsWith("Server error:");
+    }
+
     createTableRow(story) {
         const row = document.createElement("tr");
         row.dataset.storyId = story.id;
@@ -769,7 +776,7 @@ class StoryTrackerTable {
 
         const lastCheckStatus = utils.escapeHtml(story.lastCheckStatus || "Unknown");
 
-        if (story.lastCheckStatus?.startsWith("Page error:")) {
+        if (this.isErrorStatus(story.lastCheckStatus)) {
             row.classList.add("page-error");
         }
 
@@ -1283,7 +1290,7 @@ class StoryTrackerTable {
 
         const statusEl = document.getElementById("last-check-status");
         statusEl.textContent = story.lastCheckStatus || "";
-        statusEl.classList.toggle("page-error", story.lastCheckStatus?.startsWith("Page error:") || false);
+        statusEl.classList.toggle("page-error", this.isErrorStatus(story.lastCheckStatus));
 
         document.getElementById("story-modal").style.display = "flex";
     }
