@@ -129,6 +129,7 @@
                                 <button id="open-last-chapters-btn" class="kebab-item">Open Last Chapters</button>
                                 <button id="open-main-stories-btn" class="kebab-item">Open Story URLs</button>
                                 <button id="edit-tags-btn" class="kebab-item">Edit Tags</button>
+                                <button id="set-interval-btn" class="kebab-item">Set Check Interval</button>
                             </div>
                         </div>
                     </div>
@@ -248,6 +249,10 @@
                         <input type="text" id="stop-at" placeholder="e.g. 164.2">
                     </div>
                     <div class="form-group">
+                        <label for="check-interval-days">Check Interval (days) <small class="form-help">Optional: Auto-queue this story on its own schedule, overriding the per-domain interval (no domain setting needed). Fractions allowed, e.g. 0.0417 for hourly</small></label>
+                        <input type="number" id="check-interval-days" min="0.0417" step="any" placeholder="e.g. 1">
+                    </div>
+                    <div class="form-group">
                         <label for="secondary-url-matches">Secondary URL Matches <small class="form-help">Optional: Comma-separated URL prefixes to match chapters when the main URL pattern doesn't work</small></label>
                         <input type="text" id="secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
                     </div>
@@ -341,6 +346,28 @@
                     <div class="form-actions">
                         <button type="button" id="cancel-tags-btn" class="secondary-btn">Cancel</button>
                         <button type="submit" class="primary-btn">Update Tags</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="set-interval-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set Check Interval for Selected Stories</h2>
+                <button id="close-interval-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="set-interval-form">
+                    <div class="form-group">
+                        <label for="bulk-check-interval-days">Check Interval (days)</label>
+                        <input type="number" id="bulk-check-interval-days" min="0.0417" step="any" placeholder="e.g. 1">
+                        <small class="form-help">Applied to all selected stories, overriding the per-domain interval (no domain setting needed). Fractions allowed, e.g. 0.0417 for hourly. Leave blank to clear the per-story interval and use the domain default.</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-interval-btn" class="secondary-btn">Cancel</button>
+                        <button type="submit" class="primary-btn">Set Interval</button>
                     </div>
                 </form>
             </div>

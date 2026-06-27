@@ -88,14 +88,18 @@ export class StoryUpdateChecker {
             return false;
         }
 
-        // Check if domain has auto-queue configured
-        const domain = this.extractDomain(story.lastChapterUrl);
-        if (!domain || !this.domainSettings[domain]) {
+        // Determine the interval to use. A per-story checkIntervalDays overrides
+        // the per-domain setting and removes the need for a domain entry. When
+        // it's not set, fall back to the configured days for the story's domain.
+        // If neither is configured, the story is not eligible.
+        let daysInterval = story.checkIntervalDays;
+        if (daysInterval == null) {
+            const domain = this.extractDomain(story.lastChapterUrl);
+            daysInterval = domain ? this.domainSettings[domain] : null;
+        }
+        if (daysInterval == null) {
             return false;
         }
-        
-        // Get the configured days for this domain
-        const daysInterval = this.domainSettings[domain];
         const hoursInterval = daysInterval * 24;
         
         // Check last update time

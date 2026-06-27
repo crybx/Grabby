@@ -190,8 +190,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Days input
         const daysInput = document.createElement("input");
         daysInput.type = "number";
-        daysInput.min = "0.25";
-        daysInput.step = "0.25";
+        daysInput.min = "0.0417"; // ~1 hour (1/24 day); fractions allowed
+        daysInput.step = "any";
         daysInput.value = days;
         daysInput.className = "days-input";
         row.appendChild(daysInput);

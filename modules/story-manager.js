@@ -26,7 +26,8 @@ export class StoryManager {
     //   lastChapterTitle: string | null,// Title of the last grabbed chapter (cleaned)
     //   secondaryUrlMatches: string[],  // Additional URL patterns to match this story
     //   stopAt: string | null,          // Stop auto-queueing when lastChapterTitle matches this value (null = no stop point)
-    //   
+    //   checkIntervalDays: number | null,// Per-story auto-queue interval in days; overrides the per-domain setting (null = use domain setting)
+    //
     //   // Timestamps (ISO strings)
     //   dateAdded: string,              // When story was added to tracker
     //   dateLastGrabbed: string | null, // When content was last grabbed

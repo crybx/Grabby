@@ -146,6 +146,10 @@ class StoryTrackerTable {
             this.showEditTagsModal();
         });
 
+        document.getElementById("set-interval-btn").addEventListener("click", () => {
+            this.showSetIntervalModal();
+        });
+
         document.getElementById("grab-chapters-btn").addEventListener("click", () => {
             this.handleAutoGrabNewChapters().then();
         });
@@ -316,6 +320,25 @@ class StoryTrackerTable {
         // Close edit tags modal when clicking outside
         document.getElementById("edit-tags-modal").addEventListener("click", (e) => {
             if (e.target.id === "edit-tags-modal") this.hideEditTagsModal();
+        });
+
+        // Set check interval modal controls
+        document.getElementById("close-interval-modal").addEventListener("click", () => {
+            this.hideSetIntervalModal();
+        });
+
+        document.getElementById("cancel-interval-btn").addEventListener("click", () => {
+            this.hideSetIntervalModal();
+        });
+
+        document.getElementById("set-interval-form").addEventListener("submit", (e) => {
+            e.preventDefault();
+            this.handleSetInterval().then();
+        });
+
+        // Close set interval modal when clicking outside
+        document.getElementById("set-interval-modal").addEventListener("click", (e) => {
+            if (e.target.id === "set-interval-modal") this.hideSetIntervalModal();
         });
 
         // Auto-check toggle
@@ -1259,6 +1282,7 @@ class StoryTrackerTable {
         document.getElementById("last-chapter-url").value = story.lastChapterUrl || "";
         document.getElementById("last-chapter-title").value = story.lastChapterTitle || "";
         document.getElementById("stop-at").value = story.stopAt || "";
+        document.getElementById("check-interval-days").value = story.checkIntervalDays || "";
         document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
         
@@ -1331,6 +1355,8 @@ class StoryTrackerTable {
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
         const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
         const stopAt = document.getElementById("stop-at").value.trim();
+        const checkIntervalRaw = parseFloat(document.getElementById("check-interval-days").value);
+        const checkIntervalDays = checkIntervalRaw > 0 ? checkIntervalRaw : null;
         const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("story-tags").value.trim();
 
@@ -1351,6 +1377,7 @@ class StoryTrackerTable {
             lastChapterUrl: lastChapterUrl,
             lastChapterTitle: lastChapterTitle,
             stopAt: stopAt || null,
+            checkIntervalDays,
             secondaryUrlMatches,
             tags,
             dateLastGrabbed: lastChapterUrl ? new Date().toISOString() : null,
@@ -1372,6 +1399,8 @@ class StoryTrackerTable {
         const lastChapterUrl = document.getElementById("last-chapter-url").value.trim();
         const lastChapterTitle = document.getElementById("last-chapter-title").value.trim();
         const stopAt = document.getElementById("stop-at").value.trim();
+        const checkIntervalRaw = parseFloat(document.getElementById("check-interval-days").value);
+        const checkIntervalDays = checkIntervalRaw > 0 ? checkIntervalRaw : null;
         const secondaryUrlMatchesInput = document.getElementById("secondary-url-matches").value.trim();
         const tagsInput = document.getElementById("story-tags").value.trim();
 
@@ -1397,6 +1426,7 @@ class StoryTrackerTable {
             lastChapterUrl,
             lastChapterTitle,
             stopAt: stopAt || null,
+            checkIntervalDays,
             secondaryUrlMatches,
             tags
         };
@@ -1821,6 +1851,66 @@ class StoryTrackerTable {
         } else {
             alert("No stories were updated. All selected stories already have the specified tag state.");
         }
+    }
+
+    showSetIntervalModal() {
+        const selectedCount = this.selectedStories.size;
+        if (selectedCount === 0) {
+            alert("Please select at least one story.");
+            return;
+        }
+
+        // Update modal title with count
+        document.querySelector("#set-interval-modal h2").textContent =
+            `Set Check Interval for ${selectedCount} Selected Stories`;
+
+        // Prefill if all selected stories share the same interval, otherwise leave blank
+        const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
+        const intervals = new Set(selectedStoriesData.map(s => s.checkIntervalDays ?? null));
+        const input = document.getElementById("bulk-check-interval-days");
+        input.value = (intervals.size === 1 && selectedStoriesData[0].checkIntervalDays) || "";
+
+        document.getElementById("set-interval-modal").style.display = "flex";
+        input.focus();
+    }
+
+    hideSetIntervalModal() {
+        document.getElementById("set-interval-modal").style.display = "none";
+        document.getElementById("set-interval-form").reset();
+    }
+
+    // Handle bulk check-interval updates for selected stories
+    async handleSetInterval() {
+        const raw = document.getElementById("bulk-check-interval-days").value.trim();
+
+        let checkIntervalDays;
+        if (raw === "") {
+            // Blank clears the per-story override (falls back to the domain default)
+            checkIntervalDays = null;
+        } else {
+            const parsed = parseFloat(raw);
+            if (!(parsed > 0)) {
+                alert("Please enter a positive number of days, or leave blank to clear the interval.");
+                return;
+            }
+            checkIntervalDays = parsed;
+        }
+
+        const selectedStoriesData = this.stories.filter(s => this.selectedStories.has(s.id));
+
+        for (const story of selectedStoriesData) {
+            story.checkIntervalDays = checkIntervalDays;
+            await StoryManager.saveStory(story);
+
+            const storyIndex = this.stories.findIndex(s => s.id === story.id);
+            if (storyIndex !== -1) {
+                this.stories[storyIndex] = story;
+            }
+        }
+
+        this.applyFilters();
+        this.renderTable();
+        this.hideSetIntervalModal();
     }
 
     // Handle auto grab new chapters for selected stories using queue system
