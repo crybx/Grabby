@@ -1000,6 +1000,10 @@ h1 {
     margin-bottom: 16px;
 }
 
+.advanced-summary {
+    font-weight: 400;
+}
+
 /* Drop the trailing form-group gap so the border hugs the content evenly */
 .advanced-settings[open] > .form-group:last-child {
     margin-bottom: 0;

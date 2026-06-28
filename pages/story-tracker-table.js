@@ -200,6 +200,13 @@ class StoryTrackerTable {
             this.hideStoryModal();
         });
 
+        // Keep the collapsed "Advanced" summary in sync as fields are edited
+        ["stop-at", "check-interval-days", "secondary-url-matches"].forEach(id => {
+            document.getElementById(id).addEventListener("input", () => {
+                this.updateAdvancedSummary();
+            });
+        });
+
         // Form submission
         document.getElementById("story-form").addEventListener("submit", (e) => {
             e.preventDefault();
@@ -1270,8 +1277,28 @@ class StoryTrackerTable {
         // Collapse advanced settings (form.reset doesn't affect <details>)
         const advanced = document.querySelector(".advanced-settings");
         if (advanced) advanced.open = false;
+        this.updateAdvancedSummary();
 
         document.getElementById("story-modal").style.display = "flex";
+    }
+
+    // Build the "Stop At: …, Check Interval: …, More Match URLs" summary shown
+    // next to "Advanced" so set values are visible while the section is collapsed
+    updateAdvancedSummary() {
+        const summaryEl = document.getElementById("advanced-summary");
+        if (!summaryEl) return;
+
+        const parts = [];
+        const stopAt = document.getElementById("stop-at").value.trim();
+        if (stopAt) parts.push(`Stop At: ${stopAt}`);
+
+        const interval = document.getElementById("check-interval-days").value.trim();
+        if (interval) parts.push(`Check Interval: ${interval}`);
+
+        const secondary = document.getElementById("secondary-url-matches").value.trim();
+        if (secondary) parts.push("More Match URLs");
+
+        summaryEl.textContent = parts.length ? ` | ${parts.join(", ")}` : "";
     }
 
     showEditModal(story) {
@@ -1290,14 +1317,11 @@ class StoryTrackerTable {
         document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
 
-        // Expand advanced settings when any of them have a value
+        // Keep advanced settings collapsed; surface set values in the summary
         const advanced = document.querySelector(".advanced-settings");
-        if (advanced) {
-            advanced.open = Boolean(
-                story.stopAt || story.checkIntervalDays || (story.secondaryUrlMatches || []).length
-            );
-        }
-        
+        if (advanced) advanced.open = false;
+        this.updateAdvancedSummary();
+
         // Show and populate date fields for edit mode
         const editOnlyElements = document.querySelectorAll(".edit-only");
         editOnlyElements.forEach(el => el.style.display = "block");
