@@ -1266,7 +1266,11 @@ class StoryTrackerTable {
         // Hide date fields for add mode
         const editOnlyElements = document.querySelectorAll(".edit-only");
         editOnlyElements.forEach(el => el.style.display = "none");
-        
+
+        // Collapse advanced settings (form.reset doesn't affect <details>)
+        const advanced = document.querySelector(".advanced-settings");
+        if (advanced) advanced.open = false;
+
         document.getElementById("story-modal").style.display = "flex";
     }
 
@@ -1285,6 +1289,14 @@ class StoryTrackerTable {
         document.getElementById("check-interval-days").value = story.checkIntervalDays || "";
         document.getElementById("secondary-url-matches").value = (story.secondaryUrlMatches || []).join(", ");
         document.getElementById("story-tags").value = (story.tags || []).join(", ");
+
+        // Expand advanced settings when any of them have a value
+        const advanced = document.querySelector(".advanced-settings");
+        if (advanced) {
+            advanced.open = Boolean(
+                story.stopAt || story.checkIntervalDays || (story.secondaryUrlMatches || []).length
+            );
+        }
         
         // Show and populate date fields for edit mode
         const editOnlyElements = document.querySelectorAll(".edit-only");

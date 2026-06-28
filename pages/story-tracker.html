@@ -244,18 +244,21 @@
                         <label for="last-chapter-title">Last Chapter Title <small class="form-help">Optional: Edit the chapter title for easier identification</small></label>
                         <input type="text" id="last-chapter-title" placeholder="Chapter 15: The Final Battle">
                     </div>
-                    <div class="form-group">
-                        <label for="stop-at">Stop At <small class="form-help">Optional: Don't auto-check once last chapter title matches this</small></label>
-                        <input type="text" id="stop-at" placeholder="e.g. 164.2">
-                    </div>
-                    <div class="form-group">
-                        <label for="check-interval-days">Check Interval (days) <small class="form-help">Optional: Auto-queue this story on its own schedule, overriding the per-domain interval (no domain setting needed). Fractions allowed, e.g. 0.0417 for hourly</small></label>
-                        <input type="number" id="check-interval-days" min="0.0417" step="any" placeholder="e.g. 1">
-                    </div>
-                    <div class="form-group">
-                        <label for="secondary-url-matches">Secondary URL Matches <small class="form-help">Optional: Comma-separated URL prefixes to match chapters when the main URL pattern doesn't work</small></label>
-                        <input type="text" id="secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
-                    </div>
+                    <details class="advanced-settings">
+                        <summary>Advanced</summary>
+                        <div class="form-group">
+                            <label for="stop-at">Stop At <small class="form-help">Optional: Don't auto-check once last chapter title matches this</small></label>
+                            <input type="text" id="stop-at" placeholder="e.g. 164.2">
+                        </div>
+                        <div class="form-group">
+                            <label for="check-interval-days">Check Interval (days) <small class="form-help">Optional: Auto-queue this story on its own schedule, overriding the per-domain interval (no domain setting needed). Fractions allowed, e.g. 0.0417 for hourly</small></label>
+                            <input type="number" id="check-interval-days" min="0.0417" step="any" placeholder="e.g. 1">
+                        </div>
+                        <div class="form-group">
+                            <label for="secondary-url-matches">Secondary URL Matches <small class="form-help">Optional: Comma-separated URL prefixes to match chapters when the main URL pattern doesn't work</small></label>
+                            <input type="text" id="secondary-url-matches" placeholder="https://site.com/chapter/story-prefix-, https://site.com/episodes/story-">
+                        </div>
+                    </details>
                     <div class="form-group tag-autocomplete-group">
                         <label for="story-tags">Tags (comma-separated)</label>
                         <input type="text" id="story-tags" placeholder="fantasy, mon, fav (comma-separated)" autocomplete="off">
