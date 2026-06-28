@@ -1,0 +1,101 @@
+/* Shared theme variables for Grabby extension pages.
+ *
+ * Centralizes every color used by the popup, options, and story-tracker pages
+ * so they can be tweaked in one place. Variable names mirror the epub/ theme
+ * system (see epub/css/themeBase.css) so these pages can eventually adopt those
+ * themes by overriding this base palette.
+ *
+ * Note: this file is linked only by the extension pages. The content-script
+ * stylesheets (grabby.css, grabby-button.css) are injected into third-party web
+ * pages without it, so they keep their own literal colors.
+ */
+
+:root {
+    /* ===== Brand / primary (Google blue) ===== */
+    --color-primary: #4285f4;
+    --color-primary-hover: #3367d6;
+    --color-primary-light: #e8f0fe;
+    --color-primary-focus-ring: rgba(66, 133, 244, 0.2);
+
+    /* ===== Accent blue (queue / progress) ===== */
+    --color-accent: #007bff;
+    --color-accent-dark: #0056b3;
+
+    /* ===== Active / processing (material blue) ===== */
+    --color-active: #1976d2;
+    --color-active-dark: #1565c0;
+    --color-active-bg: #e3f2fd;
+    --color-active-bg-hover: #bbdefb;
+    --color-active-ring: rgba(25, 118, 210, 0.3);
+
+    /* ===== Purple (options theme + popup accents) ===== */
+    --color-purple: #667eea;
+    --color-purple-hover: #5a67d8;
+    --color-purple-dark: #5e35b1;
+    --color-purple-light: #e8eaf6;
+    --color-purple-accent: #9d80ff;
+    --color-purple-muted: #bbb0d9;
+    --color-purple-ring: rgba(102, 126, 234, 0.2);
+    --color-purple-shadow: rgba(102, 126, 234, 0.3);
+
+    /* ===== Status: success ===== */
+    --color-success: #28a745;
+    --color-success-bg: #d4edda;
+
+    /* ===== Status: info ===== */
+    --color-info: #17a2b8;
+    --color-info-bg: #d1ecf1;
+    --color-info-accent: #2196F3;
+
+    /* ===== Status: warning / highlight ===== */
+    --color-warning: #ffc107;
+    --color-warning-bg: #fff3cd;
+    --color-highlight: #fffbe0;
+    --color-highlight-strong: #fff5c0;
+
+    /* ===== Status: error / danger ===== */
+    --color-error: #dc3545;
+    --color-error-strong: #d93025;
+    --color-error-bg: #f8d7da;
+    --color-error-border: #f5c6cb;
+    --color-error-tint: #fff0f0;
+    --color-error-tint-strong: #ffe0e0;
+    --color-danger-text: #d73a49;
+    --color-danger-border: #fddede;
+    --color-danger-border-hover: #fdbcbc;
+    --color-danger-bg-hover: #fef2f2;
+
+    /* ===== Cancelled / muted status ===== */
+    --color-cancelled-bg: #e2e3e5;
+
+    /* ===== Neutrals (light -> dark) ===== */
+    --color-surface-primary: white;
+    --color-neutral-50: #f8f9fa;
+    --color-neutral-75: #f5f5f5;
+    --color-neutral-100: #f2f2f2;
+    --color-neutral-150: #f1f3f4;
+    --color-neutral-175: #f0f0f0;
+    --color-neutral-200: #eee;
+    --color-neutral-250: #e9ecef;
+    --color-neutral-275: #e0e0e0;
+    --color-neutral-300: #ddd;
+    --color-neutral-400: #ccc;
+    --color-neutral-450: #aaa;
+    --color-neutral-500: #999;
+    --color-neutral-550: #6c757d;
+    --color-neutral-600: #666;
+    --color-neutral-650: #5f6368;
+    --color-neutral-700: #555;
+    --color-neutral-725: #495057;
+    --color-neutral-750: #444;
+    --color-neutral-800: #333;
+
+    /* ===== Borders ===== */
+    --border-color: #dadce0;
+
+    /* ===== Shadows / overlays ===== */
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-md: rgba(0, 0, 0, 0.15);
+    --color-shadow-strong: rgba(0, 0, 0, 0.2);
+    --color-overlay: rgba(0, 0, 0, 0.5);
+}
