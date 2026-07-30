@@ -57,7 +57,7 @@ const WEBSITE_CONFIGS = {
             grabber: "grabFenrir",
             preGrab: { fn: "GrabActions.checkForUrlText", args: [["auth/login"]] },
             postGrab: "GrabActions.pressRightArrow",
-            autoNav: { enabled: true, defaultDelay: 10 }
+            autoNav: { enabled: true, defaultDelay: 10, activeTab: true }
         },
         "helioscans.com": {
             grabber: { fn: "grabStandard", args: ["#pages div.novel-reader"] },

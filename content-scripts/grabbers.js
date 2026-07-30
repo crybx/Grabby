@@ -753,9 +753,13 @@ function grabLocalFile() {
 }
 
 function grabFenrir() {
-    const content = document.querySelector(".reader-area");
+    const contentOrig = document.querySelector(".reader-area");
+    // create a clone of the content to not disrupt the original content
+    const content = contentOrig.cloneNode(true);
     const title = document.querySelector("h1")?.textContent
     ??  document.querySelector("title").textContent;
+
+    content.querySelectorAll("div[aria-hidden=\"true\"]").forEach(div => div.remove());
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + standardCleanup(content).innerHTML;
 }
