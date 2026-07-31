@@ -522,6 +522,42 @@ function pressRightArrow() {
     simulateKeyPress("ArrowRight");
 }
 
+// Kakao Page: advance to the next episode. Locked episodes open a sheet
+// offering a wait-for-free rental ticket (기다무 대여권) - that free option is
+// the only thing this clicks, so an episode that costs cash stops the run
+// instead of spending anything.
+async function kakaoNext(waitForNavigationMs = 8000) {
+    const startUrl = window.location.href;
+
+    const nextButton = document.querySelector("div[data-test=\"viewer-navbar-next-button\"]");
+    if (!nextButton) {
+        return { abort: true, reason: "No next episode button - reached the last episode" };
+    }
+    clickElement(nextButton);
+
+    // Wait for the rental sheet to open, if this episode needs one
+    await wait(2500);
+
+    const ticketButton = document.querySelector("button[data-t-obj*=\"기다무대여권\"]") ||
+        Array.from(document.querySelectorAll("button"))
+            .find(button => button.textContent.trim() === "기다무 대여권");
+    if (ticketButton) {
+        clickElement(ticketButton);
+    }
+
+    // The viewer navigates client-side, so watch the URL rather than assuming
+    // a fixed delay is enough. No change means the episode stayed locked.
+    const deadline = Date.now() + waitForNavigationMs;
+    while (Date.now() < deadline) {
+        if (window.location.href !== startUrl) {
+            return;
+        }
+        await wait(250);
+    }
+
+    return { abort: true, reason: "Next episode is locked and no rental ticket was available" };
+}
+
 async function ridiNext() {
     let unownedEpisodeButtons = document.querySelectorAll(".checkout_contents_wrapper button");
     let unownedText = [
@@ -609,5 +645,6 @@ window.GrabActions = {
     clickNextPageLink,
     simulateKeyPress,
     pressRightArrow,
+    kakaoNext,
     ridiNext
 };

@@ -166,7 +166,10 @@ const WEBSITE_CONFIGS = {
                 // right arrow advances to the text
                 "GrabActions.pressRightArrow",
                 { fn: "GrabActions.wait", args: [3000] }
-            ]
+            ],
+            postGrab: "GrabActions.kakaoNext",
+            // Delay has to cover the pre and post grab actions.
+            autoNav: { enabled: true, defaultDelay: 30, activeTab: true }
         },
         "publang.com": {
             grabber: "grabPublang",
