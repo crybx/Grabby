@@ -268,23 +268,18 @@ async function performAutoGrabSequence(tabId, storyInfo) {
                 const config = findMatchingConfig(window.location.href);
                 if (config && config.postGrab) {
                     // Resolve function references
-                    const resolvedConfig = resolveConfigFunctions(config, { 
-                        grabbers: window, 
-                        GrabActions: window.GrabActions 
+                    const resolvedConfig = resolveConfigFunctions(config, {
+                        grabbers: window,
+                        GrabActions: window.GrabActions
                     });
-                    
-                    if (typeof resolvedConfig.postGrab === "function") {
-                        try {
-                            await resolvedConfig.postGrab();
 
-                            // Return delay from website-config
-                            const delay = config.autoNav?.defaultDelay || 15; // fallback to 15 seconds if not found
-                            return delay * 1000; // convert to milliseconds
-                        } catch (error) {
-                            console.error("Error in postGrab action:", error);
-                            return 10000; // fallback delay
-                        }
-                    }
+                    // Handles a single action or a list of them, and logs
+                    // rather than throwing if one of them fails
+                    await GrabbyCore.runGrabActions(resolvedConfig.postGrab, "post-grab");
+
+                    // Return delay from website-config
+                    const delay = config.autoNav?.defaultDelay || 15; // fallback to 15 seconds if not found
+                    return delay * 1000; // convert to milliseconds
                 }
                 return 10000; // fallback delay if no config found
             }
@@ -368,11 +363,14 @@ async function performAutoGrabSequence(tabId, storyInfo) {
 // that only render content after JS / anti-bot checks. See Live-Mode-Plan.md.
 let liveModeInFlight = null; // { tabId, url } when a live-mode tab is open
 
-function waitForTabComplete(tabId, timeoutMs) {
+// Resolves when the tab reports status "complete". Pass checkCurrentStatus
+// false when a load was just started (e.g. a reload) - the tab may still
+// report the previous "complete" status, so only the event counts.
+function waitForTabComplete(tabId, timeoutMs, checkCurrentStatus = true) {
     return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
             chrome.tabs.onUpdated.removeListener(listener);
-            reject(new Error(`Live Mode: tab load timed out after ${timeoutMs}ms`));
+            reject(new Error(`Tab load timed out after ${timeoutMs}ms`));
         }, timeoutMs);
         const listener = (updatedTabId, changeInfo) => {
             if (updatedTabId === tabId && changeInfo.status === "complete") {
@@ -382,6 +380,11 @@ function waitForTabComplete(tabId, timeoutMs) {
             }
         };
         chrome.tabs.onUpdated.addListener(listener);
+
+        if (!checkCurrentStatus) {
+            return;
+        }
+
         // Catch the case where the tab finished loading before we attached the listener
         chrome.tabs.get(tabId).then(tab => {
             if (tab.status === "complete") {
@@ -391,6 +394,37 @@ function waitForTabComplete(tabId, timeoutMs) {
             }
         }).catch(reject);
     });
+}
+
+// Reload a tab and re-run the grab on the freshly loaded page. Requested by
+// the GrabActions.reloadPage pre-grab action, which can't do this itself
+// because the reload tears down the content script mid-grab.
+async function handleReloadAndGrab(message, sender) {
+    const tabId = await scriptInjector.getTabId(message, sender);
+    if (!tabId) {
+        return { success: false, error: "No tab ID available for reload" };
+    }
+
+    const waitAfterLoadMs = message.waitAfterLoadMs ?? 3000;
+
+    // Kick the reload off without awaiting it: the page that asked for it is
+    // about to be destroyed, so nothing is waiting on the response.
+    void (async () => {
+        try {
+            const state = await bulkGrabManager.loadBulkGrabState(tabId);
+            const isBulkGrab = !!state?.isRunning;
+
+            await chrome.tabs.reload(tabId);
+            await waitForTabComplete(tabId, 60000, false);
+            await new Promise(resolve => setTimeout(resolve, waitAfterLoadMs));
+
+            await scriptInjector.injectGrabbingScriptsAndExecute(tabId, isBulkGrab);
+        } catch (error) {
+            console.error("Error reloading tab before grab:", error);
+        }
+    })();
+
+    return { success: true };
 }
 
 async function handleLiveModeGrab(message) {
@@ -522,6 +556,9 @@ async function handleMessages(message, sender, sendResponse) {
         case "grabContent":
             await handleGrabContent(message, sender);
             break;
+        case "reloadAndGrab":
+            // Returned value becomes the response (see the liveModeGrab note below)
+            return await handleReloadAndGrab(message, sender);
         case "openBackgroundTab":
             // Open URL in background tab
             try {

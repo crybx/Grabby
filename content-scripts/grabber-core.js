@@ -79,6 +79,31 @@ function extractTitle(content, useFirstHeadingTitle) {
            "Chapter";
 }
 
+// Run a pre/post-grab action, or a list of them in order (configs can set
+// either a single action or an array of them). Returns the first abort signal
+// so the caller can stop the grab; an action that throws is logged and the
+// remaining actions still run.
+async function runGrabActions(action, label) {
+    const actions = Array.isArray(action) ? action : [action];
+
+    for (const actionFn of actions) {
+        if (typeof actionFn !== "function") {
+            continue;
+        }
+
+        try {
+            const result = await actionFn();
+            if (result && result.abort) {
+                return result;
+            }
+        } catch (error) {
+            console.error(`Error in ${label} function:`, error);
+        }
+    }
+
+    return null;
+}
+
 // Helper function to handle grab interruptions (aborts, errors, end of story, etc.)
 function handleGrabInterruption(message) {
     // Send single message to handle all interruption actions
@@ -111,20 +136,16 @@ async function grabFromWebsite(isBulkGrab = false) {
             const configAllowsDirectActions = config.runActionsOnDirectGrab !== false;
             const shouldRunActions = isBulkGrab || configAllowsDirectActions;
 
-            if (config.preGrab && typeof config.preGrab === "function" && shouldRunActions) {
-                try {
-                    const preGrabResult = await config.preGrab();
+            if (config.preGrab && shouldRunActions) {
+                const preGrabResult = await runGrabActions(config.preGrab, "pre-grab");
 
-                    // Check if preGrab returned an abort signal
-                    if (preGrabResult && preGrabResult.abort) {
-                        console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
+                // Check if preGrab returned an abort signal
+                if (preGrabResult) {
+                    console.log("Pre-grab function requested abort:", preGrabResult.reason || "No reason provided");
 
-                        handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
+                    handleGrabInterruption(preGrabResult.reason || "Aborted by pre-grab check");
 
-                        return null; // Abort the grab
-                    }
-                } catch (preGrabError) {
-                    console.error("Error in pre-grab function:", preGrabError);
+                    return null; // Abort the grab
                 }
             }
 
@@ -198,21 +219,17 @@ async function grabFromWebsite(isBulkGrab = false) {
             const shouldRunActions = isBulkGrab || configAllowsDirectActions;
 
             if (matchingConfig?.postGrab && shouldRunActions) {
-                try {
-                    // Resolve function references
-                    const config = resolveConfigFunctions(matchingConfig, {
-                        grabbers: window,
-                        GrabActions: window.GrabActions
-                    });
-                    const postGrabResult = await config.postGrab();
+                // Resolve function references
+                const config = resolveConfigFunctions(matchingConfig, {
+                    grabbers: window,
+                    GrabActions: window.GrabActions
+                });
+                const postGrabResult = await runGrabActions(config.postGrab, "post-grab");
 
-                    // Check if postGrab returned an abort signal
-                    if (postGrabResult && postGrabResult.abort) {
-                        console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
-                        handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
-                    }
-                } catch (postGrabError) {
-                    console.error("Error in post-grab function:", postGrabError);
+                // Check if postGrab returned an abort signal
+                if (postGrabResult) {
+                    console.log("Post-grab function requested abort:", postGrabResult.reason || "No reason provided");
+                    handleGrabInterruption(postGrabResult.reason || "Aborted by post-grab check");
                 }
             }
         }
@@ -251,5 +268,6 @@ function copyToClipboard(text) {
 
 // Export functions for use in other files
 window.GrabbyCore = {
-    grabFromWebsite
+    grabFromWebsite,
+    runGrabActions
 };

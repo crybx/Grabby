@@ -34,6 +34,12 @@ function waitForElement(selector, timeout = 5000) {
     });
 }
 
+// Function to wait a fixed amount of time (useful between chained actions,
+// e.g. after a key press that makes the page render its content)
+function wait(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 // Function to disable page animations/transitions (useful for faster grabbing)
 function disableAnimations() {
     const style = document.createElement("style");
@@ -59,6 +65,49 @@ function loadAllImages() {
             img.src = img.dataset.lazy;
         }
     });
+}
+
+// Reload the page before grabbing it. Needed for single-page-app sites
+// (page.kakao.com) where client-side navigation leaves document.title holding
+// the previous chapter's title, so every grab is filed under the wrong name.
+//
+// The reload tears this script down, so the background script re-runs the grab
+// once the fresh page has loaded. A sessionStorage flag keyed to the current
+// URL keeps it to one reload per grab: on the second pass the action finds its
+// own flag, clears it, and lets the grab proceed.
+async function reloadPage(waitAfterLoadMs = 3000) {
+    const reloadFlag = "grabbyReloadedForGrab";
+
+    if (sessionStorage.getItem(reloadFlag) === window.location.href) {
+        sessionStorage.removeItem(reloadFlag);
+        return { abort: false };
+    }
+
+    sessionStorage.setItem(reloadFlag, window.location.href);
+
+    let response;
+    try {
+        response = await chrome.runtime.sendMessage({
+            target: "background",
+            type: "reloadAndGrab",
+            waitAfterLoadMs
+        });
+    } catch (error) {
+        // The reload normally tears this script down before the message
+        // resolves, so only a genuine send failure reaches here.
+        console.error("Error requesting reload before grab:", error);
+        sessionStorage.removeItem(reloadFlag);
+        return { abort: true, reason: "Could not reload page before grabbing" };
+    }
+
+    if (response && response.success === false) {
+        sessionStorage.removeItem(reloadFlag);
+        return { abort: true, reason: response.error || "Could not reload page before grabbing" };
+    }
+
+    // The page is about to be replaced - stall so this pass doesn't grab
+    // the stale content the reload was meant to avoid.
+    await new Promise(() => {});
 }
 
 // Peach Tea Agency specific: Click "All on one page?" button if it exists
@@ -543,6 +592,8 @@ window.GrabActions = {
     scrollToBottom,
     scrollToTop,
     waitForElement,
+    wait,
+    reloadPage,
     peachTeaClickAllOnOnePageButton,
     checkForLockedContent,
     checkForUrlText,

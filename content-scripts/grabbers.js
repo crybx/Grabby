@@ -1,8 +1,11 @@
 function grabKakaoPage() {
     const shadowHost = document.querySelector("#__next > div > div.flex > div > div > div.mx-auto > div.h-full > div > div");
     const shadowRoot = shadowHost.shadowRoot;
-    const content = shadowRoot.querySelector(".DC2CN") ||
+    const liveContent = shadowRoot.querySelector(".DC2CN") ||
         shadowRoot.querySelector(".DC1CN");
+    // Shadow roots aren't carried along by a document or host clone, so clone
+    // the content element itself to avoid modifying the live page.
+    const content = liveContent.cloneNode(true);
     content.querySelectorAll("*").forEach(element => {
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeAttributes(element, ["id", "data-p-id", "data-original-font-size", "data-original-line-height"]);

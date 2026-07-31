@@ -2,8 +2,10 @@
 // Each site config can have:
 // - grabber: function to extract content (required)
 // - useFirstHeadingTitle: boolean to use first <h1> as title (optional)
-// - preGrab: function to run before grabbing content (optional)
-// - postGrab: function to run after grabbing content (optional)
+// - preGrab: function to run before grabbing content (optional, or an array of
+//   functions to run in order)
+// - postGrab: function to run after grabbing content (optional, or an array of
+//   functions to run in order)
 // - runActionsOnDirectGrab: boolean to run pre/post actions on direct grabs (optional, defaults to true)
 // - autoNav: configuration for automatic navigation during chapter grabbing (optional)
 //   - enabled: boolean to enable auto-nav for this site
@@ -153,7 +155,19 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultDelay: 15 },
             filenameCleanupPatterns: [" - Ridibooks"]
         },
-        "page.kakao.com": { grabber: "grabKakaoPage", useFirstHeadingTitle: true },
+        "page.kakao.com": {
+            grabber: "grabKakaoPage",
+            useFirstHeadingTitle: true,
+            preGrab: [
+                // Client-side navigation leaves the previous chapter's title in
+                // place, so reload before grabbing to get the right one
+                { fn: "GrabActions.reloadPage", args: [5000] },
+                // A freshly loaded chapter shows only the cover image - the
+                // right arrow advances to the text
+                "GrabActions.pressRightArrow",
+                { fn: "GrabActions.wait", args: [3000] }
+            ]
+        },
         "publang.com": {
             grabber: "grabPublang",
             useFirstHeadingTitle: true,
