@@ -159,6 +159,9 @@ const WEBSITE_CONFIGS = {
             grabber: "grabKakaoPage",
             useFirstHeadingTitle: true,
             preGrab: [
+                // Running out of tickets lands on the purchase page instead of
+                // the next episode - nothing worth grabbing there
+                "GrabActions.checkKakaoViewerPage",
                 // Client-side navigation leaves the previous chapter's title in
                 // place, so reload before grabbing to get the right one
                 { fn: "GrabActions.reloadPage", args: [5000] },

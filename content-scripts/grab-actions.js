@@ -541,9 +541,8 @@ function pressRightArrow() {
 }
 
 // Kakao Page: advance to the next episode. Locked episodes open a sheet
-// offering a wait-for-free rental ticket (기다무 대여권) - that free option is
-// the only thing this clicks, so an episode that costs cash stops the run
-// instead of spending anything.
+// offering whatever tickets apply - only the free ones get clicked, so an
+// episode that costs cash stops the run instead of spending anything.
 async function kakaoNext(waitForNavigationMs = 8000) {
     const startUrl = window.location.href;
 
@@ -556,24 +555,71 @@ async function kakaoNext(waitForNavigationMs = 8000) {
     // Wait for the rental sheet to open, if this episode needs one
     await wait(2500);
 
-    const ticketButton = document.querySelector("button[data-t-obj*=\"기다무대여권\"]") ||
-        Array.from(document.querySelectorAll("button"))
-            .find(button => button.textContent.trim() === "기다무 대여권");
+    const ticketButton = findKakaoFreeTicketButton();
     if (ticketButton) {
         clickElement(ticketButton);
     }
 
     // The viewer navigates client-side, so watch the URL rather than assuming
-    // a fixed delay is enough. No change means the episode stayed locked.
+    // a fixed delay is enough. A URL that never changes means the episode
+    // stayed locked - but a URL that changes isn't proof the episode opened,
+    // since running out of both free and paid tickets sends the viewer to the
+    // ticket store (page.kakao.com/buy/ticket/?seriesId=...) instead.
     const deadline = Date.now() + waitForNavigationMs;
     while (Date.now() < deadline) {
-        if (window.location.href !== startUrl) {
+        const currentUrl = window.location.href;
+        if (currentUrl !== startUrl) {
+            if (isKakaoNonViewerUrl(currentUrl)) {
+                return { abort: true, reason: "Next episode needs a ticket - stopped at the purchase page" };
+            }
             return;
         }
         await wait(250);
     }
 
     return { abort: true, reason: "Next episode is locked and no rental ticket was available" };
+}
+
+// Finds a free rental ticket button in Kakao's unlock sheet. Nothing that
+// spends cash is ever matched, so a cash-only episode ends the run. Add new
+// free ticket types here as they turn up:
+//   기다무 대여권      - the "wait and it's free" ticket
+//   신규혜택 무료 대여권 - handed out for opening a series for the first time
+function findKakaoFreeTicketButton() {
+    const squash = text => (text ?? "").replace(/\s+/g, "");
+    const freeTicketLabels = ["기다무 대여권", "신규혜택 무료 대여권"].map(squash);
+
+    for (const button of document.querySelectorAll("button")) {
+        // The tracking attribute names the ticket type outright (e.g.
+        // "대여_신규혜택무료대여권"), so a substring is safe there. The visible
+        // label - which sits in a nested div - has to match exactly, keeping a
+        // "buy more tickets" button that merely mentions one from being clicked.
+        const trackingLabel = squash(button.getAttribute("data-t-obj"));
+        const buttonText = squash(button.textContent);
+        if (freeTicketLabels.some(label => trackingLabel.includes(label) || buttonText === label)) {
+            return button;
+        }
+    }
+
+    return null;
+}
+
+// True for the pages Kakao bounces the viewer to when an episode can't be
+// opened with the tickets on hand. Matching these rather than whitelisting the
+// viewer URL keeps an unrecognized viewer path from stopping a run that works.
+function isKakaoNonViewerUrl(url = window.location.href) {
+    const path = url.toLowerCase().replace(/^https?:\/\/[^/]*/, "");
+    return ["/buy/", "/ticket", "/payment", "/login"].some(part => path.includes(part));
+}
+
+// Pre-grab guard for Kakao Page: the grabber falls back to a generic grab when
+// its shadow-root selector misses, which turns a purchase page into a junk
+// chapter file. Bail out before that happens.
+async function checkKakaoViewerPage() {
+    if (isKakaoNonViewerUrl()) {
+        return { abort: true, reason: "Not an episode page - Kakao redirected to a purchase page" };
+    }
+    return { abort: false };
 }
 
 async function ridiNext() {
@@ -654,6 +700,7 @@ window.GrabActions = {
     checkForPageErrors,
     checkForPageErrorsAndLockedContent,
     checkUrlMatchesTrackedStory,
+    checkKakaoViewerPage,
     googleTranslate,
     // Post-grab actions
     peachTeaClickNextChapterLink,

@@ -275,18 +275,37 @@ async function performAutoGrabSequence(tabId, storyInfo) {
 
                     // Handles a single action or a list of them, and logs
                     // rather than throwing if one of them fails
-                    await GrabbyCore.runGrabActions(resolvedConfig.postGrab, "post-grab");
+                    const abortResult = await GrabbyCore.runGrabActions(resolvedConfig.postGrab, "post-grab");
 
                     // Return delay from website-config
                     const delay = config.autoNav?.defaultDelay || 15; // fallback to 15 seconds if not found
-                    return delay * 1000; // convert to milliseconds
+                    return {
+                        delayMs: delay * 1000, // convert to milliseconds
+                        abort: abortResult?.abort === true,
+                        reason: abortResult?.reason
+                    };
                 }
-                return 10000; // fallback delay if no config found
+                return { delayMs: 10000 }; // fallback delay if no config found
             }
         });
 
+        const postGrabResult = configResult[0]?.result;
+
+        // An aborting postGrab means there's no next chapter to move to - the
+        // navigation was blocked, or it landed somewhere that isn't a chapter.
+        // Stop here rather than letting the bulk grab run on whatever loaded.
+        if (postGrabResult?.abort) {
+            const reason = postGrabResult.reason || "Post-grab navigation aborted";
+            await StoryManager.updateLastCheckStatus(initialUrl, reason, storyInfo.storyId);
+            if (storyInfo.storyId) {
+                queueManager.handleStoryAutoGrabComplete(storyInfo.storyId, false, reason);
+            }
+            await chrome.tabs.remove(tabId);
+            return;
+        }
+
         // Get the delay from the script result, with fallback
-        const delayMs = configResult[0]?.result || 10000;
+        const delayMs = postGrabResult?.delayMs || 10000;
 
         // Wait additional time for navigation to complete after postGrab finishes
         setTimeout(async () => {
