@@ -190,7 +190,6 @@ async function checkForPageErrors(selectors = ["title", "h1", "h2", "h3", ".erro
         "We Couldn’t Find This Page",
         "We Couldn't Find This Page",
         "Page Not Found",
-        "404",
         "This page does not exist",
         "The page you requested could not be found",
         "Uncaught Error: Call to undefined function wp_cache_get()",
@@ -198,11 +197,30 @@ async function checkForPageErrors(selectors = ["title", "h1", "h2", "h3", ".erro
         "503 Service Unavailable"
     ];
 
+    // A bare "404" is too generic to match as plain text - a story with a
+    // chapter 404 would never be grabbable. These patterns only fire when the
+    // number reads as an HTTP status rather than as a chapter number.
+    const statusCodePatterns = [
+        /^404\s*(?:[-–—|:·»]|$)/,                                   // "404", "404 - Site Name"
+        /\b(?:error|http|status(?:\s+code)?)\s*[-–—|:#]?\s*404\b/i, // "Error 404", "HTTP 404"
+        /\b404\b[\s\-–—|:.]*(?:page\s+)?(?:not\s+found|error)/i     // "404 Not Found", "404 error"
+    ];
+
+    // Keeps a chapter designation ("Chapter 404", "Ch. 404", "#404") from
+    // tripping the status code patterns above
+    const chapterNumberPattern = /(?:chapter|chap|ch|episode|ep|part|volume|vol|#)\.?\s*[-–—:]?\s*404\b/i;
+
     for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         for (const element of elements) {
             const text = element.textContent.trim();
             if (errorIndicators.some(indicator => text.includes(indicator))) {
+                console.log(`Page error detected: "${text}" - aborting grab`);
+                return { abort: true, reason: `Page error: "${text}"` };
+            }
+
+            if (!chapterNumberPattern.test(text)
+                && statusCodePatterns.some(pattern => pattern.test(text))) {
                 console.log(`Page error detected: "${text}" - aborting grab`);
                 return { abort: true, reason: `Page error: "${text}"` };
             }
