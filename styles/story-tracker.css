@@ -863,26 +863,32 @@ h1 {
 }
 
 /* Modal Styles */
+/* The overlay does the scrolling, not .modal-content: a scroll container on
+   the content box would clip absolutely positioned children (the tag
+   autocomplete dropdown) at the modal's edges. */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    padding: 24px;
     background-color: var(--color-overlay);
     z-index: 1000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
 }
 
+/* margin: auto centers the box when there's room and collapses to 0 when the
+   modal is taller than the viewport, so the top never scrolls out of reach. */
 .modal-content {
     background: var(--color-surface-primary);
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
+    margin: auto;
     box-shadow: 0 8px 24px var(--color-shadow-strong);
 }
 
@@ -1129,7 +1135,6 @@ h1 {
     
     .modal-content {
         width: 95%;
-        margin: 20px;
     }
     
 }

@@ -684,7 +684,12 @@ class StoryTrackerTable {
         };
 
         input.addEventListener("input", update);
-        input.addEventListener("focus", update);
+        // Only reopen on focus when the user is part way through a tag.
+        // Suggesting on an empty field would cover the rest of the form the
+        // moment a modal opens and autofocuses its first input.
+        input.addEventListener("focus", () => {
+            if (currentSegment()) update();
+        });
         input.addEventListener("blur", closeDropdown);
 
         input.addEventListener("keydown", (e) => {
