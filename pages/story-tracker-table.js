@@ -291,11 +291,6 @@ class StoryTrackerTable {
             this.handleImportStories().then();
         });
 
-        // Close import modal when clicking outside
-        document.getElementById("import-stories-modal").addEventListener("click", (e) => {
-            if (e.target.id === "import-stories-modal") this.hideImportModal();
-        });
-
         // Clear error when user interacts with inputs
         document.getElementById("import-links").addEventListener("input", () => {
             this.hideImportError();
@@ -324,11 +319,6 @@ class StoryTrackerTable {
             this.handleEditTags().then();
         });
 
-        // Close edit tags modal when clicking outside
-        document.getElementById("edit-tags-modal").addEventListener("click", (e) => {
-            if (e.target.id === "edit-tags-modal") this.hideEditTagsModal();
-        });
-
         // Set check interval modal controls
         document.getElementById("close-interval-modal").addEventListener("click", () => {
             this.hideSetIntervalModal();
@@ -341,11 +331,6 @@ class StoryTrackerTable {
         document.getElementById("set-interval-form").addEventListener("submit", (e) => {
             e.preventDefault();
             this.handleSetInterval().then();
-        });
-
-        // Close set interval modal when clicking outside
-        document.getElementById("set-interval-modal").addEventListener("click", (e) => {
-            if (e.target.id === "set-interval-modal") this.hideSetIntervalModal();
         });
 
         // Auto-check toggle
