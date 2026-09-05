@@ -226,12 +226,23 @@ class TwoMoonsLibraryParser extends FictioneerParser {
         super();
     }
 
+    populateUIImpl() {
+        document.getElementById("removeChapterNumberRow").hidden = false;
+    }
+
     // Chapter list links wrap the whole row, so their text runs the chapter number,
     // title, publish date and word count together ("2 CAGE CH1.2 Jun 1, '26 1.6K
-    // words"). Take just the title element when the row has one.
+    // words"). Take just the title element when the row has one, prefixed with the
+    // row's chapter number unless "Remove Chapter Number" is checked (some stories
+    // already have the number in the title, where the prefix would duplicate it).
     chapterTitleFromLink(a) {
-        return a.querySelector(".chapter-group__list-item-title")?.textContent
-            ?? super.chapterTitleFromLink(a);
+        let title = a.querySelector(".chapter-group__list-item-title")?.textContent?.trim();
+        if (!title) {
+            return super.chapterTitleFromLink(a);
+        }
+        let num = a.querySelector(".chapter-group__list-item-num")?.textContent.trim();
+        let removeNum = document.getElementById("removeChapterNumberCheckbox")?.checked;
+        return (!removeNum && num) ? `${num} ${title}` : title;
     }
 
     findCoverImage(dom) {
