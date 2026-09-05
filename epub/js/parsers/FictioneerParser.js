@@ -15,6 +15,7 @@ parserFactory.register("novelib.com", () => new FictioneerParser());
 parserFactory.register("smeraldogarden.com", () => new FictioneerParser());
 parserFactory.register("springofromance.com", () => new FictioneerParser());
 parserFactory.register("talesinthevalley.com", () => new LilyOnTheValleyParser());
+parserFactory.register("twomoonslibrary.com", () => new TwoMoonsLibraryParser());
 
 parserFactory.registerRule(
     (url, dom) => FictioneerParser.isFictioneerTheme(dom) * 0.7,
@@ -28,7 +29,8 @@ class FictioneerParser extends Parser {
 
     static isFictioneerTheme(dom) {
         // the html tag has the class "fictioneer-theme"
-        return (dom.querySelector("html.fictioneer-theme") !== null);
+        return (dom.querySelector("html.fictioneer-theme") !== null) ||
+            (dom.querySelector(".fictioneer-theme") !== null);
     }
 
     async getChapterUrls(dom) {
@@ -36,22 +38,28 @@ class FictioneerParser extends Parser {
         // Put free chapters first
         [...dom.querySelectorAll(".chapter-group__list ._publish a")].map(a => chapters.push(({
             sourceUrl: a.href,
-            title: a.textContent,
+            title: this.chapterTitleFromLink(a),
             isIncludeable: true
         })));
         // Put scheduled chapters after free and don't select them
         [...dom.querySelectorAll("._future a")].map(a => chapters.push(({
             sourceUrl: a.href,
-            title: a.textContent,
+            title: this.chapterTitleFromLink(a),
             isIncludeable: false
         })));
 
         if (chapters.length === 0) {
             chapters = [...dom.querySelectorAll(".chapter-group__list-item a")]
-                .map(a => util.hyperLinkToChapter(a));
+                .map(a => ({ sourceUrl: a.href, title: this.chapterTitleFromLink(a) }));
         }
 
         return chapters;
+    }
+
+    // Text to use as a chapter's title, taken from its link in the chapter list.
+    // Override when the link holds more than the title.
+    chapterTitleFromLink(a) {
+        return a.textContent;
     }
 
     // the element holding chapter content
@@ -82,12 +90,13 @@ class FictioneerParser extends Parser {
 
     // story description
     extractDescription(dom) {
-        let summary = dom.querySelector(".story__summary");
+        let summary = dom.querySelector(".story__summary") ||
+            dom.querySelector(".story__synopsis");
         if (summary === null) return "";
         summary = summary.cloneNode(true);
         util.removeElements(summary.querySelectorAll("figure, .story__thumbnail, .story__thumbnail-ribbon, .related-stories-block, .code-block, .jp-relatedposts"));
-        return [...summary.querySelectorAll("p")]
-            .map(p => p.textContent.trim())
+        return [...summary.querySelectorAll("h1, h2, p")]
+            .map(el => el.textContent.trim())
             .filter(t => t)
             .join("\n\n");
     }
@@ -103,9 +112,7 @@ class FictioneerParser extends Parser {
     }
 
     findCoverImageUrl(dom) {
-        let img =
-            dom.querySelector(".wp-post-image") ||
-            dom.querySelector("figure.story__thumbnail img");
+        let img = this.findCoverImage(dom);
 
         if (!img?.src) return null;
 
@@ -113,6 +120,13 @@ class FictioneerParser extends Parser {
         let url = img.src;
         const pos = url.indexOf("?");
         return pos !== -1 ? url.substring(0, pos) : url;
+    }
+
+    // Element holding the story's cover image.
+    // Override when the site's markup doesn't match the theme defaults.
+    findCoverImage(dom) {
+        return dom.querySelector(".wp-post-image") ||
+            dom.querySelector("figure.story__thumbnail img");
     }
 
     preprocessRawDom(chapterDom) {
@@ -199,6 +213,25 @@ class CherryMistParser extends FictioneerParser {
             }
         }
         super.preprocessRawDom(chapterDom);
+    }
+}
+
+class TwoMoonsLibraryParser extends FictioneerParser {
+    constructor() {
+        super();
+    }
+
+    // Chapter list links wrap the whole row, so their text runs the chapter number,
+    // title, publish date and word count together ("2 CAGE CH1.2 Jun 1, '26 1.6K
+    // words"). Take just the title element when the row has one.
+    chapterTitleFromLink(a) {
+        return a.querySelector(".chapter-group__list-item-title")?.textContent
+            ?? super.chapterTitleFromLink(a);
+    }
+
+    findCoverImage(dom) {
+        return dom.querySelector("img.story__cover")
+            ?? super.findCoverImage(dom);
     }
 }
 

@@ -204,6 +204,20 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultDelay: 15, activeTab: true }
         },
         "tapas.io": { grabber: "grabTapas", useFirstHeadingTitle: true },
+        "twomoonslibrary.com": {
+            grabber: "grabFictioneer",
+            useFirstHeadingTitle: true,
+            preGrab: {
+                fn: "GrabActions.checkForPageErrorsAndLockedContent",
+                args: [null, ["h1, h2, h3, .mycred-sell-this-wrapper, .cmppp-plan-card"]] },
+            // Fictioneer theme, but the right arrow key doesn't navigate here,
+            // so click the site's own next-chapter link instead
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: ["a.sor-btn._navigation._next", { abortIfNotFound: true }]
+            },
+            autoNav: { enabled: true, defaultDelay: 10 }
+        },
         "webnovel.com": { grabber: "grabWebnovel" },
         "watashiwasugoidesu.com": { grabber: "grabWatashiWaSugoiDesu" },
         "yoru.world": { grabber: "grabYoruWorld", useFirstHeadingTitle: true },

@@ -13,7 +13,7 @@
  *   handler instead of HttpClient. See Live-Mode-Plan.md.
  *
  * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 615
+ * Total supported domains: 616
  */
 
 let PARSER_REGISTRY = {
@@ -548,6 +548,7 @@ let PARSER_REGISTRY = {
     "ttshu8.com": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "twbook.cc": { parserClass: "Novel543Parser", file: "Novel543Parser.js" },
     "twkan.com": { parserClass: "TwkanParser", file: "TwkanParser.js" },
+    "twomoonslibrary.com": { parserClass: "TwoMoonsLibraryParser", file: "FictioneerParser.js" },
     "uaa.com": { parserClass: "UaaParser", file: "UaaParser.js" },
     "ultimaguil.org": { parserClass: "VariableSizeImageCollector", file: "UltimaguilParser.js" },
     "universalnovel.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
