@@ -181,17 +181,18 @@ class Parser {
             if (title instanceof HTMLElement) {
                 title = title.textContent;
             }
+            title = Parser.normalizeTitle(title);
             if (webPage.title == "[placeholder]") {
-                webPage.title = title.trim();
+                webPage.title = title;
             }
             if (!this.titleAlreadyPresent(title, content)) {
                 let titleElement = webPage.rawDom.createElement("h1");
-                titleElement.appendChild(webPage.rawDom.createTextNode(title.trim()));
+                titleElement.appendChild(webPage.rawDom.createTextNode(title));
                 content.insertBefore(titleElement, content.firstChild);
             }
         } else {
             if (webPage.title == "[placeholder]") {
-                webPage.title = webPage.rawDom.title;
+                webPage.title = Parser.normalizeTitle(webPage.rawDom.title);
             }
         }
     }
@@ -199,7 +200,7 @@ class Parser {
     titleAlreadyPresent(title, content) {
         let existingTitle = content.querySelector("h1, h2, h3, h4, h5, h6");
         return (existingTitle != null)
-            && (title.trim() === existingTitle.textContent.trim());
+            && (Parser.normalizeTitle(title) === Parser.normalizeTitle(existingTitle.textContent));
     }
 
     /**
@@ -305,6 +306,14 @@ class Parser {
     }
 
     /**
+    * Collapse runs of whitespace (including newlines and non-breaking
+    * spaces) in a title down to single spaces, and trim the result.
+    */
+    static normalizeTitle(title) {
+        return title?.replace(/\s+/g, " ").trim();
+    }
+
+    /**
     * default implementation
     */
     static extractTitleDefault(dom) {
@@ -324,7 +333,7 @@ class Parser {
         if (title.textContent !== undefined) {
             title = title.textContent;
         }
-        return title.trim();
+        return Parser.normalizeTitle(title);
     }
 
     /**
@@ -532,7 +541,7 @@ class Parser {
                 chapters = this.addFirstPageUrlToWebPages(url, firstPageDom, chapters);
             }
             chapters = this.cleanWebPageUrls(chapters);
-            chapters?.forEach(chapter => chapter.title = chapter.title?.trim());
+            chapters?.forEach(chapter => chapter.title = Parser.normalizeTitle(chapter.title));
             await this.userPreferences.readingList.deselectOldChapters(url, chapters);
             chapterUrlsUI.populateChapterUrlsTable(chapters);
             if (0 < chapters.length) {
@@ -959,7 +968,7 @@ class Parser {
         // Folio's normal flow caches content AFTER addTitleToContent has prepended
         // an <h1>. The cache-hit branch then skips title processing. Match that
         // shape here so chapter HTML pages have proper titles.
-        const titleText = (result.title || webPage.title || "").trim();
+        const titleText = Parser.normalizeTitle(result.title || webPage.title || "");
         if (titleText && !Parser.titleAlreadyPresentIn(contentEl, titleText)) {
             const h1 = doc.createElement("h1");
             h1.appendChild(doc.createTextNode(titleText));
@@ -974,7 +983,7 @@ class Parser {
     static titleAlreadyPresentIn(contentEl, titleText) {
         const heading = contentEl.querySelector("h1, h2, h3");
         if (!heading) return false;
-        return heading.textContent.trim() === titleText;
+        return Parser.normalizeTitle(heading.textContent) === Parser.normalizeTitle(titleText);
     }
 
     static makeEmptyDocForContent(baseUrl) {
