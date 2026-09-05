@@ -81,11 +81,16 @@ class FictioneerParser extends Parser {
 
     extractAuthor(dom) {
         let author =
-            dom.querySelector("a.author").textContent ||
-            dom.querySelector(".story__identity-meta").textContent;
+            dom.querySelector("a.author")?.textContent ||
+            dom.querySelector(".story-author-meta a.author-name")?.textContent ||
+            dom.querySelector(".story__identity-meta")?.textContent ||
+            dom.querySelector(".story__author")?.textContent;
+        // fall back to the user's default author name when the site has no byline
+        if (!author?.trim()) {
+            return super.extractAuthor(dom);
+        }
         // remove "by " from the beginning if it exists
-        author = author.replace(/^by /, "");
-        return author;
+        return author.replace(/^by /, "").trim();
     }
 
     // story description
@@ -95,7 +100,7 @@ class FictioneerParser extends Parser {
         if (summary === null) return "";
         summary = summary.cloneNode(true);
         util.removeElements(summary.querySelectorAll("figure, .story__thumbnail, .story__thumbnail-ribbon, .related-stories-block, .code-block, .jp-relatedposts"));
-        return [...summary.querySelectorAll("h1, h2, p")]
+        return [...summary.querySelectorAll("p")]
             .map(el => el.textContent.trim())
             .filter(t => t)
             .join("\n\n");
