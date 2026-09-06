@@ -101,8 +101,10 @@ const utils = (function() {
             return;
         }
 
-        // Handle array, NodeList, or other iterable collections
-        for (let e of elements) {
+        // Snapshot before removing. Live collections (element.children,
+        // getElementsBy*) re-index as elements are removed, so iterating them
+        // directly skips every other element.
+        for (let e of [...elements]) {
             e.remove();
         }
     }
