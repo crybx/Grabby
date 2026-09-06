@@ -269,7 +269,7 @@ class LilyOnTheValleyParser extends FictioneerParser {
     }
 
     customRawDomToContentStep(chapter, content) {
-        utils.removeTagsFromContent(content, ["BDI", "CODE", "RUBY", "SAMP", "KBD", "RT", "RP", "WBR"]);
+        util.removeTagsFromContent(content, ["BDI", "CODE", "RUBY", "SAMP", "KBD", "RT", "RP", "WBR"]);
         content.querySelectorAll("*").forEach(element => {
             // if it's a p tag and does not have attribute data-paragraph-id, remove it
             if (element.tagName === "P" && !element.hasAttribute("data-paragraph-id")) {
@@ -284,10 +284,10 @@ class LilyOnTheValleyParser extends FictioneerParser {
                 element.remove();
                 return;
             }
-            utils.removeAttributes(element, ["id", "data-paragraph-id"]);
-            utils.replaceSemanticInlineStylesWithTags(element, true);
-            utils.removeElementWithAttributes(element, ["aria-hidden"]);
-            utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
+            util.removeAttributes(element, ["id", "data-paragraph-id"]);
+            util.replaceSemanticInlineStylesWithTags(element, true);
+            util.removeElementWithAttributes(element, ["aria-hidden"]);
+            util.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
         });
 
         // get all spans with data-fcnc-rev="1" and reverse the text inside them
@@ -295,7 +295,7 @@ class LilyOnTheValleyParser extends FictioneerParser {
             span.textContent = span.textContent.split("").reverse().join("");
         });
 
-        utils.unwrapAllOfTag(content, "span");
+        util.unwrapAllOfTag(content, "span");
 
         super.customRawDomToContentStep(chapter, content);
     }

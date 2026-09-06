@@ -204,14 +204,14 @@ class QidianParser extends Parser {
         this.tagAuthorNotesBySelector(content, "div.m-thou");
         //Remove repeat & unused metadata from document. Approximately halves body length.
         content.querySelectorAll("*").forEach(element => {
-            utils.removeClasses(element, ["db", "pr", "hover-light"]);
-            utils.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
-            utils.removeAttributesThatStartWith(element, ["data-"]);
-            utils.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment", "tac"]);
-            utils.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
-            utils.replaceSemanticInlineStylesWithTags(element, true);
+            util.removeClasses(element, ["db", "pr", "hover-light"]);
+            util.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
+            util.removeAttributesThatStartWith(element, ["data-"]);
+            util.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment", "tac"]);
+            util.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
+            util.replaceSemanticInlineStylesWithTags(element, true);
         });
-        utils.unwrapAllOfTag(content, "div");
+        util.unwrapAllOfTag(content, "div");
 
         super.removeUnwantedElementsFromContentElement(content);
     }
