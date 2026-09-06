@@ -1,6 +1,11 @@
 /**
  * Parser Registry - Maps domains to WebToEpub parser classes
  *
+ * GENERATED FILE - do not edit by hand.
+ * Run `node generate-parser-registry.js` (or `npm run build`) to regenerate it from the
+ * parserFactory.register() calls in epub/js/parsers/. Fields that can't be derived from
+ * the parser sources live in the OVERRIDES map in that script.
+ *
  * This static registry maps domain names to their corresponding WebToEpub parser
  * information. Used as a fallback when Grabby doesn't have a native grabber for a site.
  *
@@ -11,9 +16,10 @@
  *   tab (JS execution, anti-bot checks, etc.) before content is in the DOM. When set,
  *   EPUB packing routes per-chapter fetches through Grabby's live-mode background
  *   handler instead of HttpClient. See Live-Mode-Plan.md.
+ * - deadSite (optional): true if upstream registered the site with registerDeadSite(),
+ *   i.e. the site is believed gone. The parser still loads and runs; this is a note.
  *
- * This file should be updated when syncing WebToEpub parser updates from upstream.
- * Total supported domains: 616
+ * Total supported domains: 621 (12 marked dead upstream)
  */
 
 let PARSER_REGISTRY = {
@@ -23,7 +29,7 @@ let PARSER_REGISTRY = {
     "38xs.com": { parserClass: "_38xsParser", file: "230BookParser.js" },
     "4ksw.com": { parserClass: "_4kswParser", file: "4kswParser.js" },
     "69shuba.tw": { parserClass: "_69shuTwParser", file: "69shuParser.js" },
-    "69yuedu.net": { parserClass: "_69yueduParser", file: "69shuParser.js" },
+    "69yuedu.net": { parserClass: "_69yueduParser", file: "69shuParser.js", deadSite: true },
     "888novel.com": { parserClass: "_888novelParser", file: "888novelParser.js" },
     "88xiaoshuo.net": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "a-t.nu": { parserClass: "ActiveTranslationsParser", file: "ActiveTranslationsParser.js" },
@@ -37,15 +43,16 @@ let PARSER_REGISTRY = {
     "allnovelfull.app": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "allnovelfull.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "allnovelfull.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
-    "allnovelfull.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "allnovelfull.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "allnovelnext.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "alphapolis.co.jp": { parserClass: "AlphapolisParser", file: "AlphapolisParser.js" },
     "alternatehistory.com": { parserClass: "SpacebattlesParser", file: "SpacebattlesParser.js" },
     "amor-yaoi.com": { parserClass: "AmoryaoiParser", file: "AmoryaoiParser.js" },
     "anythingnovel.com": { parserClass: "AnythingNovelParser", file: "AnythingNovelParser.js" },
+    "api.cdnlibs.org": { parserClass: "RanobelibParser", file: "RanobelibParser.js" },
     "api.lumostories.com": { parserClass: "LumosStoriesParser", file: "LumosStoriesParser.js" },
-    "api.yoru.world": { parserClass: "YoruworldParer", file: "LumosStoriesParser.js" },
     "api.mangadex.org": { parserClass: "MangadexParser", file: "MangadexParser.js" },
+    "api.yoru.world": { parserClass: "YoruworldParer", file: "LumosStoriesParser.js" },
     "app.yoru.world": { parserClass: "AppYoruWorldParser", file: "AppYoruWorldParser.js" },
     "arcanetranslations.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "archiveofourown.org": { parserClass: "ArchiveOfOurOwnParser", file: "ArchiveOfOurOwnParser.js" },
@@ -54,6 +61,7 @@ let PARSER_REGISTRY = {
     "asianovel.net": { parserClass: "AsianovelParser", file: "AsianovelParser.js" },
     "asstr.org": { parserClass: "AsstrParser", file: "AsstrParser.js" },
     "athenatls.com": { parserClass: "AthenaTlsParser", file: "AthenaTlsParser.js" },
+    "atlantisviendong.com": { parserClass: "AtlantisVienDongParser", file: "AtlantisVienDongParser.js" },
     "b.faloo.com": { parserClass: "FalooParser", file: "FalooParser.js" },
     "babelnovel.com": { parserClass: "BabelChainParser", file: "BabelChainParser.js" },
     "bakapervert.wordpress.com": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
@@ -68,7 +76,7 @@ let PARSER_REGISTRY = {
     "bookalb.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "bookswithqianya.com": { parserClass: "BookswithqianyaParser", file: "BookswithqianyaParser.js" },
     "botitranslation.com": { parserClass: "BotitranslationParser", file: "BotitranslationParser.js" },
-    "boxnovel.art": { parserClass: "NovelfireParser", file: "NovelfireParser.js" },
+    "boxnovel.art": { parserClass: "NovelfireParser", file: "LightNovelWorldParser.js" },
     "boxnovel.net": { parserClass: "NovelUpdatesOnlineParser", file: "NovelUpdatesOnlineParser.js" },
     "boxnovel.org": { parserClass: "BoxnovelOrgParser", file: "BoxnovelOrgParser.js" },
     "boxnovelfull.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
@@ -98,7 +106,7 @@ let PARSER_REGISTRY = {
     "crushnovel6.blog": { parserClass: "CrushnovelParser", file: "CrushnovelParser.js" },
     "crushnovelpo.blog": { parserClass: "CrushnovelParser", file: "CrushnovelParser.js" },
     "crushnovels.net": { parserClass: "CrushnovelParser", file: "CrushnovelParser.js" },
-    "cyborg-tl.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
+    "cyborg-tl.com": { parserClass: "CyborgTlParser", file: "NoblemtlParser.js" },
     "czbooks.net": { parserClass: "CzbooksParser", file: "CzbooksParser.js" },
     "dao-divine-tl.com": { parserClass: "DaoDivineTlParser", file: "DaoDivineTlParser.js" },
     "daotranslate.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
@@ -148,7 +156,7 @@ let PARSER_REGISTRY = {
     "forums.sufficientvelocity.com": { parserClass: "SpacebattlesParser", file: "SpacebattlesParser.js" },
     "foxteller.com": { parserClass: "FoxtellerParser", file: "FoxtellerParser.js" },
     "freelightnovel.net": { parserClass: "FreelightnovelParser", file: "FreelightnovelParser.js" },
-    "freenovelsread.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "freenovelsread.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "freewebnovel.com": { parserClass: "FreeWebNovelComParser", file: "FreeWebNovelParser.js" },
     "freewn.com": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "frostfire10.wordpress.com": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
@@ -234,9 +242,10 @@ let PARSER_REGISTRY = {
     "literotica.com": { parserClass: "LiteroticaParser", file: "LiteroticaParser.js" },
     "lnmtl.com": { parserClass: "LnmtlParser", file: "LnmtlParser.js" },
     "lnreader.org": { parserClass: "LightnovelreaderParser", file: "LightnovelreaderParser.js" },
+    "lorenovels.com": { parserClass: "LoreNovelsParser", file: "LoreNovelsParser.js" },
+    "lovelyblossoms.com": { parserClass: "LovelyBlossomsParser", file: "LovelyBlossomsParser.js" },
     "lumostories.com": { parserClass: "LumosStoriesParser", file: "LumosStoriesParser.js" },
     "lunoxscans.com": { parserClass: "LunoxscansParser", file: "LunoxscansParser.js" },
-    "lorenovels.com": { parserClass: "LoreNovelsParser", file: "LoreNovelsParser.js" },
     "m.38xs.com": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "m.88xiaoshuo.net": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "m.bqg225.com": { parserClass: "Bqg225Parser", file: "Bqg225Parser.js" },
@@ -286,13 +295,14 @@ let PARSER_REGISTRY = {
     "morenovel.net": { parserClass: "MadaraParser", file: "MadaraParser.js" },
     "mottruyen.com.vn": { parserClass: "MottruyenParser", file: "MottruyenParser.js" },
     "mottruyen.vn": { parserClass: "MottruyenParser", file: "MottruyenParser.js" },
+    "mtlbooks.com": { parserClass: "MtlBooksParser", file: "MtlBooksParser.js" },
     "mtled-novels.com": { parserClass: "MtledNovelsParser", file: "MtledNovelsParser.js" },
     "mtlnation.com": { parserClass: "MtlnationParser", file: "MtlnationParser.js" },
     "mtlnovel.com": { parserClass: "MtlnovelsParser", file: "MtlnovelsParser.js" },
     "mtlnovels.com": { parserClass: "MtlnovelsParser", file: "MtlnovelsParser.js" },
     "mtlreader.com": { parserClass: "MtlreaderParser", file: "MtlreaderParser.js" },
-    "mtnovel.net": { parserClass: "MtnovelParser", file: "MtnovelParser.js" },
-    "mvlempyr.com": { parserClass: "MvlempyrParser", file: "MvlempyrParser.js" },
+    "mtnovel.net": { parserClass: "MtnovelParser", file: "MtnovelParser.js", deadSite: true },
+    "mvlempyr.com": { parserClass: "MvlempyrParser", file: "MvlempyrParser.js", deadSite: true },
     "mvlempyr.io": { parserClass: "MvlempyrParser", file: "MvlempyrParser.js" },
     "my-novel.online": { parserClass: "MyNovelOnlineParser", file: "NoblemtlParser.js" },
     "mydramanovel.com": { parserClass: "MydramanovelParser", file: "MydramanovelParser.js" },
@@ -315,7 +325,7 @@ let PARSER_REGISTRY = {
     "novel.babelchain.org": { parserClass: "BabelChainParser", file: "BabelChainParser.js" },
     "novel.naver.com": { parserClass: "NovelNaverParser", file: "NovelNaverParser.js" },
     "novel18.syosetu.com": { parserClass: "SyosetuParser", file: "SyosetuParser.js" },
-    "novel35.com": { parserClass: "Novel35Parser", file: "NovelfullParser.js" },
+    "novel35.com": { parserClass: "Novel35Parser", file: "NovelfullParser.js", deadSite: true },
     "novel543.com": { parserClass: "Novel543Parser", file: "Novel543Parser.js" },
     "novelactive.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "novelall.com": { parserClass: "NovelAllParser", file: "NovelAllParser.js" },
@@ -330,7 +340,8 @@ let PARSER_REGISTRY = {
     "novelcranel.org": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "novelcrush.com": { parserClass: "NovelCrushParser", file: "NovelCrushParser.js" },
     "noveldex.io": { parserClass: "NoveldexParser", file: "NoveldexParser.js" },
-    "novelebook.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "noveldrama.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "novelebook.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "novelfever.com": { parserClass: "NovelFeverParser", file: "NovelFeverParser.js" },
     "novelfire.docsachhay.net": { parserClass: "LightNovelWorldParser", file: "LightNovelWorldParser.js" },
     "novelfire.net": { parserClass: "NovelfireParser", file: "LightNovelWorldParser.js" },
@@ -345,7 +356,7 @@ let PARSER_REGISTRY = {
     "novelhall.com": { parserClass: "NovelhallParser", file: "NovelhallParser.js" },
     "novelhi.com": { parserClass: "NovelhiParser", file: "NovelhiParser.js" },
     "novelhold.com": { parserClass: "NovelholdParser", file: "NovelholdParser.js" },
-    "novelhulk.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "novelhulk.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "novelib.com": { parserClass: "FictioneerParser", file: "FictioneerParser.js" },
     "novelight.net": { parserClass: "NovelightParser", file: "NovelightParser.js" },
     "novelingua.com": { parserClass: "NovelinguaParser", file: "NovelinguaParser.js" },
@@ -384,7 +395,7 @@ let PARSER_REGISTRY = {
     "novelsquare.blog": { parserClass: "NovelsquareParser", file: "NovelsquareParser.js" },
     "novelsrock.com": { parserClass: "NovelsRockParser", file: "NovelsRockParser.js" },
     "noveltoon.mobi": { parserClass: "NoveltoonParser", file: "NoveltoonParser.js" },
-    "noveltop1.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "noveltop1.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "noveltranslatedbyc.blogspot.com": { parserClass: "NoveltranslatedbycParser", file: "NoveltranslatedbycParser.js" },
     "noveltrench.com": { parserClass: "MadaraParser", file: "MadaraParser.js" },
     "noveltrust.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
@@ -402,7 +413,6 @@ let PARSER_REGISTRY = {
     "nyantl.wordpress.com": { parserClass: "NyantlParser", file: "NyantlParser.js" },
     "oceanstale.com": { parserClass: "OceanstaleParser", file: "OceanstaleParser.js" },
     "octopii.co": { parserClass: "OctopiiParser", file: "OctopiiParser.js" },
-    "old.ranobelib.me": { parserClass: "OldranobelibParser", file: "OldranobelibParser.js" },
     "onlinenovelbook.com": { parserClass: "OnlinenovelbookParser", file: "OnlinenovelbookParser.js" },
     "ontimestory.eu": { parserClass: "OntimestoryParser", file: "OntimestoryParser.js" },
     "ossantl.com": { parserClass: "OssantlParser", file: "OssantlParser.js" },
@@ -436,10 +446,10 @@ let PARSER_REGISTRY = {
     "rainofsnow.com": { parserClass: "RainOfSnowParser", file: "RainOfSnowParser.js" },
     "raisingthedead.ninja": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
     "randomtranslator.com": { parserClass: "RandomtranslatorParser", file: "RandomtranslatorParser.js" },
-    "ranobelib.me": { parserClass: "OldranobelibParser", file: "OldranobelibParser.js" },
+    "ranobelib.me": { parserClass: "RanobelibParser", file: "RanobelibParser.js" },
     "ranobes.com": { parserClass: "RanobesParser", file: "RanobesParser.js" },
     "ranobes.net": { parserClass: "RanobesNetParser", file: "RanobesParser.js" },
-    "ranobes.top": { parserClass: "RanobesParser", file: "RanobesParser.js" },
+    "ranobes.top": { parserClass: "RanobesNetParser", file: "RanobesParser.js" },
     "razentl.com": { parserClass: "FictioneerParser", file: "FictioneerParser.js" },
     "re-library.com": { parserClass: "ReLibraryParser", file: "ReLibraryParser.js" },
     "readcomiconline.li": { parserClass: "ReadComicOnlineParser", file: "ReadComicOnlineParser.js" },
@@ -508,7 +518,7 @@ let PARSER_REGISTRY = {
     "springofromance.com": { parserClass: "FictioneerParser", file: "FictioneerParser.js" },
     "sspai.com": { parserClass: "SspaiParser", file: "SspaiParser.js" },
     "starlightstream.net": { parserClass: "StarlightstreamParser", file: "StarlightstreamParser.js" },
-    "stellarrealm.com": { parserClass: "StellarRealmParser", file: "StellarRealmParser.js" },
+    "stellarrealm.net": { parserClass: "StellarRealmParser", file: "StellarRealmParser.js", deadSite: true },
     "sto.cx": { parserClass: "StocxParser", file: "StocxParser.js" },
     "storiesonline.net": { parserClass: "WLPublishingParser", file: "WLPublishingParser.js" },
     "storyseedling.com": { parserClass: "StorySeedlingParser", file: "StorySeedlingParser.js" },
@@ -525,7 +535,7 @@ let PARSER_REGISTRY = {
     "teanovel.net": { parserClass: "TeanovelParser", file: "TeanovelParser.js" },
     "teenfic.net": { parserClass: "TeenficParser", file: "TeenficParser.js" },
     "template.org": { parserClass: "TemplateParser", file: "Template.js" },
-    "thenovelbin.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
+    "thenovelbin.org": { parserClass: "NovelfullParser", file: "NovelfullParser.js", deadSite: true },
     "tiemtruyenchu.com": { parserClass: "TiemTruyenChuParser", file: "TiemtruyenchuParser.js" },
     "tigertranslations.org": { parserClass: "TigertranslationsParser", file: "TigertranslationsParser.js" },
     "timotxt.com": { parserClass: "TimotxtParser", file: "TimotxtParser.js" },
@@ -539,18 +549,19 @@ let PARSER_REGISTRY = {
     "translationchicken.com": { parserClass: "TranslationChickenParser", file: "TranslationChickenParser.js" },
     "travistranslations.com": { parserClass: "TravistranslationsParser", file: "TravistranslationsParser.js" },
     "truyenfull.vision": { parserClass: "TruyenFullVisionParser", file: "TruyenFullVisionParser.js" },
-    "truyenfull.vn": { parserClass: "TruyenfullParser", file: "TruyenfullParser.js" },
+    "truyenfull.vn": { parserClass: "TruyenFullVisionParser", file: "TruyenFullVisionParser.js" },
     "truyenmoikk.com": { parserClass: "TruyenMoiKKParser", file: "TruyenmoikkParser.js" },
+    "truyenmoiqq.com": { parserClass: "TruyenMoiKKParser", file: "TruyenmoikkParser.js" },
     "truyennhabo.com": { parserClass: "TruyenParser", file: "TruyenParser.js" },
     "truyenyy.com": { parserClass: "TruyenyyParser", file: "TruyenyyParser.js" },
     "trxs.cc": { parserClass: "TrxsParser", file: "TrxsParser.js" },
-    "trxs.me": { parserClass: "TrxsParser", file: "TrxsParser.js" },
+    "trxs.me": { parserClass: "TrxsParser", file: "TrxsParser.js", deadSite: true },
     "ttshu8.com": { parserClass: "_88xiaoshuoParser", file: "88xiaoshuoParser.js" },
     "twbook.cc": { parserClass: "Novel543Parser", file: "Novel543Parser.js" },
     "twkan.com": { parserClass: "TwkanParser", file: "TwkanParser.js" },
     "twomoonslibrary.com": { parserClass: "TwoMoonsLibraryParser", file: "FictioneerParser.js" },
     "uaa.com": { parserClass: "UaaParser", file: "UaaParser.js" },
-    "ultimaguil.org": { parserClass: "VariableSizeImageCollector", file: "UltimaguilParser.js" },
+    "ultimaguil.org": { parserClass: "UltimaguilParser", file: "UltimaguilParser.js" },
     "universalnovel.com": { parserClass: "NoblemtlParser", file: "NoblemtlParser.js" },
     "unlimitednovelfailures.mangamatters.com": { parserClass: "UnlimitedNovelFailuresParser", file: "UnlimitedNovelFailuresParser.js" },
     "untamedalley.com": { parserClass: "UntamedAlleyParser", file: "UntamedAlleyParser.js" },
@@ -609,13 +620,13 @@ let PARSER_REGISTRY = {
     "wuxiaworld.world": { parserClass: "WuxiaworldWorldParser", file: "WuxiaworldWorldParser.js" },
     "wuxiazone.com": { parserClass: "ReadwnParser", file: "ReadwnParser.js" },
     "www.8muses.com": { parserClass: "EightMusesParser", file: "EightMusesParser.js" },
-    "www.dudushuge.com": { parserClass: "DudushugeParser", file: "DudushugeParser.js"},
+    "www.dudushuge.com": { parserClass: "DudushugeParser", file: "DudushugeParser.js" },
     "www.fanfiction.net": { parserClass: "FanFictionParser", file: "FanFictionParser.js" },
     "www.fictionpress.com": { parserClass: "FanFictionParser", file: "FanFictionParser.js" },
     "www.lightsnovel.com": { parserClass: "PandaNovelParser", file: "PandaNovelParser.js" },
     "www.mangahere.cc": { parserClass: "MangaHereParser", file: "MangaHereParser.js" },
     "www.rebirth.online": { parserClass: "RebirthOnlineParser", file: "RebirthOnline.js" },
-    "wxscs.com": { parserClass: "WxscsParser", file: "WxscsPaser.js" },
+    "wxscs.com": { parserClass: "WxscsParser", file: "WxscsParser.js" },
     "xbanxia.cc": { parserClass: "XbanxiaParser", file: "XbanxiaParser.js" },
     "xbiquge.so": { parserClass: "XbiqugeParser", file: "XbiqugeParser.js" },
     "xiaoshubao.net": { parserClass: "XiaoshubaoParser", file: "XiaoshubaoParser.js" },
@@ -639,7 +650,7 @@ let PARSER_REGISTRY = {
 window.PARSER_REGISTRY = PARSER_REGISTRY;
 
 // Look up a registry entry by URL, stripping a leading "www." to match registrations.
-// Returns the {parserClass, file, liveMode?} entry or undefined.
+// Returns the {parserClass, file, liveMode?, deadSite?} entry or undefined.
 function getParserRegistryEntryForUrl(url) {
     try {
         let hostname = new URL(url).hostname;

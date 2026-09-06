@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { generateParserRegistry } = require("./generate-parser-registry");
 let zipjs;
 
 const DIST_DIR = "dist";
@@ -13,6 +14,7 @@ const EXCLUDE_PATTERNS = [
     "package.json",
     "package-lock.json",
     "build.js",
+    "generate-parser-registry.js",
     "dist",
     ".git",
     ".github",
@@ -26,6 +28,10 @@ const EXCLUDE_PATTERNS = [
 ];
 
 console.log("Building Grabby extension package...");
+
+// Derive parser-registry.js from the parser sources before staging, so the packaged
+// registry always matches the parsers in epub/js/parsers/.
+generateParserRegistry();
 
 // Clean and create dist directory
 if (fs.existsSync(DIST_DIR)) {
