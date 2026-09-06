@@ -169,9 +169,16 @@ class FictioneerParser extends Parser {
     }
 
     getInformationEpubItemChildNodes(dom) {
-        return [...dom.querySelectorAll(".story__header, .story__summary")].map(node => {
+        // Same summary fallback as extractDescription(): sites using .story__synopsis
+        // have no .story__summary, so take whichever one the page has.
+        let nodes = [
+            ...dom.querySelectorAll(".story__header"),
+            dom.querySelector(".story__summary") || dom.querySelector(".story__synopsis")
+        ].filter(node => node !== null);
+        return nodes.map(node => {
             const clone = node.cloneNode(true);
-            util.removeElements(clone.querySelectorAll(".related-stories-block, .code-block"));
+            // svg icons in the story header render as junk (or break) in an epub
+            util.removeElements(clone.querySelectorAll("svg, .story__actions, .related-stories-block, .code-block"));
             return clone;
         });
     }
@@ -243,6 +250,11 @@ class TwoMoonsLibraryParser extends FictioneerParser {
         let num = a.querySelector(".chapter-group__list-item-num")?.textContent.trim();
         let removeNum = document.getElementById("removeChapterNumberCheckbox")?.checked;
         return (!removeNum && num) ? `${num} ${title}` : title;
+    }
+
+    extractTitleImpl(dom) {
+        return dom.querySelector("h1.story__title")
+            ?? super.extractTitleImpl(dom);
     }
 
     findCoverImage(dom) {
