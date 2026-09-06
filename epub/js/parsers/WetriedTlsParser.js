@@ -17,8 +17,8 @@ class WetriedTlsParser extends Parser {
         const chapterJson = (
             await HttpClient.fetchJson(
                 "https://api.wetriedtls.com/chapters/" +
-                    this.id +
-                    "?page=1&perPage=9999&order=asc"
+                this.id +
+                "?page=1&perPage=9999&order=asc"
             )
         ).json;
 
@@ -55,7 +55,7 @@ class WetriedTlsParser extends Parser {
         let series = (
             await HttpClient.fetchJson(
                 "https://api.wetriedtls.com/query?adult=true&query_string=" +
-                    bookTitle
+                bookTitle
             )
         ).json;
 
@@ -115,7 +115,7 @@ class WetriedTlsParser extends Parser {
     }
 
     findContent(dom) {
-        return Parser.findConstrutedContent(dom);
+        return Parser.findConstructedContent(dom);
     }
 
     extractTitleImpl() {

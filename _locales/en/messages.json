@@ -63,6 +63,10 @@
 		"message": "Add novels to Library",
 		"description": "Label on button to Add novels to Library in Library"
 	},
+	"__MSG_button_Lib_Template_Add_List_To_Library_Paused__": {
+		"message": "Add novels to Library paused",
+		"description": "Label on button to Add novels to Library in Library"
+	},
 	"__MSG_button_Lib_Template_Update_All__": {
 		"message": "Update all",
 		"description": "Label on button to Update all Epubs"
@@ -94,6 +98,10 @@
 	"__MSG_button_Lib_Template_Edit_Metadata__": {
 		"message": "Edit Metadata",
 		"description": "Label on button to show edit options for metadata"
+	},
+	"__MSG_button_Lib_Template_Open_URL__": {
+		"message": "Open URL",
+		"description": "Label on button to open URL from Library book"
 	},
 	"__MSG_label_Lib_Template_Library_uses__": {
 		"message": "Library uses: ",
@@ -162,6 +170,10 @@
 	"__MSG_button_error_Open_URL__": {
 		"message": "Open URL for Captcha",
 		"description": "Label on 'Open URL for Captcha' button when show error HTTP 403"
+	},
+	"__MSG_button_error_Copy_URL__": {
+		"message": "Copy URL for Captcha",
+		"description": "Label on 'Copy URL for Captcha' button when show error HTTP 403"
 	},
 	"__MSG_button_error_Block_URL__": {
 		"message": "Block Website for future requests",
@@ -287,8 +299,20 @@
 		"message": "Compress Images",
 		"description": "Label for checkbox and value to compress images to a certain size"
 	},
+	"__MSG_label_Compress_Images_Animated__": {
+		"message": "Compress Animated Images to single frame (GIF, APNG, WebP)",
+		"description": "Label for animated compression checkbox"
+	},
+	"__MSG_label_Compress_Images_JPG_Cover__": {
+		"message": "Restrict Cover Image to JPEG",
+		"description": "Label for JPEG cover restriction checkbox"
+	},
+	"__MSG_label_Compress_Images_Format__": {
+		"message": "Compressed Image Format",
+		"description": "Label for mime type of compressed image"
+	},
 	"__MSG_label_Compress_Images_Resolution__": {
-		"message": "Resolution",
+		"message": "Compressed Resolution",
 		"description": "Label for number input for maximum dimension size of pixel height or width in image"
 	},
 	"__MSG_label_Cover_from_URL__": {
@@ -347,6 +371,10 @@
 		"message": "Developer stuff",
 		"description": "Label for checkbox to show/hide buttons for developer testing (in Advanced settings)."
 	},
+	"__MSG_label_Extension_Version__": {
+		"message": "WebToEpub Version:",
+		"description": "Label in front of WebToEpub extension version"
+	},
 	"__MSG_label_Fetch_Highest_Resolution_Images__": {
 		"message": "Fetch Highest Resolution Images",
 		"description": "Label for checkbox to get EPUB to include highest resolution images available (in Advanced settings)."
@@ -398,6 +426,14 @@
 	"__MSG_label_Metadata_description__": {
 		"message": "EPUB Description",
 		"description": "Preview description from the epub in Calibre"
+	},
+	"__MSG_label_Metadata_publisher__": {
+		"message": "Publisher",
+		"description": "Label for Epub publisher"
+	},
+	"__MSG_label_Metadata_date_published__": {
+		"message": "Published",
+		"description": "Label for the original publication date"
 	},
 	"__MSG_label_Custom_Filename__": {
 		"message": "Custom Filename",
@@ -459,6 +495,10 @@
 		"message": "Download raw (no login)",
 		"description": "Label for radio checkbox Google"
 	},
+	"__MSG_label_Select_Retry_Longer__": {
+		"message": "Retry Chapter for up to 1h (it looks like WebToEpub is stuck)",
+		"description": "Label for Retry longer"
+	},
 	"__MSG_label_Remove_Translated__": {
 		"message": "Remove Translated Text",
 		"description": "Label for checkbox to remove Translated text from chapters"
@@ -491,6 +531,10 @@
 		"message": "Skip chapters that return HTTP 404 error",
 		"description": "Label in front of checkbox for skipping chapters that can't be fetched"
 	},
+	"__MSG_label_No_Content_To_Error_403_Page__": {
+		"message": "Treat 'no content found error' as 'HTTP 403 error'.",
+		"description": "Label in front of checkbox for treating 'no content found' error as 'HTTP 403 error'"
+	},
 	"__MSG_label_Stylesheet__": {
 		"message": "Stylesheet:",
 		"description": "Label in front of edit field for setting the stylesheet (in Advanced settings)."
@@ -510,6 +554,10 @@
 	"__MSG_label_Use_Full_Title_As_File_Name__": {
 		"message": "Use full title as file name",
 		"description": "Label in front of checkbox to choose if Epub's filename will be truncated or not."
+	},
+	"__MSG_label_Remove_Illegal_Character_From_Filename_On_Download__": {
+		"message": "Remove illegal characters from filename on download",
+		"description": "Label in front of checkbox to choose if Epub's filename will have it's illegal character removed or not."
 	},
 	"__MSG_label_Use_SVG_for_Images__": {
 		"message": "Use <svg> for images",
@@ -594,6 +642,10 @@
 	"__MSG_Searching_For_URLs_Please_Wait__": {
 		"message": "Searching for URLs.  Please wait.",
 		"description": "Message shown while looking for list of Chapter URLs."
+	},
+	"__MSG_option_value_auto__": {
+		"message": "auto",
+		"description": "Generic option text for 'automatic'"
 	},
 	"__MSG_Shift_Click__": {
 		"message": "You can select or unselect a range of chapters by clicking on the checkbox for the first chapter, then holding down the shift key and clicking the last chapter in the range.\n\nThis alert can be disabled in Advanced Options.",
@@ -758,6 +810,10 @@
 		"message": "No images found",
 		"description": "Text put in images table when no images are found."
 	},
+	"errorMobileModeDetected": {
+		"message": "You use WebToEpub in the Mobile view please change the tab to the Desktop version.\nIn Firefox for Android ⋮-> Desktop site -> On\n\nThe website from which you start WebToEpub also needs to be in the Desktop view.",
+		"description": "Warning message when the user is in Mobile mode."
+	},
 	"noParserFound": {
 		"message": "No parser found for this URL.  Default parser will be used.  You will need to specify how to obtain content for each chapter.",
 		"description": "Warning message when can't figure out how to extract info from web page."
@@ -779,7 +835,7 @@
 		"description": "Internal message for developer."
 	},
 	"warning403ErrorResponse": {
-		"message": "WARNING: Site '$host$' has sent an Access Denied (403) error.\nYou may need to logon to site, or browse site normally\nuntil you get a Cloudflare \"Are you a human\" page or satisfy some other CAPTCHA\nbefore WebToEpub can continue.\nThis happens if you are downloading to fast try to increase 'Advanced Options -> Delay per chapter in ms'\n",
+		"message": "WARNING: Site '$host$' has sent an Access Denied (403) error.\nYou may need to logon to site, or browse site normally\nuntil you get a Cloudflare \"Are you a human\" page or satisfy some other CAPTCHA\nbefore WebToEpub can continue.\nThis happens if you are downloading too fast, try to increase 'Advanced Options -> Delay per chapter in ms'\n",
 		"description": "Warning message for user when site sends a 403 response.",
 		"placeholders": {
 			"host": {

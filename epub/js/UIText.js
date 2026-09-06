@@ -36,8 +36,10 @@ class UIText { // eslint-disable-line no-unused-vars
         exportLibrary: chrome.i18n.getMessage("__MSG_button_Lib_Template_Export_Library__"),
         importLibrary: chrome.i18n.getMessage("__MSG_button_Lib_Template_Import_Library__"),
         addToLibrary: chrome.i18n.getMessage("__MSG_button_Lib_Template_Add_List_To_Library__"),
+        addToLibraryPaused: chrome.i18n.getMessage("__MSG_button_Lib_Template_Add_List_To_Library_Paused__"),
         mergeUpload: chrome.i18n.getMessage("__MSG_button_Lib_Template_Add_Chapter_from_different_EPUB__"),
         editMetadata: chrome.i18n.getMessage("__MSG_button_Lib_Template_Edit_Metadata__"),
+        openURL: chrome.i18n.getMessage("__MSG_button_Lib_Template_Open_URL__"),
         warningURLChange: chrome.i18n.getMessage("__MSG_label_Lib_Template_Warning_URL_Change__"),
         warningInProgress: chrome.i18n.getMessage("__MSG_label_Lib_Warning_In_Progress___"),
         viewListMode: chrome.i18n.getMessage("__MSG_button_View_Library_List__"),
@@ -91,6 +93,7 @@ class UIText { // eslint-disable-line no-unused-vars
 
     // Error messages
     static Error = {
+        errorMobileModeDetected: chrome.i18n.getMessage("errorMobileModeDetected"),
         noParserFound: chrome.i18n.getMessage("noParserFound"),
         noChaptersFound: chrome.i18n.getMessage("noChaptersFound"),
         noChaptersFoundAndFetchClicked: chrome.i18n.getMessage("noChaptersFoundAndFetchClicked"),

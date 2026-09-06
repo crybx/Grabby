@@ -7,10 +7,6 @@ class NovelUpdatesParser extends Parser {
         super();
     }
 
-    disabled() {
-        return UIText.Warning.parserDisabledNotification;
-    }
-
     // returns promise with the URLs of the chapters to fetch
     // promise is used because may need to fetch the list of URLs from internet
     getChapterUrls(dom) {

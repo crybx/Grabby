@@ -19,6 +19,7 @@ const main = (function() {
 
     // details
     let initialWebPage = null;
+    let initialMetaInfo = null;
     let parser = null;
     let userPreferences = null;
 
@@ -46,6 +47,7 @@ const main = (function() {
             try {
                 await parser.loadEpubMetaInfo(dom);
                 let metaInfo = parser.getEpubMetaInfo(dom, userPreferences.useFullTitle.value);
+                initialMetaInfo = metaInfo;
                 populateMetaInfo(metaInfo);
                 setUiToDefaultState();
                 parser.populateUI(dom);
@@ -80,6 +82,7 @@ const main = (function() {
         setUiFieldToValue("subjectInput", metaInfo.subject);
         setUiFieldToValue("descriptionInput", metaInfo.description);
         setUiFieldToValue("publisherInput", metaInfo.publisher);
+        setUiFieldToValue("datePublishedInput", metaInfo.datePublished);
         if (metaInfo.seriesName !== null) {
             document.getElementById("seriesRow").hidden = false;
             document.getElementById("volumeRow").hidden = false;
@@ -110,6 +113,7 @@ const main = (function() {
         metaInfo.subject = getValueFromUiField("subjectInput");
         metaInfo.description = getValueFromUiField("descriptionInput");
         metaInfo.publisher = getValueFromUiField("publisherInput");
+        metaInfo.datePublished = getValueFromUiField("datePublishedInput");
 
         if (document.getElementById("seriesRow").hidden === false) {
             metaInfo.seriesName = getValueFromUiField("seriesNameInput");
@@ -174,12 +178,18 @@ const main = (function() {
     }
 
     async function fetchContentAndPackEpub() {
-        if (document.getElementById("noAdditionalMetadataCheckbox")?.checked) {
+        util.resetSleepController();
+        let metaInfo = metaInfoFromControls();
+        let noMeta = document.getElementById("noAdditionalMetadataCheckbox").checked;
+        if (noMeta && initialMetaInfo != null) {
+            metaInfo.subject = initialMetaInfo.subject;
+            metaInfo.description = initialMetaInfo.description;
+            metaInfo.publisher = initialMetaInfo.publisher;
+        } else if (noMeta) {
             setUiFieldToValue("subjectInput", "");
             setUiFieldToValue("descriptionInput", "");
             setUiFieldToValue("publisherInput", "");
         }
-        let metaInfo = metaInfoFromControls();
 
         if (this.dataset.libclick === "yes") {
             if (document.getElementById("chaptersPageInChapterListCheckbox")?.checked) {
@@ -217,9 +227,9 @@ const main = (function() {
             if (document.getElementById("includeInReadingListCheckbox")?.checked) {
                 parser.updateReadingList();
             }
-            if (util.sleepController.signal.aborted) {
-                util.sleepController = new AbortController;
-                // Don't reset UI completely - just update button states
+            if (util.getSleepController().signal.aborted) {
+                util.resetSleepController();
+                // Don't reset UI completely, just update button states
                 setProcessingButtonsState(false);
             }
             if (this.dataset.libsuppressErrorLog == true) {
@@ -230,9 +240,9 @@ const main = (function() {
             }
         } catch (err) {
             setProcessingButtonsState(false);
-            if (util.sleepController.signal.aborted) {
-                util.sleepController = new AbortController;
-                // Operation was cancelled, don't show error
+            if (util.getSleepController().signal.aborted) {
+                util.resetSleepController();
+                // Operation was canceled, don't show error
                 return;
             }
             ErrorLog.showErrorMessage(err);
@@ -290,8 +300,8 @@ const main = (function() {
                 dumpErrorLogToFile();
             } catch (err) {
                 setProcessingButtonsState(false);
-                if (util.sleepController.signal.aborted) {
-                    util.sleepController = new AbortController;
+                if (util.getSleepController().signal.aborted) {
+                    util.resetSleepController();
                     return;
                 }
                 ErrorLog.showErrorMessage(err);
@@ -307,7 +317,7 @@ const main = (function() {
             stopBtn.textContent = "Stopping...";
         }
 
-        util.sleepController.abort();
+        util.getSleepController().abort();
 
         // Tell Grabby to close any in-flight live-mode tab. Best-effort; ignore
         // failures (e.g. running outside the extension).
@@ -448,6 +458,13 @@ const main = (function() {
     }
 
     function setParser(url, dom) {
+        /* This didn't work as firefox on tablets behaves differently than frefox on smartphones.
+        if (/Android|Mobile/i.test(navigator.userAgent)) {
+            // tab is opened in the mobile view
+            // need to discourage this as some websites send different content depending on the user-agent
+            ErrorLog.showErrorMessage(UIText.Error.errorMobileModeDetected);
+            return false;
+        }*/
         let manualSelect = getManuallySelectParserTag().value;
         if (util.isNullOrEmpty(manualSelect)) {
             parser = parserFactory.fetch(url, dom);
@@ -827,6 +844,9 @@ const main = (function() {
     }
 
     function addEventHandlers() {
+        // Setup library book indicator event handlers
+        LibraryUI.LibSetupBookIndicatorHandlers();
+
         getPackEpubButton().onclick = fetchContentAndPackEpub;
         document.getElementById("downloadChaptersButton").onclick = downloadChapters;
         document.getElementById("diagnosticsCheckBoxInput").onclick = onDiagnosticsClick;
@@ -839,12 +859,11 @@ const main = (function() {
         document.getElementById("cacheOptionsButton").onclick = onCacheOptionsClick;
         document.getElementById("ShowMoreMetadataOptionsCheckbox").addEventListener("change", () => onShowMoreMetadataOptionsClick());
         document.getElementById("LibAddToLibrary").addEventListener("click", fetchContentAndPackEpub);
-
-        // Setup library book indicator event handlers
-        LibraryUI.LibSetupBookIndicatorHandlers();
         if (document.getElementById("stopDownloadButton")) {
             document.getElementById("stopDownloadButton").addEventListener("click", stopDownload);
         }
+        document.getElementById("seriesIndexInput").addEventListener("beforeinput", (event) => seriesIndexInpuValidator(event));
+        document.getElementById("manualDelayPerChapterTag").addEventListener("beforeinput", (event) => manualDelayPerChapterValidator(event));
         document.getElementById("stylesheetToDefaultButton").onclick = onStylesheetToDefaultClick;
         document.getElementById("resetButton").onclick = resetUI;
         document.getElementById("clearCoverImageUrlButton").onclick = clearCoverUrl;
@@ -867,6 +886,18 @@ const main = (function() {
         document.getElementById("closeCoverImage").onclick = closeCoverImageModal;
 
         window.addEventListener("beforeunload", onUnloadEvent);
+    }
+
+    function seriesIndexInpuValidator(event) {
+        if (event.data && !/^[0-9.]+$/.test(event.data)) {
+            event.preventDefault();
+        }
+    }
+
+    function manualDelayPerChapterValidator(event) {
+        if (event.data && !/^[0-9]+$/.test(event.data)) {
+            event.preventDefault();
+        }
     }
 
     // Additional metadata
@@ -954,6 +985,17 @@ const main = (function() {
 
     // actions to do when window opened
     window.onload = async () => {
+        if (typeof DOMPurify === "undefined" || typeof zip === "undefined") {
+            let msg = "Error: WebToEpub is missing required third-party dependencies (DOMPurify or zip.js).\n\nIf you are running from a git clone, please run 'npm install' in the project root to fetch these dependencies.";
+            alert(msg);
+            let pleaseWait = document.getElementById("findingChapterUrlsMessageRow");
+            if (pleaseWait) {
+                pleaseWait.textContent = msg;
+                pleaseWait.style.color = "red";
+                pleaseWait.hidden = false;
+            }
+            return;
+        }
         userPreferences = UserPreferences.readFromLocalStorage();
         if (isRunningInTabMode()) {
             ErrorLog.SuppressErrorLog = false;
@@ -1016,4 +1058,3 @@ const main = (function() {
         showNotification: showNotification
     };
 })();
-

@@ -95,6 +95,26 @@ class Parser {
         return {};
     }
 
+    isNoContentToError403AndContentNull(response) {
+        if (this.userPreferences.noContentToError403.value) {
+            let content = this.findContent(response.responseXML);
+            return (content == null);
+        }
+        else {
+            return false;
+        }
+    }
+
+    setNoContentToError403Response(url, wrapOptions, checkedresponse) {
+        let ret = {};
+        ret.url = url;
+        ret.wrapOptions = wrapOptions;
+        ret.response = {};
+        ret.response.url = checkedresponse.response.url;
+        ret.response.status = 403;
+        return ret;
+    }
+
     onUserPreferencesUpdate(userPreferences) {
         this.userPreferences = userPreferences;
         this.imageCollector.onUserPreferencesUpdate(userPreferences);
@@ -220,7 +240,7 @@ class Parser {
     removeUnwantedElementsFromContentElement(element) {
         util.removeScriptableElements(element);
         util.removeComments(element);
-        util.removeElements(element.querySelectorAll("noscript, input"));
+        util.removeElements(element.querySelectorAll("noscript, input, [aria-hidden=\"true\"]"));
         util.removeUnwantedWordpressElements(element);
         util.removeMicrosoftWordCrapElements(element);
         util.removeShareLinkElements(element);
@@ -232,6 +252,9 @@ class Parser {
     }
 
     populateUI(dom) {
+        let versionElement = document.getElementById("spanExtensionVersion");
+        versionElement.textContent = `${util.extensionVersion()}`;
+
         CoverImageUI.showCoverImageUrlInput(true);
         let coverUrl = this.findCoverImageUrl(dom);
         CoverImageUI.setCoverImageUrl(coverUrl);
@@ -307,7 +330,7 @@ class Parser {
 
     /**
     * Collapse runs of whitespace (including newlines and non-breaking
-    * spaces) in a title down to single spaces, and trim the result.
+    * spaces) in a title down to single spaces, and trim.
     */
     static normalizeTitle(title) {
         return title?.replace(/\s+/g, " ").trim();
@@ -387,6 +410,13 @@ class Parser {
         return publisher?.content ?? "";
     }
 
+    extractDatePublished(dom) {
+        let published = dom.querySelector(
+            "meta[property='article:published_time'], time[itemprop='datePublished']"
+        );
+        return published?.content ?? published?.dateTime ?? null;
+    }
+
     /**
     * default implementation, Derived classes will override
     */
@@ -419,6 +449,7 @@ class Parser {
         metaInfo.subject = this.safeExtract(() => this.extractSubject(dom)).toLowerCase();
         metaInfo.description = this.safeExtract(() => this.extractDescription(dom));
         metaInfo.publisher = this.safeExtract(() => this.extractPublisher(dom));
+        metaInfo.datePublished = this.safeExtract(() => this.extractDatePublished(dom));
 
         this.extractSeriesInfo(dom, metaInfo);
         return metaInfo;
@@ -641,7 +672,7 @@ class Parser {
                 }));
                 index += group.length;
                 group = this.groupPagesToFetch(pagesToFetch, index);
-                if (util.sleepController.signal.aborted) {
+                if (util.getSleepController().signal.aborted) {
                     break;
                 }
             }
@@ -715,8 +746,14 @@ class Parser {
             pageParser.removeUnusedElementsToReduceMemoryConsumption(webPageDom);
             let content = pageParser.findContent(webPage.rawDom);
             if (content == null) {
-                let errorMsg = UIText.Error.errorContentNotFound(webPage.sourceUrl);
-                throw new Error(errorMsg);
+                if (this.userPreferences.noContentToError403.value) {
+                    let errorMsg = UIText.Warning.warning403ErrorResponse(new URL(webPage.sourceUrl).hostname);
+                    throw new Error(errorMsg);
+                }
+                else {
+                    let errorMsg = UIText.Error.errorContentNotFound(webPage.sourceUrl);
+                    throw new Error(errorMsg);
+                }
             }
             return pageParser.fetchImagesUsedInDocument(content, webPage);
         } catch (error) {
@@ -785,7 +822,13 @@ class Parser {
 
     // Hook if need to chase hyperlinks in page to get all chapter content
     async fetchChapter(url) {
-        return (await HttpClient.wrapFetch(url)).responseXML;
+        if (this.userPreferences.noContentToError403.value) {
+            let options = { parser: this };
+            return (await HttpClient.wrapFetch(url, options)).responseXML;
+        }
+        else {
+            return (await HttpClient.wrapFetch(url)).responseXML;
+        }
     }
 
     updateReadingList() {
@@ -1000,7 +1043,7 @@ class Parser {
         };
     }
 
-    static findConstrutedContent(dom) {
+    static findConstructedContent(dom) {
         return dom.querySelector("div." + Parser.WEB_TO_EPUB_CLASS_NAME);
     }
 

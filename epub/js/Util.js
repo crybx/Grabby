@@ -12,13 +12,23 @@ const util = (function() {
 
     function sleep(ms) {
         return new Promise(resolve => {
+            let timer;
             function finished() {
-                resolve();
+                clearTimeout(timer);
                 sleepController.signal.removeEventListener("abort", finished);
+                resolve();
             }
+            //to catch 403 etc. delayed requests
+            if (sleepController.signal.aborted) {
+                return finished();
+            }
+            timer = setTimeout(finished, ms);
             sleepController.signal.addEventListener("abort", finished);
-            setTimeout(finished, ms);
         });
+    }
+
+    function resetSleepController() {
+        sleepController = new AbortController;
     }
 
     function randomInteger(min, max) {
@@ -458,7 +468,11 @@ const util = (function() {
     }
 
     function getFirstImgSrc(dom, selector) {
-        return dom.querySelector(selector)?.querySelector("img")?.src ?? null;
+        var element = dom.querySelector(selector);
+        if (element && (element.tagName !== "IMG")) {
+            element = element.querySelector("img");
+        }
+        return element?.src ?? null;
     }
 
     function extractHashFromUri(uri) {
@@ -1181,7 +1195,8 @@ const util = (function() {
         HEADER_TAGS: HEADER_TAGS,
 
         sleep: sleep,
-        sleepController: sleepController,
+        getSleepController: () => sleepController,
+        resetSleepController: resetSleepController,
         randomInteger: randomInteger,
         isFirefox: isFirefox,
         extensionVersion: extensionVersion,

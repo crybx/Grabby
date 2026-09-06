@@ -521,19 +521,19 @@ button:active {
         margin: 0;
         padding: 0;
     }
-    
+
     #page-container section {
         padding: 8px;
     }
-    
+
     #inputSection {
         flex-direction: column;
     }
-    
+
     #inputSection .form-container {
         margin-bottom: 6px;
     }
-    
+
     #inputSection .cover-image-container {
         align-self: center;
     }
@@ -543,51 +543,51 @@ button:active {
         align-items: stretch;
         gap: 4px;
     }
-    
+
     #inputSection .field-label {
         width: 100%;
         text-align: left;
         font-weight: bold;
     }
-    
+
     #inputSection .field-input {
         margin-right: 0;
     }
-    
+
     #inputSection .field-action {
         margin-top: 4px;
     }
-    
+
     #inputSection .form-field.checkbox-field {
         flex-direction: row;
         align-items: center;
         gap: 8px;
     }
-    
+
     #inputSection .field-checkbox {
         width: auto;
     }
-    
+
     #inputSection .checkbox-label {
         text-align: left;
     }
-    
+
     .progressButtonRow {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .progressButtonRow .expandedButton {
         min-width: auto;
         width: 100%;
     }
-    
+
     .HiddenButtonSection {
         flex-direction: column;
         gap: 8px;
         min-width: 200px;
     }
-    
+
     .HiddenButtonSection button {
         width: 100%;
         margin-right: 0;
@@ -600,7 +600,7 @@ button:active {
         max-width: 95%;
         margin: 8px auto;
     }
-    
+
     #inputSection .field-label {
         width: 100px;
         min-width: 100px;
@@ -613,7 +613,7 @@ button:active {
         max-width: fit-content;
         min-width: 600px;
     }
-    
+
     #inputSection .field-label {
         width: 120px;
     }

@@ -42,11 +42,26 @@ class Download {
         for (const [key, value] of Object.entries(ToReplace)) {
             CustomFilename = CustomFilename.replaceAll(key, value);
         }
+        CustomFilename = CustomFilename.trim();
         if (CustomFilename == "") {
             return EpubPacker.addExtensionIfMissing(metaInfo.fileName);
         }
         if (Download.isFileNameIllegalOnWindows(CustomFilename)) {
             ErrorLog.showErrorMessage(UIText.Error.errorIllegalFileName(CustomFilename, Download.illegalWindowsFileNameChars));
+
+            let userPreferences = main.getUserPreferences();
+            if (userPreferences.removeIllegalCharacterFromFilenameOnDownload.value) {
+                let newCustomFilename = CustomFilename;
+                for (let c of Download.illegalWindowsFileNameChars) {
+                    newCustomFilename = newCustomFilename.replaceAll(c, "");
+                }
+                newCustomFilename = newCustomFilename.trim();
+                if (newCustomFilename == "") {
+                    return EpubPacker.addExtensionIfMissing("IllegalFileName");
+                }
+                return EpubPacker.addExtensionIfMissing(newCustomFilename);
+            }
+
             return EpubPacker.addExtensionIfMissing("IllegalFileName");
         }
         return EpubPacker.addExtensionIfMissing(CustomFilename);
@@ -54,6 +69,25 @@ class Download {
 
     /** write blob to "Downloads" directory */
     static save(blob, fileName, overwriteExisting, backgroundDownload) {
+        if (Download.isFileNameIllegalOnWindows(fileName.replace(".epub", ""))) {
+            ErrorLog.showErrorMessage(UIText.Error.errorIllegalFileName(fileName, Download.illegalWindowsFileNameChars));
+
+            let userPreferences = main.getUserPreferences();
+            if (userPreferences.removeIllegalCharacterFromFilenameOnDownload.value) {
+                let newFileName = fileName;
+                for (let c of Download.illegalWindowsFileNameChars) {
+                    newFileName = newFileName.replaceAll(c, "");
+                }
+                if (newFileName.trim() == "") {
+                    fileName = EpubPacker.addExtensionIfMissing("IllegalFileName");
+                }
+
+                fileName = EpubPacker.addExtensionIfMissing(newFileName);
+            }
+            else {
+                fileName = EpubPacker.addExtensionIfMissing("IllegalFileName");
+            }
+        }
         let options = {
             url: URL.createObjectURL(blob),
             filename: fileName,

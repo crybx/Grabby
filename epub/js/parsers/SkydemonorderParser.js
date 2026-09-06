@@ -23,8 +23,44 @@ class SkydemonorderParser extends Parser {
         };
     }
 
+    preprocessRawDom(webPageDom) {
+        for (let tag of webPageDom.querySelectorAll("live, comments, epicstream")) {
+            let div = webPageDom.createElement("div");
+
+            while (tag.firstChild) {
+                div.appendChild(tag.firstChild);
+            }
+
+            tag.replaceWith(div);
+        }
+    }
+
     findContent(dom) {
-        return dom.querySelector("div#chapter-body");
+        const content = dom.querySelector("#chapter-body");
+
+        if (!content) {
+            return null;
+        }
+
+        const unwrap = element => {
+            for (const child of [...element.children]) {
+                if (child.tagName !== "P" && child.tagName !== "DIV") {
+                    unwrap(child);
+
+                    while (child.firstChild) {
+                        element.insertBefore(child.firstChild, child);
+                    }
+
+                    child.remove();
+                } else {
+                    unwrap(child);
+                }
+            }
+        };
+
+        unwrap(content);
+
+        return content;
     }
 
     extractTitleImpl(dom) {
@@ -37,7 +73,15 @@ class SkydemonorderParser extends Parser {
     }
 
     findCoverImageUrl(dom) {
-        return util.getFirstImgSrc(dom, "div.w-full");
+        const img = dom.querySelector(
+            "div.order-1.flex.justify-center img"
+        );
+
+        if (!img) {
+            return null;
+        }
+
+        return img.getAttribute("src") || img.src || null;
     }
 
     getInformationEpubItemChildNodes(dom) {
