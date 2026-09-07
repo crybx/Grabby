@@ -495,13 +495,9 @@ const utils = (function() {
         });
     }
 
-    function removeAllElementsMatchingSelectors(content, selectors) {
-        // Convert single selector to array for consistent handling
-        const selectorsArray = Array.isArray(selectors) ? selectors : [selectors];
-
-        for (const selector of selectorsArray) {
-            const elements = content.querySelectorAll(selector);
-            removeElements(elements);
+    function removeChildElementsMatchingSelector(element, selector) {
+        if (element !== null) {
+            removeElements(element.querySelectorAll(selector));
         }
     }
 
@@ -631,7 +627,7 @@ const utils = (function() {
         removeTag: removeTag,
         removeTags: removeTags,
         removeTagsFromContent: removeTagsFromContent,
-        removeAllElementsMatchingSelectors: removeAllElementsMatchingSelectors,
+        removeChildElementsMatchingSelector: removeChildElementsMatchingSelector,
         removeElements: removeElements,
         removeElementWithClasses: removeElementWithClasses,
         removeElementWithClassesThatStartWith: removeElementWithClassesThatStartWith,

@@ -22,11 +22,11 @@ function grabRidi() {
     const content = dom.querySelector("#viewer_contents");
 
     utils.removeComments(content);
+    utils.removeChildElementsMatchingSelector(content, ".contents_dummy_mask, .content_footer");
     content.querySelectorAll("*").forEach(element => {
         utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
         utils.removeClassesThatStartWith(element, "block_");
         utils.removeClasses(element, ["body", "story_part_header_title"]);
-        utils.removeElementWithClasses(element, ["contents_dummy_mask", "content_footer"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeEmptyParagraphAndHeadings(element);
     });
@@ -150,12 +150,12 @@ function grabSecondLifeTranslations() {
     const title = document.querySelector(".entry-title").textContent;
     const cipher = "rhbndjzvqkiexcwsfpogytumalVUQXWSAZKBJNTLEDGIRHCPFOMY";
 
+    utils.removeChildElementsMatchingSelector(content, ".jmbl-ent, .jmbl-disclaimer");
     content.querySelectorAll("*").forEach(element => {
         if (element.classList.contains("jmbl")) {
             utils.cipherSubstitution(element, cipher);
         }
         utils.removeClasses(element, ["jmbl"]);
-        utils.removeElementWithClasses(element, ["jmbl-ent", "jmbl-disclaimer"]);
         utils.standardElementCleanup(element);
     });
     utils.standardContentCleanup(content);
@@ -226,7 +226,7 @@ function madaraWpTheme() {
         dom.querySelector(".entry-content_wrap");
 
     content = standardCleanup(content);
-    utils.removeAllElementsMatchingSelectors(content, ".abh_box");
+    utils.removeChildElementsMatchingSelector(content, ".abh_box");
 
     return "<h1>" + title.trim() + "</h1>" + "\n\n" + content.innerHTML.trim();
 }
@@ -234,11 +234,10 @@ function madaraWpTheme() {
 function grabWatashiWaSugoiDesu() {
     const content = document.querySelector("#wtr-content");
 
+    utils.removeChildElementsMatchingSelector(content, ".ezoic-autoinsert-ad, [data-ez-ph-id]");
     content.querySelectorAll("*").forEach(element => {
         utils.removeAttributes(element, ["class", "style"]);
         utils.removeTags(element, ["SCRIPT", "SELECT"]);
-        utils.removeElementWithClasses(element, ["ezoic-autoinsert-ad"]);
-        utils.removeElementWithAttributes(element, ["data-ez-ph-id"]);
     });
     return content.innerHTML.trim();
 }
@@ -325,10 +324,11 @@ function grabFictioneer() {
     let content = document.querySelector(".chapter-formatting") ||
         document.querySelector("#chapter-content");
 
+    utils.removeChildElementsMatchingSelector(content,
+        ".eoc-chapter-groups, .chapter-nav, .paragraph-tools, .code-block, .jp-relatedposts");
     content.querySelectorAll("*").forEach(element => {
         utils.removeSpansInsideParagraph(element);
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
-        utils.removeElementWithClasses(element, ["eoc-chapter-groups", "chapter-nav", "paragraph-tools", "code-block", "jp-relatedposts"]);
     });
 
     return prepFictioneerContent(content, title);
@@ -352,7 +352,9 @@ function grabLilyonthevalley() {
         return { abort: true, reason: "Page loaded with no content - will retry on next check" };
     }
 
-    utils.removeTagsFromContent(content, ["BDI", "CODE", "RUBY", "SAMP", "KBD", "RT", "RP", "WBR"]);
+    utils.removeChildElementsMatchingSelector(content, "bdi, code, ruby, samp, kbd, rt, rp, wbr");
+    utils.removeChildElementsMatchingSelector(content,
+        "[aria-hidden], .encryptedPayload, .eoc-chapter-groups, .chapter-nav, .paragraph-tools, .related-stories-block");
     content.querySelectorAll("*").forEach(element => {
         // if it's a p tag and does not have attribute data-paragraph-id, remove it
         if (element.tagName === "P" && !element.hasAttribute("data-paragraph-id")) {
@@ -369,8 +371,6 @@ function grabLilyonthevalley() {
         }
         utils.removeAttributes(element, ["id", "data-paragraph-id"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
-        utils.removeElementWithAttributes(element, ["aria-hidden"]);
-        utils.removeElementWithClasses(element, ["encryptedPayload", "eoc-chapter-groups", "chapter-nav", "paragraph-tools", "related-stories-block"]);
     });
     utils.unwrapAllOfTag(content, "span");
 
@@ -450,14 +450,12 @@ function grabNovelingua() {
     title = title.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 
     const content = dom.querySelector(".entry-content");
+    utils.removeChildElementsMatchingSelector(content,
+        ".pagelayer-btn-holder, .pagelayer-share, .pagelayer-anim-par, .pagelayer-image_slider, .pagelayer-embed");
     content.querySelectorAll("*").forEach(element => {
         element.removeAttribute("dir");
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.removeIdsThatStartWith(element, "docs-internal-guid-");
-        utils.removeElementWithClasses(element, [
-            "pagelayer-btn-holder", "pagelayer-share", "pagelayer-anim-par",
-            "pagelayer-image_slider", "pagelayer-embed"
-        ]);
         utils.removeClasses(element, ["pagelayer-text-holder"]);
         utils.standardElementCleanup(element);
     });
@@ -541,13 +539,13 @@ function grabReadhive() {
     title = title.replace(" – Readhive", "");
 
     utils.standardContentCleanup(content);
+    utils.removeChildElementsMatchingSelector(content, ".absolute, .fixed, .flex, .sticky");
     content.querySelectorAll("*").forEach(element => {
         utils.standardElementCleanup(element);
         // remove "span" tag elements while keeping the inner text
         if (element.tagName === "SPAN") {
             utils.unwrapTag(element);
         }
-        utils.removeElementWithClasses(element, ["absolute", "fixed", "flex", "sticky"]);
         utils.removeAttributes(element, ["@click"]);
     });
 
@@ -793,11 +791,11 @@ function grabWebnovel() {
     const content = contentOrig.cloneNode(true);
 
     utils.standardContentCleanup(content);
+    utils.removeChildElementsMatchingSelector(content, "._avatar, .user-link, .add-a-para-comment");
     content.querySelectorAll("*").forEach(element => {
         utils.removeClasses(element, ["db", "pr", "hover-light"]);
         utils.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
         utils.removeAttributesThatStartWith(element, ["data-"]);
-        utils.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment"]);
         utils.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
         utils.standardElementCleanup(element);
@@ -854,10 +852,8 @@ function cleanClaudeConversationContent(container) {
     ]);
 
     // Remove non-content elements
-    utils.removeTagsFromContent(container, [
-        "BUTTON", "SVG", "PATH", "INPUT", "FORM",
-        "HEADER", "FOOTER", "NAV", "SCRIPT", "STYLE", "LINK", "META"
-    ]);
+    utils.removeChildElementsMatchingSelector(container,
+        "button, svg, path, input, form, header, footer, nav, script, style, link, meta");
 
     // Strip all attributes, preserving href on links and src/alt on images
     container.querySelectorAll("*").forEach(el => {

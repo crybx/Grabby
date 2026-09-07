@@ -1201,30 +1201,6 @@ const util = (function() {
         element.textContent = sArray.join("");
     }
 
-    function removeTagsFromContent(content, tagNames) {
-        // Convert single tagName to array for consistent handling
-        const tagNamesArray = Array.isArray(tagNames) ? tagNames : [tagNames];
-
-        for (let tagName of tagNamesArray) {
-            let elements = content?.querySelectorAll(tagName);
-            if (elements?.length > 0) {
-                removeElements(elements);
-            }
-        }
-    }
-
-    function removeElementWithClasses(element, classNames) {
-        // Convert single string to array for consistent handling
-        const classNamesArray = Array.isArray(classNames) ? classNames : [classNames];
-
-        for (let className of classNamesArray) {
-            if (element.classList.contains(className)) {
-                element.remove();
-                break; // Once element is removed, no need to check other classes
-            }
-        }
-    }
-
     function removeElementWithClassesThatStartWith(element, prefixes) {
         // Convert single string to array for consistent handling
         const prefixArray = Array.isArray(prefixes) ? prefixes : [prefixes];
@@ -1239,18 +1215,6 @@ const util = (function() {
                         return; // Once element is removed, no need to continue
                     }
                 }
-            }
-        }
-    }
-
-    function removeElementWithAttributes(element, attributes) {
-        // Convert single attribute to array for consistent handling
-        const attributesArray = Array.isArray(attributes) ? attributes : [attributes];
-
-        for (let attribute of attributesArray) {
-            if (element.hasAttribute(attribute)) {
-                element.remove();
-                break; // Once element is removed, no need to check other attributes
             }
         }
     }
@@ -1316,17 +1280,10 @@ const util = (function() {
         }
     }
 
-    function unwrapTag(element) {
-        while (element.firstChild) {
-            element.parentNode.insertBefore(element.firstChild, element);
-        }
-        element.parentNode.removeChild(element);
-    }
-
     function unwrapAllOfTag(content, tagName) {
         const elements = content?.querySelectorAll(tagName) || [];
         for (const element of elements) {
-            unwrapTag(element);
+            flattenNode(element);
         }
     }
 
@@ -1439,14 +1396,10 @@ const util = (function() {
         removeEmptyAttributes: removeEmptyAttributes,
         removeSpansWithNoAttributes: removeSpansWithNoAttributes,
         replaceSemanticInlineStylesWithTags: replaceSemanticInlineStylesWithTags,
-        removeTagsFromContent: removeTagsFromContent,
-        removeElementWithClasses: removeElementWithClasses,
         removeElementWithClassesThatStartWith: removeElementWithClassesThatStartWith,
-        removeElementWithAttributes: removeElementWithAttributes,
         removeClasses: removeClasses,
         removeClassesThatStartWith: removeClassesThatStartWith,
         removeAttributesThatStartWith: removeAttributesThatStartWith,
-        unwrapTag: unwrapTag,
         unwrapAllOfTag: unwrapAllOfTag,
         wrapInnerContentInTag: wrapInnerContentInTag,
         getDefaultExtensionByMime: getDefaultExtensionByMime,

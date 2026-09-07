@@ -199,7 +199,7 @@ class QidianParser extends Parser {
     }
  
     removeUnwantedElementsFromContentElement(content) {
-        util.removeChildElementsMatchingSelector(content, "pirate");
+        util.removeChildElementsMatchingSelector(content, "pirate, ._avatar, .user-link, .add-a-para-comment, .tac");
         //util.removeChildElementsMatchingSelector(content, "form.cha-score, div.cha-bts, pirate, div.cha-content div.user-links-wrap, div.tac");
         this.tagAuthorNotesBySelector(content, "div.m-thou");
         //Remove repeat & unused metadata from document. Approximately halves body length.
@@ -207,7 +207,6 @@ class QidianParser extends Parser {
             util.removeClasses(element, ["db", "pr", "hover-light"]);
             util.removeClassesThatStartWith(element, ["cha-", "j_para", "_font_"]);
             util.removeAttributesThatStartWith(element, ["data-"]);
-            util.removeElementWithClasses(element, ["_avatar", "user-link", "add-a-para-comment", "tac"]);
             util.removeElementWithClassesThatStartWith(element, ["j_comment", "para-comment", "user-link"]);
             util.replaceSemanticInlineStylesWithTags(element, true);
         });
