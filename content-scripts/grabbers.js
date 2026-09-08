@@ -462,12 +462,17 @@ function grabNovelingua() {
     utils.standardContentCleanup(content);
     utils.unwrapAllOfTag(content, "div");
 
+    let chapterEnders = [
+        "check out these other novels as well",
+        "please rate and review this novel on"
+    ];
+
     // now that everything is flatter inside content, look for the end of the content
     let contentEnded = false;
     content.querySelectorAll("*").forEach(element => {
         if (contentEnded) {
             element.remove();
-        } else if (element.textContent.toLowerCase().includes("please rate and review this novel on")) {
+        } else if (chapterEnders.some(ender => element.textContent.toLowerCase().includes(ender))) {
             contentEnded = true;
             element.remove();
         }
