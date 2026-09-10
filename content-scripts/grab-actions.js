@@ -547,7 +547,7 @@ function pressRightArrow() {
 async function kakaoNext(waitForNavigationMs = 8000) {
     const startUrl = window.location.href;
 
-    const nextButton = document.querySelector("div[data-test=\"viewer-navbar-next-button\"]");
+    const nextButton = document.querySelector("button[data-test=\"viewer-navbar-next-button\"]");
     if (!nextButton) {
         return { abort: true, reason: "No next episode button - reached the last episode" };
     }
