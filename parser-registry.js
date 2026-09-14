@@ -19,7 +19,7 @@
  * - deadSite (optional): true if upstream registered the site with registerDeadSite(),
  *   i.e. the site is believed gone. The parser still loads and runs; this is a note.
  *
- * Total supported domains: 648 (12 marked dead upstream)
+ * Total supported domains: 649 (12 marked dead upstream)
  */
 
 let PARSER_REGISTRY = {
@@ -667,6 +667,7 @@ let PARSER_REGISTRY = {
     "zenithnovels.com": { parserClass: "ZenithNovelsParser", file: "ZenithNovelsParser.js" },
     "zenithtls.com": { parserClass: "ZenithtlsParser", file: "ZenithtlsParser.js" },
     "zeonic-republic.net": { parserClass: "ZeonicrepublicParser", file: "ZeonicrepublicParser.js" },
+    "zerostls.wordpress.com": { parserClass: "WordpressBaseParser", file: "WordpressBaseParser.js" },
     "zhenhunxiaoshuo.com": { parserClass: "ZhenhunxiaoshuoParser", file: "ZhenhunxiaoshuoParser.js" },
     "zinnovel.net": { parserClass: "NovelfullParser", file: "NovelfullParser.js" },
     "zirusmusings.com": { parserClass: "ZirusMusingsParser", file: "ZirusMusingsParser.js" },

@@ -19,6 +19,7 @@ parserFactory.register("skythewoodtl.com", () => new WordpressBaseParser());
 parserFactory.register("yoraikun.wordpress.com", () => new WordpressBaseParser());
 parserFactory.register("wanderertl130.id", () => new Wanderertl130Parser());
 parserFactory.register("sasakitomyiano.wordpress.com", () => new WordpressBaseParser());
+parserFactory.register("zerostls.wordpress.com", () => new WordpressBaseParser());
 
 parserFactory.registerRule(
     // return probability (0.0 to 1.0) web page is a Wordpress page
