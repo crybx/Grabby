@@ -92,11 +92,14 @@ class CherrymistParser extends Parser {
 
     customRawDomToContentStep(chapter, content) {
         // Paragraphs end in an invisible watermark: a run of zero-width (non-)joiners
-        // wrapped in word joiners (&NoBreak;&zwnj;&zwj;...&NoBreak;). Strip them from
-        // the text nodes so inline markup inside paragraphs survives.
+        // wrapped in word joiners (&NoBreak;&zwnj;&zwj;...&NoBreak;). Remove the whole run
+        // rather than every joiner, since a lone zero-width joiner holds multi-part emoji
+        // together. Works on text nodes so inline markup inside paragraphs survives.
         let walker = content.ownerDocument.createTreeWalker(content, NodeFilter.SHOW_TEXT);
         while (walker.nextNode()) {
-            walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/[\u200B-\u200D\u2060\uFEFF]/g, "");
+            walker.currentNode.nodeValue = walker.currentNode.nodeValue
+                .replace(/\u2060[\u200C\u200D]+\u2060/g, "")
+                .replace(/[\u200B\u2060\uFEFF]/g, "");
         }
         // The container's inline style is the reader's display settings (font, size, spacing)
         util.removeAttributes(content, ["style"]);

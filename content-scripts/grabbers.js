@@ -23,12 +23,12 @@ function grabRidi() {
 
     utils.removeComments(content);
     utils.removeChildElementsMatchingSelector(content, ".contents_dummy_mask, .content_footer");
+    utils.removeInvisibleCharacters(content);
     content.querySelectorAll("*").forEach(element => {
         utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
         utils.removeClassesThatStartWith(element, "block_");
         utils.removeClasses(element, ["body", "story_part_header_title"]);
         utils.replaceSemanticInlineStylesWithTags(element, true);
-        utils.removeEmptyParagraphAndHeadings(element);
     });
     utils.unwrapAllOfTag(content, "font");
     utils.unwrapAllOfTag(content, "article");
@@ -410,12 +410,8 @@ function grabCherrymist() {
     if (storyName) { title = storyName + ": " + title; }
 
     // Paragraphs end in an invisible watermark: a run of zero-width (non-)joiners
-    // wrapped in word joiners (&NoBreak;&zwnj;&zwj;...&NoBreak;). Strip them from
-    // the text nodes so inline markup inside paragraphs survives.
-    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
-    while (walker.nextNode()) {
-        walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/[\u200B-\u200D\u2060\uFEFF]/g, "");
-    }
+    // wrapped in word joiners (&NoBreak;&zwnj;&zwj;...&NoBreak;)
+    utils.removeInvisibleCharacters(content);
 
     standardCleanup(content);
     content.querySelectorAll("*").forEach(element => {
