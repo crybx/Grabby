@@ -957,7 +957,7 @@ class Parser {
         if (!entry?.liveMode) {
             return;
         }
-        if (util.sleepController.signal.aborted) {
+        if (util.getSleepController().signal.aborted) {
             return; // User cancelled before this chapter started
         }
         try {
@@ -975,7 +975,7 @@ class Parser {
         if (webPage.parser && typeof webPage.parser.rateLimitDelay === "function") {
             ChapterUrlsUI.showChapterStatus(webPage.row, ChapterUrlsUI.CHAPTER_STATUS_SLEEPING, webPage.sourceUrl, webPage.title);
             await webPage.parser.rateLimitDelay();
-            if (util.sleepController.signal.aborted) {
+            if (util.getSleepController().signal.aborted) {
                 return;
             }
         }
