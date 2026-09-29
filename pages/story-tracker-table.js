@@ -226,6 +226,15 @@ class StoryTrackerTable {
             this.setDateTimeToNow("date-last-checked");
         });
 
+        // Clear button for the story tags input
+        document.getElementById("clear-story-tags-btn").addEventListener("click", () => {
+            const input = document.getElementById("story-tags");
+            input.value = "";
+            // Refocus without reopening suggestions: the focus handler only
+            // suggests when a tag segment is part way typed.
+            input.focus();
+        });
+
         document.getElementById("refresh-btn").addEventListener("click", () => {
             this.refresh().then();
         });

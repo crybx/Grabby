@@ -1048,13 +1048,15 @@ h1 {
     color: var(--color-active);
 }
 
-.datetime-input-group {
+.datetime-input-group,
+.tag-input-group {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
-.datetime-input-group input {
+.datetime-input-group input,
+.tag-input-group input {
     flex: 1;
 }
 
