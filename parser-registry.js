@@ -88,7 +88,7 @@ let PARSER_REGISTRY = {
     "cangji.net": { parserClass: "CangjiParser", file: "CangjiParser.js" },
     "cclawtranslations.home.blog": { parserClass: "CClawTranslationsParser", file: "CClawTranslationsParser.js" },
     "chaleuria.com": { parserClass: "ChaleuriaParser", file: "ChaleuriaParser.js" },
-    "cherrymist.cafe": { parserClass: "CherryMistParser", file: "FictioneerParser.js" },
+    "cherrymist.cafe": { parserClass: "CherrymistParser", file: "CherrymistParser.js", liveMode: true },
     "chichipeph.com": { parserClass: "ChichipephParser", file: "ChichipephParser.js" },
     "chickengege.org": { parserClass: "ChickengegeParser", file: "ChickengegeParser.js" },
     "chikari.moe": { parserClass: "ChikariParser", file: "ChikariParser.js" },

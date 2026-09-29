@@ -31,23 +31,21 @@ const WEBSITE_CONFIGS = {
         "blogspot.com": { grabber: "grabBlogspot" },
         "claude.ai": { grabber: "grabClaude" },
         "cherrymist.cafe": {
-            grabber: "grabLilyonthevalley",
+            grabber: "grabCherrymist",
             useFirstHeadingTitle: true,
+            // Locked chapters show a "Sealed" card with an "Unlock for N Cherries"
+            // button instead of the chapter body. Match the button, not the "Sealed"
+            // heading, since recommended story titles are h3s on the same page.
             preGrab: {
                 fn: "GrabActions.checkForPageErrorsAndLockedContent",
-                args: [
-                    null,
-                    ["h1", "h2", "h3", ".mycred-sell-this-wrapper"],
-                    ["Secret Pavilion", "Hidden Pavilion"]
-                ]
+                args: [null, ["button"], ["Unlock for"]]
             },
-            // Fictioneer "valley" theme, but click the site's own next-chapter
-            // link instead of pressing the right arrow key
+            // Click the site's own next-chapter link
             postGrab: {
                 fn: "GrabActions.clickElementBySelector",
                 args: ["[aria-label=\"Next chapter\"]", { abortIfNotFound: true }]
             },
-            autoNav: { enabled: true, defaultDelay: 15, activeTab: true }
+            autoNav: { enabled: true, defaultDelay: 20, activeTab: true }
         },
         "chrysanthemumgarden.com": {
             grabber: "grabChrysanthemum",

@@ -38,9 +38,11 @@ const REGISTRY_PATH = path.join(__dirname, "parser-registry.js");
  *   anti-bot checks) before it's in the DOM. See Live-Mode-Plan.md.
  *
  * Example:
- *   "cherrymist.cafe": { liveMode: true },
+ *   "example.com": { liveMode: true },
  */
 const OVERRIDES = {
+    // Client-rendered app: chapter content only exists in a signed-in tab
+    "cherrymist.cafe": { liveMode: true },
 };
 
 // Matches both registration forms, across line breaks (CClawTranslationsParser.js wraps).

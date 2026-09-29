@@ -395,6 +395,39 @@ function prepFictioneerContent(content, title) {
     return content;
 }
 
+function grabCherrymist() {
+    // The page has two .rich-content blocks: an author note (a promo blurb) and
+    // the chapter body inside .cm-reader-body. Only take the chapter body.
+    const originalContent = document.querySelector(".cm-reader-body .rich-content");
+    if (!originalContent || originalContent.textContent.trim().length < 50) {
+        return { abort: true, reason: "No chapter content found - signed out or still loading?" };
+    }
+    const content = originalContent.cloneNode(true);
+
+    const heading = document.querySelector("h1");
+    let title = heading?.textContent?.trim() || document.title;
+    const storyName = heading?.parentElement?.querySelector("a[href^=\"/story/\"]")?.textContent?.trim();
+    if (storyName) { title = storyName + ": " + title; }
+
+    // Paragraphs end in an invisible watermark: a run of zero-width (non-)joiners
+    // wrapped in word joiners (&NoBreak;&zwnj;&zwj;...&NoBreak;). Strip them from
+    // the text nodes so inline markup inside paragraphs survives.
+    const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+        walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(/[\u200B-\u200D\u2060\uFEFF]/g, "");
+    }
+
+    standardCleanup(content);
+    content.querySelectorAll("*").forEach(element => {
+        // select-text/data-fw come from the reader; the rest from text pasted out of a chat UI
+        utils.removeClasses(element, ["select-text", "font-claude-response-body", "break-words", "whitespace-normal"]);
+        utils.removeAttributes(element, ["data-fw", "data-sourcepos"]);
+        utils.removeEmptyParagraphAndHeadings(element);
+    });
+
+    return "<h1>" + title + "</h1>" + "\n\n" + content.innerHTML.trim();
+}
+
 function grabPatreon() {
     const content = document.querySelector("body");
 
