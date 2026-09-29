@@ -30,6 +30,25 @@ const WEBSITE_CONFIGS = {
         "archiveofourown.org": { grabber: "grabAO3", useFirstHeadingTitle: true },
         "blogspot.com": { grabber: "grabBlogspot" },
         "claude.ai": { grabber: "grabClaude" },
+        "cherrymist.cafe": {
+            grabber: "grabLilyonthevalley",
+            useFirstHeadingTitle: true,
+            preGrab: {
+                fn: "GrabActions.checkForPageErrorsAndLockedContent",
+                args: [
+                    null,
+                    ["h1", "h2", "h3", ".mycred-sell-this-wrapper"],
+                    ["Secret Pavilion", "Hidden Pavilion"]
+                ]
+            },
+            // Fictioneer "valley" theme, but click the site's own next-chapter
+            // link instead of pressing the right arrow key
+            postGrab: {
+                fn: "GrabActions.clickElementBySelector",
+                args: ["[aria-label=\"Next chapter\"]", { abortIfNotFound: true }]
+            },
+            autoNav: { enabled: true, defaultDelay: 15, activeTab: true }
+        },
         "chrysanthemumgarden.com": {
             grabber: "grabChrysanthemum",
             postGrab: {
@@ -245,7 +264,7 @@ const WEBSITE_CONFIGS = {
             autoNav: { enabled: true, defaultDelay: 10 }
         },
         fictioneerValleySites: {
-            domains: ["lilyonthevalley.com", "talesinthevalley.com", "cherrymist.cafe"],
+            domains: ["lilyonthevalley.com", "talesinthevalley.com"],
             grabber: "grabLilyonthevalley",
             useFirstHeadingTitle: true,
             preGrab: {
