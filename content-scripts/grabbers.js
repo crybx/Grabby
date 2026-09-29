@@ -24,6 +24,15 @@ function grabRidi() {
     utils.removeComments(content);
     utils.removeChildElementsMatchingSelector(content, ".contents_dummy_mask, .content_footer");
     utils.removeInvisibleCharacters(content);
+    content.querySelectorAll("div").forEach(div => {
+        utils.removeElementWithClassesThatStartWith(div, "_speechHighlightLayer");
+    });
+    // Re-query so divs removed above aren't unwrapped back into the content
+    content.querySelectorAll("div").forEach(div => {
+        if ([...div.classList].some(c => c.startsWith("css-"))) {
+            utils.unwrapTag(div);
+        }
+    });
     content.querySelectorAll("*").forEach(element => {
         utils.removeTags(element, ["PRE", "TITLE", "LINK"]);
         utils.removeClassesThatStartWith(element, "block_");
