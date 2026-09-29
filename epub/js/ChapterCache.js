@@ -794,7 +794,7 @@ class ChapterCache { // eslint-disable-line no-unused-vars
                 }));
                 index += group.length;
                 group = parser.groupPagesToFetch(webPages, index);
-                if (util.sleepController.signal.aborted) {
+                if (util.getSleepController().signal.aborted) {
                     break;
                 }
             }

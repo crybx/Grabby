@@ -281,18 +281,18 @@ const main = (function() {
                 await fetchContentAndPackEpub.call(obj);
             } catch (err) {
                 setProcessingButtonsState(false);
-                if (!util.sleepController.signal.aborted) {
+                if (!util.getSleepController().signal.aborted) {
                     ErrorLog.showErrorMessage(err);
                 }
-                util.sleepController = new AbortController();
+                util.resetSleepController();
             }
         } else {
             // Normal Mode: download chapters to cache
             try {
                 await ChapterCache.downloadChaptersToCache();
                 setProcessingButtonsState(false);
-                if (util.sleepController.signal.aborted) {
-                    util.sleepController = new AbortController;
+                if (util.getSleepController().signal.aborted) {
+                    util.resetSleepController();
                     return;
                 }
                 parser.updateReadingList();
