@@ -38,7 +38,7 @@ const WEBSITE_CONFIGS = {
             // heading, since recommended story titles are h3s on the same page.
             preGrab: {
                 fn: "GrabActions.checkForPageErrorsAndLockedContent",
-                args: [null, ["button"], ["Unlock for"]]
+                args: [null, ["button"], ["Unlock for", "Log in to continue reading"]]
             },
             // Click the site's own next-chapter link
             postGrab: {

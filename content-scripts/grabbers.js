@@ -427,6 +427,11 @@ function grabCherrymist() {
         // select-text/data-fw come from the reader; the rest from text pasted out of a chat UI
         utils.removeClasses(element, ["select-text", "font-claude-response-body", "break-words", "whitespace-normal"]);
         utils.removeAttributes(element, ["data-fw", "data-sourcepos"]);
+        // Unhide elements the reader hides with an inline display: none
+        if (element.style.display === "none") {
+            element.style.removeProperty("display");
+            if (!element.getAttribute("style").trim()) { element.removeAttribute("style"); }
+        }
         utils.removeEmptyParagraphAndHeadings(element);
     });
 
