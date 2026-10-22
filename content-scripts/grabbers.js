@@ -17,8 +17,8 @@ function grabKakaoPage() {
 function grabRidi() {
     const dom = document.cloneNode(true);
     let title = dom.querySelector("title").textContent;
-    // remove " – Ridi" from the title
-    title = title.replace(" - Ridibooks", "");
+    // remove " - Ridibooks", " - Ridi" and " - 리디" from the title (longest first so "Ridi" doesn't leave "books")
+    title = title.replace(/ - (?:Ridibooks|Ridi|리디)/g, "");
     const content = dom.querySelector("#viewer_contents");
 
     utils.removeComments(content);
