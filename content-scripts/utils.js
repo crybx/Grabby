@@ -159,15 +159,16 @@ const utils = (function() {
     // lead off real ones, and as watermarks: a reader ID encoded as a run of zero-width
     // (non-)joiners wrapped in word joiners, removed as a whole run, or as word joiners
     // mixed with invisible separators. Otherwise only zero-width space, word joiner, the
-    // invisible math operators (U+2061-2064), BOM and Hangul filler go. A lone
-    // zero-width joiner holds multi-part emoji together (family, rainbow flag) and the non-joiner
-    // shapes scripts like Persian, so those stay, as do direction marks (U+200E etc.).
+    // invisible math operators (U+2061-2064) and BOM go. A lone zero-width joiner holds
+    // multi-part emoji together (family, rainbow flag) and the non-joiner shapes scripts
+    // like Persian, so those stay, as do direction marks (U+200E etc.). Hangul filler
+    // (U+3164) stays too: it renders as a blank and indents replies in comment threads.
     function removeInvisibleCharacters(content) {
         const walker = content.ownerDocument.createTreeWalker(content, NodeFilter.SHOW_TEXT);
         while (walker.nextNode()) {
             walker.currentNode.nodeValue = walker.currentNode.nodeValue
                 .replace(/\u2060[\u200C\u200D]+\u2060/g, "")
-                .replace(/[\u200B\u2060-\u2064\uFEFF\u3164]/g, "");
+                .replace(/[\u200B\u2060-\u2064\uFEFF]/g, "");
         }
     }
 
