@@ -14,7 +14,7 @@ export class DownloadHandler {
             const processedContent = this.processContent(content);
 
             // Create HTML from content
-            const htmlContent = this.getHtmlFromContent(filename, processedContent);
+            const htmlContent = this.getHtmlFromContent(this.createHtmlTitle(filename, matchingConfig), processedContent);
 
             await this.downloadAsFile(filename, htmlContent);
 
@@ -69,6 +69,21 @@ export class DownloadHandler {
 ${bodyText}
 </body>
 </html>`;
+    }
+
+    // Derive the <title> tag from the finished filename: apply domain-specific
+    // cleanup patterns (written against the filename form, e.g. "_ridibooks_com\\.html$"),
+    // then turn underscores back into spaces
+    createHtmlTitle(filename, matchingConfig) {
+        let title = filename;
+
+        if (matchingConfig?.titleCleanupPatterns && Array.isArray(matchingConfig.titleCleanupPatterns)) {
+            for (const pattern of matchingConfig.titleCleanupPatterns) {
+                title = title.replace(new RegExp(pattern, "g"), "");
+            }
+        }
+
+        return title.replace(/_/g, " ").trim();
     }
 
     createFileName(title, titleFromParser, url, matchingConfig, storyTitle) {

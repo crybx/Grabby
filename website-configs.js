@@ -6,6 +6,9 @@
 //   functions to run in order)
 // - postGrab: function to run after grabbing content (optional, or an array of
 //   functions to run in order)
+// - filenameCleanupPatterns: regex strings removed from the download filename (optional)
+// - titleCleanupPatterns: regex strings removed from the saved file's <title>, which
+//   is the finished filename with underscores turned into spaces (optional)
 // - runActionsOnDirectGrab: boolean to run pre/post actions on direct grabs (optional, defaults to true)
 // - autoNav: configuration for automatic navigation during chapter grabbing (optional)
 //   - enabled: boolean to enable auto-nav for this site
@@ -170,7 +173,8 @@ const WEBSITE_CONFIGS = {
             preGrab: "GrabActions.googleTranslate",
             postGrab: "GrabActions.ridiNext",
             autoNav: { enabled: true, defaultDelay: 15 },
-            filenameCleanupPatterns: [" - Ridibooks"]
+            filenameCleanupPatterns: [" - Ridibooks", " - 리디"],
+            titleCleanupPatterns: ["_ridibooks_com\\.html$"]
         },
         "page.kakao.com": {
             grabber: "grabKakaoPage",
