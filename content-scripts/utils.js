@@ -12,8 +12,17 @@ const utils = (function() {
 
         // If first <p> looks like a chapter heading, convert it. Require a short
         // paragraph that starts with a numbered marker - 화/편/장 are also
-        // common syllables in ordinary Korean prose (연무장, 대화, 편지)
-        const firstP = content.querySelector("p");
+        // common syllables in ordinary Korean prose (연무장, 대화, 편지).
+        // Only consider the <p> holding the content's first text, so blank spacer
+        // paragraphs (e.g. <p><b><br></b></p>) are skipped but a <p> deeper in the
+        // page is never promoted when other text comes before it
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT,
+            node => node.nodeValue.trim() && !node.parentElement.closest("style, script")
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_SKIP);
+        const firstText = walker.nextNode();
+        const firstTextP = firstText?.parentElement.closest("p");
+        const firstP = content.contains(firstTextP) ? firstTextP : null;
         const firstPText = (firstP?.textContent || "").trim();
         if (firstPText.length <= 60 &&
             /^(chapter\s*\d+|episode\s*\d+|#\s*\d+|제?\s*\d+\s*[화편장]|第?\s*\d+\s*[話章])/i.test(firstPText)) {
