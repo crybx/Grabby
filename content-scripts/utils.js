@@ -10,9 +10,13 @@ const utils = (function() {
             }
         }
 
-        // If first <p> looks like a chapter heading, convert it
+        // If first <p> looks like a chapter heading, convert it. Require a short
+        // paragraph that starts with a numbered marker - 화/편/장 are also
+        // common syllables in ordinary Korean prose (연무장, 대화, 편지)
         const firstP = content.querySelector("p");
-        if (firstP && /chapter|episode|#|화|편|장|話|章/i.test(firstP.textContent || "")) {
+        const firstPText = (firstP?.textContent || "").trim();
+        if (firstPText.length <= 60 &&
+            /^(chapter\s*\d+|episode\s*\d+|#\s*\d+|제?\s*\d+\s*[화편장]|第?\s*\d+\s*[話章])/i.test(firstPText)) {
             const h1 = document.createElement("h1");
             replaceTag(firstP, h1);
             return;
